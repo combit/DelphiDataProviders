@@ -1,4 +1,4 @@
-# Project Description
+# Project description
 This project is a community effort to write TListLabelDataProvider implementations for usage with reporting tool combit List & Label. While the support for .NET has been around a long time, we're trying to build a similar ecosystem for Delphi through this project. Any help is greatly appreciated.
 
 Currently, we're looking at building up a team. The files included are mere prototypes and require List & Label 22 to run. Contact the project admin if you're interested and we'll get together the bits to get you started.
