@@ -1,3 +1,29 @@
+Project Description
+
+This project is a community effort to write TListLabelDataProvider implementations for usage with reporting tool combit List & Label. While the support for .NET has been around a long time, we're trying to build a similar ecosystem for Delphi through this project. Any help is greatly appreciated.
+
+What's available so far
+
+The abstract base class for TListLabelDataProvider mimics exactly what's available on the .NET end. A very simple prototype allows to add TFDQuery elements as separate tables.
+
+What's required
+
+Do you know your way through FireDAC? Can you provide code for sorting or filtering? Then you're the guy we're looking for.
+
+Why bother?
+
+If you're using List & Label with Delphi, you'll have encountered a set of restrictions this project is aiming to remove:
+Multiple report containers
+Support for FireDAC instead of BDE
+Nested tables
+Keep blocks together
+
+Any feedback as well as additional contributions are very welcome, just contact the project's administrator.
+
+For a fully functional free 30-day trial version and further information about reporting tool List & Label 
+please visit: https://www.combit.net/en/reporting-tool/
+
+
 Currently, we're looking at building up a team. The files included are mere prototypes and require List & Label 22 to run. Contact the project admin if you're interested and we'll get together the bits to get you started.
 
 To give you an impression: the usage of the very raw prototype for a designer call and following print would be:
