@@ -1,0 +1,6 @@
+[Directories]
+SearchPath=.\Sources\
+OutputDir=.\
+UnitOutputDir=.\
+PackageDLLOutputDir=.\
+PackageDCPOutputDir=.\

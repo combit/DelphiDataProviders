@@ -1,7 +1,20 @@
-unit l22DataProvider;
+{=================================================================================
+
+ Copyright © combit GmbH, Konstanz
+
+----------------------------------------------------------------------------------
+ File   : LLDataProvider.pas
+ Module : List & Label 24
+ Descr. : Implementation file for the List & Label 24 VCL-Component
+ Version: 24.000
+==================================================================================
+}
+
+unit LLDataProvider;
 
 interface
-  uses l22interf,db,system.Generics.Collections,l22;
+  uses ListLabelDataProviderInterface, system.Generics.Collections, Classes, windows;
+
 type
   TListLabelDataProvider = class;
   TListLabelTable = class;
@@ -12,28 +25,31 @@ type
     FDataProvider: TListLabelDataProvider;
     FTable: TListLabelTable;
     FSortDescription: String;
-    FParent: TL22_;
+    FParent: TComponent;
     FFilter: String;
     FAdvancedFilter: String;
     procedure SetDataProvider(const Value: TListLabelDataProvider);
     procedure SetAdvancedFilter(const Value: String);
     procedure SetFilter(const Value: String);
-    procedure SetParent(const Value: TL22_);
+    procedure SetParent(const Value: TComponent);
     procedure SetSortDescription(const Value: String);
     procedure SetTable(const Value: TListLabelTable);
     procedure DefineData(Row: TListLabelTableRow; Level: Integer);
 
   protected
     property Provider: TListLabelDataProvider read FDataProvider write SetDataProvider;
-    property Parent: TL22_ read FParent write SetParent;
+    property Parent: TComponent read FParent write SetParent;
     property Table: TListLabelTable read FTable write SetTable;
     property SortDescription: String read FSortDescription write SetSortDescription;
     property Filter: String read FFilter write SetFilter;
     property AdvancedFilter: String read FAdvancedFilter write SetAdvancedFilter;
     function ApplySortOrder(const pszSortOrder: PWideChar): HResult; stdcall;
-    function ApplyFilter(arvFields: Variant; arvValues: Variant): HResult; stdcall;
-    function ApplyAdvancedFilter(const pszFilter: PWideChar; arvValues: Variant): HResult; stdcall;
-    function SetUsedIdentifiers(var arvVieldRestriction: Variant): HResult; stdcall;
+    function ApplyFilter(const arvFields: Variant; const arvValues: Variant): HResult; stdcall;
+    function ApplyAdvancedFilter(const pszFilter: PWideChar; const arvValues: Variant): HResult; stdcall;
+    function SetUsedIdentifiers(const arvVieldRestriction: Variant): HResult; stdcall;
+    function SetOption(nIndex: integer; const pvValue: Variant): HResult; stdcall;
+    function GetOption(nIndex: integer; var pvValue: Variant): HResult; stdcall;
+    function DefineDelayedInfo(nInfo: integer): HResult; stdcall;
   end;
 
   TDataProviderInterfaceProxyRoot = class(TDataProviderInterfaceProxyBase, ILlDataProvider)
@@ -42,10 +58,10 @@ type
     function OpenChildTable(const pszRelation: PWideChar; out ppUnkOfNewDataProvider: ILlDataProvider): HResult; stdcall;
     function GetRowCount(var pnRows: integer): HResult; stdcall;
     function MoveNext(): HResult; stdcall;
-    function DefineRow(): HResult; stdcall;
+    function DefineRow(enDefineRowMode: DefineDelayedInfoType; const arvRelations: Variant): HResult; stdcall;
     function Dispose(): HResult; stdcall;
   public
-    constructor Create(ListLabel: TL22_; Provider: TListLabelDataProvider);
+    constructor Create(ListLabel: TComponent; AProvider: TListLabelDataProvider);
     destructor Destroy; override;
   end;
 
@@ -56,13 +72,13 @@ type
     function OpenChildTable(const pszRelation: PWideChar; out ppUnkOfNewDataProvider: ILlDataProvider): HResult; stdcall;
     function GetRowCount(var pnRows: integer): HResult; stdcall;
     function MoveNext(): HResult; stdcall;
-    function DefineRow(): HResult; stdcall;
+    function DefineRow(enDefineRowMode: DefineDelayedInfoType; const arvRelations: Variant): HResult; stdcall;
     function Dispose(): HResult; stdcall;
     procedure PrepareTable;
     procedure SetEnumerator(const Value: TEnumerator<TListLabelTableRow>);
     property Enumerator: TEnumerator<TListLabelTableRow> read FEnumerator write SetEnumerator;
   public
-    constructor Create(ListLabel: TL22_; Table: TListLabelTable);
+    constructor Create(AProvider: TListLabelDataProvider; ListLabel: TComponent; ATable: TListLabelTable);
     destructor Destroy; override;
   end;
 
@@ -100,6 +116,7 @@ type
   TListLabelTableColumn = class
     function ColumnName: String; virtual; abstract;
     function Content: String; virtual; abstract;
+    function ImgHandle: Cardinal; virtual; abstract;
     function FieldType: Integer; virtual; abstract;
   end;
 
@@ -112,15 +129,15 @@ type
   end;
 
 implementation
-  uses classes, cmbtll22, sysutils;
+  uses  sysutils, ListLabel24;
 { TDataProviderRoot }
 
-constructor TDataProviderInterfaceProxyRoot.Create(ListLabel: TL22_; Provider: TListLabelDataProvider);
+constructor TDataProviderInterfaceProxyRoot.Create(ListLabel: TComponent; AProvider: TListLabelDataProvider);
 begin
   inherited create;
-  self.Provider := Provider;
-  Parent := ListLabel;
-  Table := nil;
+  Provider := AProvider;
+  Parent   := ListLabel;
+  Table    := nil;
 end;
 
 destructor TDataProviderInterfaceProxyRoot.Destroy;
@@ -133,7 +150,7 @@ begin
   Result := S_OK;
 end;
 
-function TDataProviderInterfaceProxyRoot.DefineRow: HResult;
+function TDataProviderInterfaceProxyRoot.DefineRow(enDefineRowMode: DefineDelayedInfoType; const arvRelations: Variant): HResult;
 begin
   Result := E_NOTIMPL;
 end;
@@ -165,7 +182,7 @@ begin
 
   if (Table <> nil) then
   begin
-    TableInterface := ILlDataProvider(TDataProviderInterfaceProxyNode.Create(Parent, Table));
+    TableInterface := ILlDataProvider(TDataProviderInterfaceProxyNode.Create(FDataProvider, Parent, Table));
     ppUnkOfNewDataProvider := TableInterface;
   end;
   Result := S_OK;
@@ -173,19 +190,28 @@ end;
 
 { TDataProviderNode }
 
-constructor TDataProviderInterfaceProxyNode.Create(ListLabel: TL22_; Table: TListLabelTable);
+constructor TDataProviderInterfaceProxyNode.Create(AProvider: TListLabelDataProvider;ListLabel: TComponent; ATable: TListLabelTable);
 begin
   inherited create;
-  self.Provider := Provider;
-  Parent := ListLabel;
-  self.Table := Table;
-  Enumerator := nil;
+  Provider      := AProvider;
+  Parent        := ListLabel;
+  Table         := ATable;
+  Enumerator    := nil;
 end;
 
 
-function TDataProviderInterfaceProxyNode.DefineRow: HResult;
+function TDataProviderInterfaceProxyNode.DefineRow(enDefineRowMode: DefineDelayedInfoType; const arvRelations: Variant): HResult;
 var Row: TListLabelTableRow;
 begin
+
+    if (Enumerator = nil)
+      Or (enDefineRowMode = DefineDelayedInfoType.diSortOrdersDesigning)
+    then
+    begin
+      result := S_FALSE;
+      exit;
+    end;
+
     Row:= Enumerator.Current;
     DefineData(Row, 1);
     Row.Free;
@@ -195,13 +221,14 @@ end;
 destructor TDataProviderInterfaceProxyNode.Destroy;
 begin
   inherited;
+  Dispose;
 end;
 
 function TDataProviderInterfaceProxyNode.Dispose: HResult;
 begin
-  Enumerator.Free;
-  Table.Free;
-  Result := E_NOTIMPL;
+  if Assigned(Enumerator) then FreeAndNil(FEnumerator);
+  if  Assigned(FTable) then FreeAndNil(FTable);
+  Result := S_OK;
 end;
 
 function TDataProviderInterfaceProxyNode.GetRowCount(var pnRows: integer): HResult;
@@ -216,9 +243,12 @@ begin
 end;
 
 function TDataProviderInterfaceProxyNode.MoveNext: HResult;
+var bInitFirstTime: boolean;
 begin
+  bInitFirstTime := False;
   if Enumerator = nil then
   begin
+    bInitFirstTime := True;
     PrepareTable;
   end;
 
@@ -228,7 +258,7 @@ begin
     exit;
   end;
 
-  if (not Enumerator.MoveNext) then
+  if (not bInitFirstTime) and (not Enumerator.MoveNext) then
   begin
     Dispose();
     result := S_FALSE;
@@ -236,18 +266,31 @@ begin
   end;
 
   result := S_OK;
+
 end;
 
-function TDataProviderInterfaceProxyNode.OpenChildTable(const pszRelation: PWideChar;
-  out ppUnkOfNewDataProvider: ILlDataProvider): HResult;
-var ChildTable: TListLabelTable;
-    ChildProvider: ILlDataProvider;
+function TDataProviderInterfaceProxyNode.OpenChildTable(const pszRelation: PWideChar; out ppUnkOfNewDataProvider: ILlDataProvider): HResult;
+var
+  TableRelation: TListLabelTableRelation;
+  TableRow: TListLabelTableRow;
+  ChildTable: TListLabelTable;
+  ChildProvider: ILlDataProvider;
 begin
-  ChildTable := Enumerator.Current.GetChildTable(Provider.GetRelation(pszRelation));
-  ChildProvider := ILlDataProvider(TDataProviderInterfaceProxyNode.Create(Parent, ChildTable));
-  ppUnkOfNewDataProvider := ChildProvider;
-  Result := S_OK;
+  ppUnkOfNewDataProvider:= nil;
+  Result := E_NOTIMPL;
+
+  TableRelation := Provider.GetRelation(pszRelation);
+  if(Assigned(TableRelation))then
+  begin
+    TableRow := Enumerator.Current;
+    ChildTable := TableRow.GetChildTable(TableRelation);
+    ChildProvider := ILlDataProvider(TDataProviderInterfaceProxyNode.Create(FDataProvider, Parent, ChildTable));
+    ppUnkOfNewDataProvider := ChildProvider;
+    TableRow.Free;
+    Result := S_OK;
+  end;
 end;
+
 
 function TDataProviderInterfaceProxyNode.OpenTable(const pszTableName: PWideChar;
   out ppUnkOfNewDataProvider: ILlDataProvider): HResult;
@@ -255,7 +298,6 @@ begin
   ppUnkOfNewDataProvider:= nil;
   Result := E_NOTIMPL;
 end;
-
 
 
 procedure TDataProviderInterfaceProxyNode.PrepareTable;
@@ -269,8 +311,7 @@ begin
       Table.ApplySort(SortDescription);
     Enumerable := Table.Rows;
     Enumerator := Enumerable.GetEnumerator();
-    Enumerable.Free;
-
+    FreeAndNil(Enumerable);
   end;
 end;
 
@@ -283,13 +324,13 @@ end;
 { TDataProviderInterfaceProxyBase }
 
 function TDataProviderInterfaceProxyBase.ApplyAdvancedFilter(
-  const pszFilter: PWideChar; arvValues: Variant): HResult;
+  const pszFilter: PWideChar; const arvValues: Variant): HResult;
 begin
   AdvancedFilter := pszFilter;
   result := S_OK;
 end;
 
-function TDataProviderInterfaceProxyBase.ApplyFilter(arvFields,
+function TDataProviderInterfaceProxyBase.ApplyFilter(const arvFields,
   arvValues: Variant): HResult;
 begin
   result := S_OK;
@@ -308,15 +349,29 @@ var Column: TListLabelTableColumn;
     ColumnList: TObjectList<TListLabelTableColumn>;
 begin
   ColumnList := Row.Columns;
+  ColumnList.OwnsObjects := True;
   for Column in ColumnList do
   begin
-    Parent.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
-  end;
+     if Column.ImgHandle > 0 Then
+        TListLabel24(Parent).DefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+     else
+        TListLabel24(Parent).DefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
+   end;
   ColumnList.Clear;
   ColumnList.Free;
 end;
 
+function TDataProviderInterfaceProxyBase.DefineDelayedInfo(
+  nInfo: integer): HResult;
+begin
+result := S_OK;
+end;
 
+function TDataProviderInterfaceProxyBase.GetOption(nIndex: integer;
+  var pvValue: Variant): HResult;
+begin
+   result := S_FALSE;
+end;
 
 procedure TDataProviderInterfaceProxyBase.SetAdvancedFilter(
   const Value: String);
@@ -335,7 +390,13 @@ begin
   FFilter := Value;
 end;
 
-procedure TDataProviderInterfaceProxyBase.SetParent(const Value: TL22_);
+function TDataProviderInterfaceProxyBase.SetOption(nIndex: integer;
+  const pvValue: Variant): HResult;
+begin
+  result := S_OK;
+end;
+
+procedure TDataProviderInterfaceProxyBase.SetParent(const Value: TComponent);
 begin
   FParent := Value;
 end;
@@ -353,7 +414,7 @@ begin
 end;
 
 function TDataProviderInterfaceProxyBase.SetUsedIdentifiers(
-  var arvVieldRestriction: Variant): HResult;
+  const arvVieldRestriction: Variant): HResult;
 begin
   result := S_OK;
 end;

@@ -1,0 +1,57 @@
+package ListLabel24Components;
+
+{$R *.res}
+{$R *.dres}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'combit List & Label 24 Components'}
+{$IMPLICITBUILD ON}
+
+requires
+  vcl,
+  DesignIde,
+  dbrtl,
+  vclimg,
+  rtl,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon;
+
+contains
+  ListLabelDataProviderInterface in 'Sources\ListLabelDataProviderInterface.pas',
+  LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
+  LLDataProvider in 'Sources\LLDataProvider.pas',
+  LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  ObjTree in 'Sources\ObjTree.pas',
+  LLPrintPreviewThread in 'Sources\LLPrintPreviewThread.pas',
+  LLThreads in 'Sources\LLThreads.pas',
+  LLReport_Reg in 'Sources\LLReport_Reg.pas',
+  LLReport_Types in 'Sources\LLReport_Types.pas',
+  ListLabel24 in 'Sources\ListLabel24.pas',
+  cmbtLL24x in 'Sources\cmbtLL24x.pas',
+  cmbtLS24x in 'Sources\cmbtLS24x.pas';
+
+end.
+
