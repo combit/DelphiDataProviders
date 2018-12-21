@@ -31,4 +31,4 @@ If you're using List & Label with Delphi, you'll have encountered a set of restr
 * Nested tables
 * Keep blocks together
 
-Any feedback as well as additional contributions are very welcome, just contact the project's administrator.
+A big special thank you goes to Andreas Müller of Nord-Vision IT - his contributions to this project were invaluable. Any feedback as well as additional contributions are very welcome, just contact the project's administrator.
