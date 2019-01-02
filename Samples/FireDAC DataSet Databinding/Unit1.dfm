@@ -168,7 +168,6 @@ object Form1: TForm1
   end
   object ListLabel: TListLabel24
     Debug = []
-    Language = lEnglish
     DataController.DataSource = DataSourceOrders
     DataController.DetailSources = <
       item
