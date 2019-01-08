@@ -2,7 +2,7 @@
 (*  (c) combit GmbH *)
 (*  [build of 2018-12-05 23:12:56] *)
 
-unit cmbtLL24;
+unit cmbtLL24x;
 
 {$ifndef VER90}
 {$ifndef VER100}

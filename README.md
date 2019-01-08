@@ -15,6 +15,8 @@ The sources feature a new VCL component that uses the data provider interface. T
 
 A sample showing how to use the component to bind to FireDAC data is also included. You should be able to bind to Oracle, MS SQL Server, SQLite, DB2, MySQL, PostgreSQL to name just a few. 
 
+Copy the contents of this repository to "...\Program Files(x86)\combit\LL??\Samples\Delphi\FireDAC"
+
 # How Can I Help?
 
 We're happy to receive pull requests. Fields of interest include
