@@ -2,7 +2,7 @@
 (*  (c) combit GmbH *)
 (*  [build of 2018-10-24 07:10:17] *)
 
-unit cmbtLS24;
+unit cmbtLS24x;
 
 (* --- remarks: -----------------------------------------------------
 - define USE_UNICODE_DLL to use the Unicode version of the DLL
