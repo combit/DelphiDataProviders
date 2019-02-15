@@ -173,6 +173,7 @@ type
                                      AFilter     : PFilterDescription;
                                      AttachInfo  : THandle);
     Procedure AbortPrinting();
+
   published
 
     Property AddVarsToFields: Boolean read FAddVarsToFields write SetAddVarsToFields default false;
@@ -945,7 +946,8 @@ Begin
          result:= LlDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
       LL_NUMERIC_INTEGER:
          result:= LlDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
-      LL_BOOLEAN:;
+      LL_BOOLEAN:
+        result:= LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
       LL_RTF:
          result := LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
       else Begin
@@ -983,7 +985,8 @@ Begin
          result:= LlDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
       LL_NUMERIC_INTEGER:
          result:= LlDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
-      LL_BOOLEAN:;
+      LL_BOOLEAN:
+        result:= LlDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
       LL_RTF:
          result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
       else Begin
