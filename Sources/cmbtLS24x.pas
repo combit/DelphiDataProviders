@@ -1357,7 +1357,7 @@ procedure LS24xUnload;
 
 implementation
 
-var hDLLLS24: longint = 0;
+var hDLLLS24: HMODULE = 0;
 var nDLLLS24Usage: longint = 0;
 
 {$ifdef WIN64}

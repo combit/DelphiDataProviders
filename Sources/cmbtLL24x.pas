@@ -5568,7 +5568,7 @@ procedure LL24xUnload;
 
 implementation
 
-var hDLLLL24: longint = 0;
+var hDLLLL24: HMODULE = 0;
 var nDLLLL24Usage: longint = 0;
 
 {$ifdef WIN64}
