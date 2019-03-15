@@ -6,7 +6,7 @@
  File   : ListLabel24.pas
  Module : List & Label 24
  Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.000
+ Version: 24.001
 ==================================================================================
 }
 
@@ -15,35 +15,21 @@ unit ListLabel24;
 interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
-     Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll24x,
+     Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll24x,l24CommonInterfaces,
      ComCtrls, Vcl.Imaging.jpeg, System.Contnrs, System.SyncObjs, LLDataProvider, LLDataSetDataProvider, System.Generics.Collections;
 
 type
 
-  {$ifdef UNICODE}
-  {$ifdef UNICODESTRING_AWARE}
     TString = UnicodeString;
-  {$else}
-    TString = WideString;
-  {$endif}
-  {$else}
-    TString = String;
-  {$endif}
-
-  {$ifdef UNICODESTRING_AWARE}
     PXChar = PWideChar;
     XChar  = WideChar;
-  {$else}
-    PXChar = PChar;
-    XChar = Char;
-  {$endif}
 
   // ==============================================================================================
   // TListLabel24
   // ==============================================================================================
 
 	[ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  TListLabel24 = class(TComponent)
+  TListLabel24 = class(TComponent, ILlDomParent)
   private
 
     FAddVarsToFields: Boolean;
@@ -72,6 +58,7 @@ type
     FDebug: TLlDebugFlags;
     FTableColoring: TLlTableColoring;
     FLanguage: TLlLanguage;
+    FBaseJob: HLLJOB;
 
     FNumCopies: Integer;
     lpfnNtfyProc: TFarProc;
@@ -174,6 +161,10 @@ type
                                      AttachInfo  : THandle);
     Procedure AbortPrinting();
 
+    // ILlDomParent
+    procedure InitDataSource(projectFile: TString);
+    procedure DeclareLlXObjectsToLL;
+    function GetJobHandle: Integer;
   published
 
     Property AddVarsToFields: Boolean read FAddVarsToFields write SetAddVarsToFields default false;
@@ -292,11 +283,12 @@ begin
   FMaxRTFVersion := 1025;
   FTableColoring := TLlTableColoring.tcListLabel;
   FLanguage := TLlLanguage.lDefault;
-
+  JobInit(FBaseJob);
 end;
 
 destructor TListLabel24.Destroy;
 begin
+  JobFree(FBaseJob, nil);
   if (lpfnNtfyProc <> nil) then  FreeProcInstance(lpfnNtfyProc);
   lpfnNtfyProc := nil;
   FPreviewCritSect.Free;
@@ -799,7 +791,6 @@ begin
   JobHandle := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
   if JobHandle > -1 then
   begin
-
     tmp := StrNew(PChar(FLicensingInfo));
     LlSetOptionString(JobHandle, LL_OPTIONSTR_LICENSINGINFO, tmp);
     StrDispose(tmp);
@@ -831,7 +822,6 @@ begin
     CheckError(LlSetOption(JobHandle, LL_OPTION_EXPANDABLE_REGIONS_REALDATAJOBPARAMETER,1));
     CheckError(LlSetOption(JobHandle, LL_OPTION_INCLUDEFONTDESCENT, Integer(FIncludeFontDescent)));
     CurrentJobHandle:=Jobhandle;
-
   end;
 
   Result := JobHandle >- 1;
@@ -935,7 +925,6 @@ end;
 function TListLabel24.DefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
 Begin
    if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
-   result:=0;
 
    case FieldType of
       LL_DATE_DELPHI:
@@ -975,7 +964,6 @@ End;
 function TListLabel24.DefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
 Begin
   if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
-   result:=0;
    case FieldType of
       LL_DATE_DELPHI:
          result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
@@ -1237,6 +1225,23 @@ Begin
 End;
 
 
+procedure TListLabel24.DeclareLlXObjectsToLL;
+begin
+  // NYI
+end;
+
+procedure TListLabel24.InitDataSource(projectFile: TString);
+  var DataProvider: TDataSetDataProvider;
+      DataProviderIntf: TDataProviderInterfaceProxyRoot;
+begin
+  if (LlUtilsGetProjectType(GetJobHandle, PTChar(projectFile)) = LL_PROJECT_LIST) then
+  begin
+    DataProvider:=InitDataProvider(GetJobHandle,nil);
+    DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+    LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+  end;
+end;
+
 Procedure TListLabel24.DefineData(DataProvider: TDataSetDataProvider; table: TListLabelTable);
 Var
   Rows          : TEnumerable<TListLabelTableRow>;
@@ -1384,6 +1389,11 @@ begin
     end;
 end;
 
+
+function TListLabel24.GetJobHandle: Integer;
+begin
+  result:=CurrentJobHandle;
+end;
 
 Procedure TListLabel24.DefineRelatedTables(DataProvider: TDataSetDataProvider; TableName: String);
 var

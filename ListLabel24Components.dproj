@@ -108,6 +108,7 @@
         <DCCReference Include="Sources\LLReport_Reg.pas"/>
         <DCCReference Include="Sources\LLReport_Types.pas"/>
         <DCCReference Include="Sources\ListLabel24.pas"/>
+		<DCCReference Include="Sources\l24CommonInterfaces.pas"/>		
         <DCCReference Include="Sources\cmbtLL24x.pas"/>
         <DCCReference Include="Sources\cmbtLS24x.pas"/>
         <RcItem Include="ListLabel.bmp">

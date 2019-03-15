@@ -50,6 +50,7 @@ contains
   LLReport_Reg in 'Sources\LLReport_Reg.pas',
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel24 in 'Sources\ListLabel24.pas',
+  l24CommonInterfaces in 'Sources\l24CommonInterfaces.pas',
   cmbtLL24x in 'Sources\cmbtLL24x.pas',
   cmbtLS24x in 'Sources\cmbtLS24x.pas';
 
