@@ -24,6 +24,13 @@ type
     PXChar = PWideChar;
     XChar  = WideChar;
 
+    TDefinePrintOptionsEvent = procedure(Sender: TObject) of object;
+    TAutoDefineNewPageEvent = procedure(Sender: TObject; IsDesignMode: boolean) of object;
+    TAutoDefineNewLineEvent = procedure(Sender: TObject; IsDesignMode: boolean) of object;
+    TAutoDefineFieldEvent = procedure(Sender: TObject; IsDesignMode: boolean; var FieldName, FieldContent: TString; var FieldType: integer; var IsHandled: boolean) of object;
+    TAutoDefineVariableEvent = procedure(Sender: TObject; IsDesignMode: boolean; var VariableName, VariableContent: TString; var VariableType: integer; var IsHandled: boolean) of object;
+
+
   // ==============================================================================================
   // TListLabel24
   // ==============================================================================================
@@ -59,6 +66,7 @@ type
     FTableColoring: TLlTableColoring;
     FLanguage: TLlLanguage;
     FBaseJob: HLLJOB;
+    FIsPrinting: Boolean;
 
     FNumCopies: Integer;
     lpfnNtfyProc: TFarProc;
@@ -83,8 +91,15 @@ type
   protected
 
     Meta: TMetafile;
+    FOnDefinePrintOptionsEvent: TDefinePrintOptionsEvent;
+    FOnAutoDefineField: TAutoDefineFieldEvent;
+    FOnAutoDefineVariable: TAutoDefineVariableEvent;
+    FOnAutoDefineNewPage: TAutoDefineNewPageEvent;
+    FOnAutoDefineNewLine: TAutoDefineNewLineEvent;
+
     property RootTables: TStringList read FRootTables;
     property PassedTables: TStringList read FPassedTables;
+    property IsPrinting: Boolean read FIsPrinting;
     property DelayedRelations: TObjectList<TListLabelTableRelation> read FDelayedRelations;
     property PassedRelations: TObjectList<TListLabelTableRelation> read FPassedRelations;
     property RelationsOfCurrentProvider: TObjectList<TListLabelTableRelation> read FRelationsOfCurrentProvider;
@@ -115,6 +130,7 @@ type
   Private
     procedure SetLanguage(const Value: TLlLanguage);
     procedure SetAddVarsToFields(const Value: Boolean);
+    procedure SetShowErrors(const Value: Boolean);
     procedure SetAutoBoxType(const Value: TLlAutoBoxType);
     procedure SetAutoDesignerPreview(const Value: Boolean);
     procedure SetAutoDestination(const Value: TLlPrintMode);
@@ -161,6 +177,8 @@ type
                                      AttachInfo  : THandle);
     Procedure AbortPrinting();
 
+    Property ShowErrors: Boolean read FShowErrors write SetShowErrors default true;
+
     // ILlDomParent
     procedure InitDataSource(projectFile: TString);
     procedure DeclareLlXObjectsToLL;
@@ -194,6 +212,13 @@ type
     Property TableColoring: TLlTableColoring read FTableColoring write SetTableColoring Default TLlTableColoring.tcListLabel;
     Property Language: TLlLanguage read FLanguage write SetLanguage Default TLlLanguage.lDefault;
     Property DataController: TLLDataController read FDataController Write FDataController;
+
+    // Events
+    property OnDefinePrintOptions: TDefinePrintOptionsEvent read FOnDefinePrintOptionsEvent write FOnDefinePrintOptionsEvent;
+    property OnAutoDefineNewPage: TAutoDefineNewPageEvent read FOnAutoDefineNewPage write FOnAutoDefineNewPage;
+    property OnAutoDefineField: TAutoDefineFieldEvent read FOnAutoDefineField write FOnAutoDefineField;
+    property OnAutoDefineVariable: TAutoDefineVariableEvent read FOnAutoDefineVariable write FOnAutoDefineVariable;
+    property OnAutoDefineNewLine: TAutoDefineNewLineEvent read FOnAutoDefineNewLine write FOnAutoDefineNewLine;
   end;
 
 function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt; export; stdcall;
@@ -263,6 +288,7 @@ begin
   FPassedRelations := TObjectList<TListLabelTableRelation>.Create(false);
   FNumCopies := 1;
   FAddVarsToFields := false;
+  FShowErrors := true;
   FAutoDesignerPreview := true;
   FAutoDestination := TLlPrintMode.pmExport;
   FAutoProjectType := TLlProject.ptList;
@@ -283,6 +309,7 @@ begin
   FMaxRTFVersion := 1025;
   FTableColoring := TLlTableColoring.tcListLabel;
   FLanguage := TLlLanguage.lDefault;
+  FBaseJob:=-1;
   JobInit(FBaseJob);
 end;
 
@@ -469,6 +496,7 @@ end;
 procedure TListLabel24.SetLanguage(const Value: TLlLanguage);
 var
   OldAddVarsToFields: Boolean;
+  OldShowErrors: Boolean;
   OldCompressStorage: Boolean;
   OldConvertCRLF: Boolean;
   OldDelayTableHeader: Boolean;
@@ -481,7 +509,6 @@ var
   OldProjectPassword: String;
   OldPreviewZoom: Integer;
   OldMaximumIdleIterationsPerObject: Integer;
-  OldMaxRTFVersion: Integer;
   OldDebug: TLlDebugFlags;
   OldTableColoring: TLlTableColoring;
 
@@ -490,6 +517,7 @@ begin
   FLanguage := Value;
 
   OldAddVarsToFields := AddVarsToFields;
+  OldShowErrors := ShowErrors;
   OldCompressStorage := CompressStorage;
   OldConvertCRLF := ConvertCRLF;
   OldDelayTableHeader := DelayTableHeader;
@@ -502,24 +530,24 @@ begin
   OldProjectPassword := ProjectPassword;
   OldPreviewZoom := PreviewZoom;
   OldMaximumIdleIterationsPerObject := MaximumIdleIterationsPerObject;
-  OldMaxRTFVersion := MaxRTFVersion;
   OldDebug := Debug;
   OldTableColoring := TableColoring;
 
-  if CurrentJobHandle > 0 then
+  if FBaseJob > 0 then
   begin
-
-    LlSetNotificationCallback(CurrentJobHandle, nil);
-    LlJobClose(CurrentJobHandle);
-
+    LlSetNotificationCallback(FBaseJob, nil);
+    LlJobClose(FBaseJob);
   end;
 
+  CheckError(LlSetOption(-1, LL_OPTION_NOPRINTERPATHCHECK, Integer(True)));
   CheckError(LlSetOption(-1, LL_OPTION_MAXRTFVERSION, FMaxRTFVersion));
-  CurrentJobHandle := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
-  if CurrentJobHandle > -1 then
+
+  FBaseJob := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
+  if FBaseJob > -1 then
   begin
 
     AddVarsToFields := OldAddVarsToFields;
+    ShowErrors := OldShowErrors;
     CompressStorage := OldCompressStorage;
     ConvertCRLF := OldConvertCRLF;
     DelayTableHeader := OldDelayTableHeader;
@@ -532,14 +560,11 @@ begin
     ProjectPassword := OldProjectPassword;
     PreviewZoom := OldPreviewZoom;
     MaximumIdleIterationsPerObject := OldMaximumIdleIterationsPerObject;
-    MaxRTFVersion := OldMaxRTFVersion;
     Debug := OldDebug;
     TableColoring := OldTableColoring;
-
     lpfnNtfyProc := TFarProc(@NtfyCallback);
     LlSetOption(CurrentJobHandle, LL_OPTION_CALLBACKPARAMETER, Integer(self));
     LlSetNotificationCallback(CurrentJobHandle, lpfnNtfyProc);
-
   end;
 
 end;
@@ -602,6 +627,13 @@ begin
 
   FAddVarsToFields := Value;
   CheckError(LlSetOption(CurrentJobHandle, LL_OPTION_ADDVARSTOFIELDS, Integer(FAddVarsToFields)));
+
+end;
+
+procedure TListLabel24.SetShowErrors(const Value: Boolean);
+begin
+
+  FShowErrors := Value;
 
 end;
 
@@ -746,9 +778,8 @@ end;
 
 procedure TListLabel24.SetMaxRTFVersion(const Value: Integer);
 begin
-
   FMaxRTFVersion := Value;
-
+  SetLanguage(Language); // makes sure to apply the value
 end;
 
 procedure TListLabel24.SetNoParameterCheck(const Value: Boolean);
@@ -782,13 +813,11 @@ begin
     LLSetDebug(LlDebugFlags);
   end;
 
-  CheckError(LlSetOption(-1, LL_OPTION_MAXRTFVERSION, FMaxRTFVersion));
-  CheckError(LlSetOption(-1, LL_OPTION_NOPRINTERPATHCHECK, Integer(True)));
+  if (Jobhandle = -1) then
+  begin
+    JobHandle := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
+  end;
 
-  JobHandle        := -1;
-  CurrentJobHandle := -1;
-
-  JobHandle := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
   if JobHandle > -1 then
   begin
     tmp := StrNew(PChar(FLicensingInfo));
@@ -802,7 +831,6 @@ begin
     lpfnNtfyProc := TFarProc(@NtfyCallback);
     LlSetOption(JobHandle, LL_OPTION_CALLBACKPARAMETER, Integer(self));
     LlSetNotificationCallback(JobHandle, lpfnNtfyProc);
-
     CheckError(LlSetOption(JobHandle, LL_OPTION_ADDVARSTOFIELDS, Integer(FAddVarsToFields)));
     CheckError(LlSetOption(JobHandle, LL_OPTION_COMPRESSSTORAGE, Integer(FCompressStorage)));
     CheckError(LlSetOption(JobHandle, LL_OPTION_CONVERTCRLF, Integer(FConvertCRLF)));
@@ -825,19 +853,16 @@ begin
   end;
 
   Result := JobHandle >- 1;
-  
   if FNumCopies = 0 then
   begin
-
     FNumCopies := 1;
-
   end;
 
 end;
 
 Procedure TListLabel24.JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
 begin
-  if JobHandle > -1 then
+  if (DataProvider = nil) or (JobHandle <> FBaseJob) then
   begin
     LlSetNotificationCallback(JobHandle, nil);
     LLJobClose(JobHandle);
@@ -867,6 +892,7 @@ end;
 Function TListLabel24.CheckError(ErrorCode: Integer): Integer;
 Var
   Buffer: Array [0 .. 255] of char;
+  ErrorText: TString;
 begin
   Case ErrorCode of
     0:
@@ -878,18 +904,36 @@ begin
   else
     Result := CE_Error;
   end;
-  If FShowErrors and (ErrorCode < 0) then
+
+  If (ErrorCode < 0) then
   begin
-    LlGetErrortext(ErrorCode,Buffer,SizeOf(Buffer));
-    Case MessageDlg('Error:' + sLineBreak + 'ErrorCode: ' + IntToStr(ErrorCode) + ' (' + StrPas(Buffer)
-      + ' )', mtError, [mbCancel, mbIgnore, mbOK], 0) of
-      mrCancel:
-        Result := CE_Abort;
-      mrIgnore:
-        Result := CE_OK;
-      mrOK:
-        Result := ErrorCode;
+
+    LlGetErrortext(ErrorCode, Buffer, SizeOf(Buffer));
+    ErrorText := IntToStr(ErrorCode) + ' (' + StrPas(Buffer) + ' )';
+
+    If FShowErrors then
+    begin
+
+      Case MessageDlg(ErrorText, mtError, [mbCancel, mbOK], 0) of
+        mrCancel:
+          Result := CE_Abort;
+        mrOK:
+          Result := ErrorCode;
+      end
+    end
+    else
+    begin
+
+      Raise Exception.Create(ErrorText);
+
     end;
+
+  end
+  else
+  begin
+
+    Result := CE_OK;
+
   end;
 end;
 
@@ -923,8 +967,14 @@ begin
 end;
 
 function TListLabel24.DefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
+var handled: boolean;
 Begin
    if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
+   handled:=false;
+   if Assigned(FOnAutoDefineVariable) then
+      OnAutoDefineVariable(self, not IsPrinting, FieldName,Contents,FieldType,handled);
+
+   if handled then exit(0);
 
    case FieldType of
       LL_DATE_DELPHI:
@@ -962,8 +1012,16 @@ End;
 //
 
 function TListLabel24.DefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
+var handled: boolean;
 Begin
   if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
+
+  handled:=false;
+  if Assigned(FOnAutoDefineField) then
+      OnAutoDefineField(self, not IsPrinting, FieldName,Contents,FieldType,handled);
+
+   if handled then exit(0);
+
    case FieldType of
       LL_DATE_DELPHI:
          result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
@@ -1004,7 +1062,6 @@ Var
   showexcept       : Boolean;
   DataProvider     : TDataSetDataProvider;
   DataProviderIntf : TDataProviderInterfaceProxyRoot;
-  JobHandle        : HJob;
   LlProjectType: Integer;
   ProjectFilename: TString;
   WindowHandle: cmbtHWND;
@@ -1037,66 +1094,58 @@ begin
 
      if showexcept then
      Begin
-        Exception.Create('DetailSource(s) dataset not defined.');
+        raise Exception.Create('DetailSource(s) dataset not defined.');
         Exit;
      End;
   end;
 
+  OldMaster := DataController.DataSource.DataSet.Active;
+  DataController.DataSource.DataSet.Active := True;
+
+  if LlProjectType = LL_PROJECT_LIST then
+  Begin
+      for i := 0 to Datacontroller.DetailSources.Count - 1 do
+        Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
+  end;
+
   Try
+    if Assigned(FOnAutoDefineNewPage) then
+      OnAutoDefineNewPage(self, True);
 
-    OldMaster := DataController.DataSource.DataSet.Active;
-    DataController.DataSource.DataSet.Active := True;
-
-    if LlProjectType = LL_PROJECT_LIST then
+    // alle Felder exportieren falls Listenprojekt
+    if (LlProjectType = LL_PROJECT_LIST) then
     Begin
-        for i := 0 to Datacontroller.DetailSources.Count - 1 do
-          Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
-    end;
 
-    if JobInit(JobHandle) then
-    begin
-      Try
-        // alle Felder exportieren falls Listenprojekt
-        if (LlProjectType = LL_PROJECT_LIST) then
-        Begin
+       DataProvider := InitDataProvider(CurrentJobHandle, nil);
 
-           DataProvider := InitDataProvider(JobHandle, nil);
+       // COM interface wrapper erzeugen...
+       DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
 
-           // COM interface wrapper erzeugen...
-           DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+       // und bei L&L anmelden
+       LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
 
-           // und bei L&L anmelden
-           LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-
-        End;
-
-        if FAutoFileAlsoNew then
-        begin
-          LlProjectType := LlProjectType or LL_FILE_ALSONEW;
-        end;
-
-        if not (csDesigning in ComponentState) then
-          WindowHandle := Application.handle
-        else
-          WindowHandle := GetActiveWindow();
-
-        ProjectFilename := FAutoProjectFile;
-        if FAutoShowSelectFile then
-          err := CheckError(LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectType, ProjectFilename));
-
-        if (err <> CE_Abort) then
-          CheckError(LLDefineLayout(JobHandle, WindowHandle, PChar(FAutoDialogTitle), LlProjectType, PChar(ProjectFilename)));
-
-      Finally
-        DataController.DataSource.DataSet.Active := OldMaster;
-        JobFree(JobHandle,DataProvider);
-      end;
-    end;
-  except
-    on E: Exception do
-    Begin
-      //
     End;
+
+    if FAutoFileAlsoNew then
+    begin
+      LlProjectType := LlProjectType or LL_FILE_ALSONEW;
+    end;
+
+    if not (csDesigning in ComponentState) then
+      WindowHandle := Application.handle
+    else
+      WindowHandle := GetActiveWindow();
+
+    ProjectFilename := FAutoProjectFile;
+    if FAutoShowSelectFile then
+      err := CheckError(LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectType, ProjectFilename));
+
+    if (err <> CE_Abort) then
+      CheckError(LLDefineLayout(CurrentJobHandle, WindowHandle, PChar(FAutoDialogTitle), LlProjectType, PChar(ProjectFilename)));
+
+  Finally
+    DataController.DataSource.DataSet.Active := OldMaster;
+    JobFree(CurrentJobHandle,DataProvider);
   end;
 end;
 
@@ -1259,6 +1308,11 @@ Begin
   // Pass columns
   Row := RowEnumerator.Current;
   Columns := Row.Columns;
+
+  if Assigned(FOnAutoDefineNewLine) then
+    OnAutoDefineNewLine(self, not FIsPrinting);
+
+
   for Column in Columns do
   Begin
 
@@ -1287,15 +1341,11 @@ Begin
 
           if (DataController.DataMember = table.TableName) and (DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables) then
           begin
-
             DefineVariableExt(table.TableName + '.' + Column.ColumnName, Column.Content, Column.FieldType)
-
           end
           else
           begin
-
             DefineFieldExt(table.TableName + '.' + Column.ColumnName, Column.Content, Column.FieldType)
-
           end;
 
         end;
@@ -1457,7 +1507,6 @@ Var
   showexcept: Boolean;
   DataProviderIntf : TDataProviderInterfaceProxyRoot;
   DataProvider     : TDataSetDataProvider;
-  JobHandle : HJob;
   LlProjectType: Integer;
   ProjectFilename: TString;
   WindowHandle: cmbtHWND;
@@ -1468,132 +1517,137 @@ begin
   OldMaster := false;
 
   Try
-    Try
-      if (DataController.DataSource = Nil) then
+    if (DataController.DataSource = Nil) then
+    begin
+      raise Exception.Create('No DataSource assigned.');
+      Exit;
+    end
+    else if (DataController.DataSource.DataSet = Nil) then
+    begin
+      Raise Exception.Create('DataSource - DataSet not assigned.');
+      Exit;
+    end;
+
+    LlProjectType := TEnumTranslator.TranslateProjectType(FAutoProjectType);
+
+    if not (csDesigning in ComponentState) then
+      WindowHandle := Application.handle
+    else
+      WindowHandle := GetActiveWindow();
+
+    ProjectFilename := FAutoProjectFile;
+    if FAutoShowSelectFile then
+    begin
+      LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectType, ProjectFilename)
+    end;
+
+    UsedIdentifiers.Free;
+    UsedIdentifiers:=LlGetUsedIdentifiers(ProjectFilename, LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
+
+    if (LlProjectType = LL_PROJECT_LIST) Then
+    Begin
+       showexcept := False;
+       for i := 0 to DataController.DetailSources.Count - 1 do
+       Begin
+          showexcept := DataController.DetailSources[i].Datasource.DataSet = nil;
+          if showexcept then break;
+       end;
+
+       if showexcept then
+        Begin
+          Raise Exception.Create('DetailSources - Dataset(s) not assigned.');
+          Exit;
+        End;
+    end;
+
+    if Assigned(DataController.DataSource.DataSet) then
+    begin
+      with DataController.DataSource.DataSet do
       begin
-        raise Exception.Create('No DataSource assigned.');
-        Exit;
-      end
-      else if (DataController.DataSource.DataSet = Nil) then
-      begin
-        Raise Exception.Create('DataSource - DataSet not assigned.');
-        Exit;
-      end;
+        Try
+          OldMaster := Active;
 
-      if not JobInit(JobHandle) then
-        Exit;
+          if (LlProjectType = LL_PROJECT_LIST) then
+          begin
+             DataProvider:=InitDataProvider(CurrentJobHandle,nil);
+             DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+             LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
 
-      LlProjectType := TEnumTranslator.TranslateProjectType(FAutoProjectType);
+             for i := 0 to Datacontroller.DetailSources.Count - 1 do
+                Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
 
-      if not (csDesigning in ComponentState) then
-        WindowHandle := Application.handle
-      else
-        WindowHandle := GetActiveWindow();
-
-      ProjectFilename := FAutoProjectFile;
-      if FAutoShowSelectFile then
-      begin
-        LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectType, ProjectFilename)
-      end;
-
-      UsedIdentifiers.Free;
-      UsedIdentifiers:=LlGetUsedIdentifiers(ProjectFilename, LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
-
-      if (LlProjectType = LL_PROJECT_LIST) Then
-      Begin
-         showexcept := False;
-         for i := 0 to DataController.DetailSources.Count - 1 do
-         Begin
-            showexcept := DataController.DetailSources[i].Datasource.DataSet = nil;
-            if showexcept then break;
-         end;
-
-         if showexcept then
-          Begin
-            Raise Exception.Create('DetailSources - Dataset(s) not assigned.');
-            Exit;
+             LlSetOption(CurrentJobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
           End;
-      end;
 
-      if Assigned(DataController.DataSource.DataSet) then
-      begin
-        with DataController.DataSource.DataSet do
-        begin
-          Try
-            OldMaster := Active;
-
-            if (LlProjectType = LL_PROJECT_LIST) then
-            begin
-               DataProvider:=InitDataProvider(JobHandle,nil);
-               DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-               LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-
-               for i := 0 to Datacontroller.DetailSources.Count - 1 do
-                  Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
-
-               LlSetOption(JobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
-            End;
-
-            if not Active then
-            begin
-              Active := True;
-              First;
-            end;
-
-            if not(CheckError(LLPrintWithBoxStart(JobHandle, LlProjectType, PChar(ProjectFilename), TEnumTranslator.TranslatePrintMode(FAutoDestination),
-              TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), WindowHandle, PChar(FAutoDialogTitle)))) = CE_OK then
-              Abort;
-
-            DoPreview := (TEnumTranslator.TranslatePrintMode(FAutoDestination) = LL_PRINT_PREVIEW);
-
-            ok := True;
-            if FAutoShowPrintOptions then
-            begin
-              LlPrintSetOption(JobHandle, LL_PRNOPT_PRINTDLG_ONLYPRINTERCOPIES, 1);
-              ok := CheckError(LLPrintOptionsDialog(JobHandle, WindowHandle, PChar(FAutoDialogTitle))) = CE_OK;
-            end;
-
-            if not(ok) then
-            begin
-              CheckError(LLPrintEnd(JobHandle, 0));
-              Abort;
-            end;
-
-            Case LlPrintGetOption(JobHandle, LL_PRNOPT_PRINTDLG_DEST) of
-              LL_DESTINATION_PRV:    DoPreview := True;
-            end;
-
-            if (DoPreview) then
-            begin
-              GetTempPath(255, temp);
-              CheckError(LLPreviewSetTempPath(JobHandle, temp));
-            end;
-
-            while (LlPrint(JobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(JobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(JobHandle, LL_PRNOPT_LASTPAGE)) do
-            begin
-            end;
-
-            LlPrintEnd(JobHandle,0);
-
-            if DoPreview then
-            begin
-              CheckError(LLPreviewDisplay(JobHandle, PChar(FAutoProjectFile), temp, WindowHandle));
-              CheckError(LLPreviewDeleteFiles(JobHandle, PChar(FAutoProjectFile), temp));
-            end;
-          finally
-            Active := OldMaster;
-            JobFree(JobHandle,DataProvider);
+          if not Active then
+          begin
+            Active := True;
+            First;
           end;
+
+          if Assigned(FOnAutoDefineNewPage) then
+            OnAutoDefineNewPage(self, True);
+
+          if not(CheckError(LLPrintWithBoxStart(CurrentJobHandle, LlProjectType, PChar(ProjectFilename), TEnumTranslator.TranslatePrintMode(FAutoDestination),
+            TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), WindowHandle, PChar(FAutoDialogTitle)))) = CE_OK then
+            Abort;
+
+          FIsPrinting := true;
+          DoPreview := (TEnumTranslator.TranslatePrintMode(FAutoDestination) = LL_PRINT_PREVIEW);
+
+          if Assigned(FOnDefinePrintOptionsEvent) then
+            FOnDefinePrintOptionsEvent(self);
+
+          ok := True;
+          if FAutoShowPrintOptions then
+          begin
+            LlPrintSetOption(CurrentJobHandle, LL_PRNOPT_PRINTDLG_ONLYPRINTERCOPIES, 1);
+            ok := CheckError(LLPrintOptionsDialog(CurrentJobHandle, WindowHandle, PChar(FAutoDialogTitle))) = CE_OK;
+          end;
+
+          if not(ok) then
+          begin
+            CheckError(LLPrintEnd(CurrentJobHandle, 0));
+            FIsPrinting := false;
+            Abort;
+          end;
+
+          Case LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_PRINTDLG_DEST) of
+            LL_DESTINATION_PRV:    DoPreview := True;
+          end;
+
+          if (DoPreview) then
+          begin
+            GetTempPath(255, temp);
+            CheckError(LLPreviewSetTempPath(CurrentJobHandle, temp));
+          end;
+
+          if Assigned(FOnAutoDefineNewPage) then
+            OnAutoDefineNewPage(self, False);
+
+          while (LlPrint(CurrentJobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_LASTPAGE)) do
+          begin
+            if Assigned(FOnAutoDefineNewPage) then
+              OnAutoDefineNewPage(self, False);
+          end;
+
+          LlPrintEnd(CurrentJobHandle,0);
+          FIsPrinting := false;
+
+          if DoPreview then
+          begin
+            CheckError(LLPreviewDisplay(CurrentJobHandle, PChar(FAutoProjectFile), temp, WindowHandle));
+            CheckError(LLPreviewDeleteFiles(CurrentJobHandle, PChar(FAutoProjectFile), temp));
+          end;
+        finally
+          Active := OldMaster;
+          JobFree(CurrentJobHandle,DataProvider);
         end;
       end;
-    Except
-      on E: Exception do
-      begin
-        //
-      end;
-    End;
+    end;
   Finally
     FreeAndNil(FUsedIdentifiers);
+    FIsPrinting := false;
   End;
 End;
 
@@ -1609,6 +1663,7 @@ Var
   DataProvider    : TDataSetDataProvider;
   DataProviderIntf: TDataProviderInterfaceProxyRoot;
   JobHandle       : HJob;
+  OldJobHandle    : HJob;
   ProjectPath     : STring;
   PreviewFileName : String;
 
@@ -1625,73 +1680,87 @@ Var
 
 begin
   DataProvider:=nil;
+  JobHandle:=-1;
+  OldJobHandle:=CurrentJobHandle;
   Try
-    Try
-        ProjectPath:=StringReplace(AProjektFile, ExtractFileExt(AProjektFile),'',[]);
+    ProjectPath:=StringReplace(AProjektFile, ExtractFileExt(AProjektFile),'',[]);
 
-        with DataController.DataSource.DataSet do
-        begin
-          Try
-            if not(JobInit(JobHandle)) then Exit;
-            if (UsedIdentifiers <> nil) then
-              UsedIdentifiers.Free;
+    with DataController.DataSource.DataSet do
+    begin
+      Try
+        JobHandle := LlJobOpenCopyEx(CurrentJobHandle,LLJOBOPENCOPYEXFLAG_NO_COPY_FIELDLIST or LLJOBOPENCOPYEXFLAG_NO_COPY_DBSTRUCTS or LLJOBOPENCOPYEXFLAG_NO_COPY_XLATTABLES);
 
-            UsedIdentifiers:=LlGetUsedIdentifiers(ProjectPath,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
-            DataProvider:=InitDataProvider(JobHandle,AFilter);
+        if (JobHandle <= 0) then
+          exit;
 
-            if DrillDown Then
-            Begin
-              FDrilldownActive:=True;
-              PreviewFileName:=APreviewFile;
-            end else
-            Begin
-              PreviewFileName := GetTempFile();
-              LlSetOptionString(JobHandle,LL_OPTIONSTR_ORIGINALPROJECTFILENAME,PChar(OriginalProjektFile));
-            end;
+        CurrentJobHandle:=JobHandle;
+        if (UsedIdentifiers <> nil) then
+          UsedIdentifiers.Free;
 
-            LlSetOptionString(JobHandle,LL_OPTIONSTR_PREVIEWFILENAME, PChar(PreviewFileName));
+        UsedIdentifiers:=LlGetUsedIdentifiers(ProjectPath,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
+        DataProvider:=InitDataProvider(JobHandle,AFilter);
 
-            if DrillDown then
-              LlAssociatePreviewControl(JobHandle,AttachInfo,
-                                              LL_ASSOCIATEPREVIEWCONTROLFLAG_DELETE_ON_CLOSE or
-                                              LL_ASSOCIATEPREVIEWCONTROLFLAG_HANDLE_IS_ATTACHINFO or
-                                              LL_ASSOCIATEPREVIEWCONTROLFLAG_PRV_ADD_TO_CONTROL_STACK)
-            else
-              LlAssociatePreviewControl(JobHandle, AWnd, 1);
-
-            if (TEnumTranslator.TranslateProjectType(FAutoProjectType) = LL_PROJECT_LIST) then
-            begin
-               DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-               LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-               LlSetOption(JobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
-            End;
-
-            if not Active then
-            begin
-              Active := True;
-              First;
-            end;
-
-            if not(CheckError(LLPrintWithBoxStart(JobHandle, TEnumTranslator.TranslateProjectType(FAutoProjectType), PChar(ProjectPath), LL_PRINT_PREVIEW,
-                TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), AWnd, PChar(FAutoDialogTitle)))) = CE_OK then
-                Abort;
-
-            while (LlPrint(JobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(JobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(JobHandle, LL_PRNOPT_LASTPAGE)) do
-            begin
-            end;
-            LlPrintEnd(JobHandle,0);
-          finally
-            LlAssociatePreviewControl(JobHandle, 0, 1);
-            JobFree(JobHandle,DataProvider);
-            if DrillDown then FDrilldownActive:=False;
-          end;
+        if DrillDown Then
+        Begin
+          FDrilldownActive:=True;
+          PreviewFileName:=APreviewFile;
+        end else
+        Begin
+          PreviewFileName := GetTempFile();
+          LlSetOptionString(JobHandle,LL_OPTIONSTR_ORIGINALPROJECTFILENAME,PChar(OriginalProjektFile));
         end;
-    Except
-      on E: Exception do
-      begin
-        //
+
+        LlSetOptionString(JobHandle,LL_OPTIONSTR_PREVIEWFILENAME, PChar(PreviewFileName));
+
+        if DrillDown then
+          LlAssociatePreviewControl(JobHandle,AttachInfo,
+                                          LL_ASSOCIATEPREVIEWCONTROLFLAG_DELETE_ON_CLOSE or
+                                          LL_ASSOCIATEPREVIEWCONTROLFLAG_HANDLE_IS_ATTACHINFO or
+                                          LL_ASSOCIATEPREVIEWCONTROLFLAG_PRV_ADD_TO_CONTROL_STACK)
+        else
+          LlAssociatePreviewControl(JobHandle, AWnd, 1);
+
+        if (TEnumTranslator.TranslateProjectType(FAutoProjectType) = LL_PROJECT_LIST) then
+        begin
+           DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+           LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+           LlSetOption(JobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
+        End;
+
+        if not Active then
+        begin
+          Active := True;
+          First;
+        end;
+
+        if Assigned(FOnAutoDefineNewPage) then
+          OnAutoDefineNewPage(self, True);
+
+        if not(CheckError(LLPrintWithBoxStart(JobHandle, TEnumTranslator.TranslateProjectType(FAutoProjectType), PChar(ProjectPath), LL_PRINT_PREVIEW,
+            TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), AWnd, PChar(FAutoDialogTitle)))) = CE_OK then
+            begin
+              Abort;
+            end;
+        FIsPrinting := true;
+
+        if Assigned(FOnAutoDefineNewPage) then
+          OnAutoDefineNewPage(self, False);
+
+        while (LlPrint(JobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(JobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(JobHandle, LL_PRNOPT_LASTPAGE)) do
+        begin
+          if Assigned(FOnAutoDefineNewPage) then
+            OnAutoDefineNewPage(self, False);
+        end;
+        LlPrintEnd(JobHandle,0);
+        FIsPrinting := false;
+      finally
+        FIsPrinting := false;
+        LlAssociatePreviewControl(JobHandle, 0, 1);
+        JobFree(JobHandle,DataProvider);
+        CurrentJobHandle:=OldJobHandle;
+        if DrillDown then FDrilldownActive:=False;
       end;
-    End;
+    end;
   Finally
     FreeAndNil(FUsedIdentifiers);
   end;
