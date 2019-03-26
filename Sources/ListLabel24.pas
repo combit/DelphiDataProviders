@@ -539,13 +539,12 @@ begin
     LlJobClose(FBaseJob);
   end;
 
-  CheckError(LlSetOption(-1, LL_OPTION_NOPRINTERPATHCHECK, Integer(True)));
   CheckError(LlSetOption(-1, LL_OPTION_MAXRTFVERSION, FMaxRTFVersion));
 
   FBaseJob := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
   if FBaseJob > -1 then
   begin
-
+    JobInit(FBaseJob);
     AddVarsToFields := OldAddVarsToFields;
     ShowErrors := OldShowErrors;
     CompressStorage := OldCompressStorage;
@@ -562,9 +561,6 @@ begin
     MaximumIdleIterationsPerObject := OldMaximumIdleIterationsPerObject;
     Debug := OldDebug;
     TableColoring := OldTableColoring;
-    lpfnNtfyProc := TFarProc(@NtfyCallback);
-    LlSetOption(CurrentJobHandle, LL_OPTION_CALLBACKPARAMETER, Integer(self));
-    LlSetNotificationCallback(CurrentJobHandle, lpfnNtfyProc);
   end;
 
 end;
@@ -849,6 +845,7 @@ begin
     CheckError(LlSetOption(JobHandle, LL_OPTION_REPORT_PARAMETERS_REALDATAJOBPARAMETER,1));
     CheckError(LlSetOption(JobHandle, LL_OPTION_EXPANDABLE_REGIONS_REALDATAJOBPARAMETER,1));
     CheckError(LlSetOption(JobHandle, LL_OPTION_INCLUDEFONTDESCENT, Integer(FIncludeFontDescent)));
+    CheckError(LlSetOption(JobHandle, LL_OPTION_NOPRINTERPATHCHECK, Integer(True)));
     CurrentJobHandle:=Jobhandle;
   end;
 
@@ -1697,7 +1694,7 @@ begin
         if (UsedIdentifiers <> nil) then
           UsedIdentifiers.Free;
 
-        UsedIdentifiers:=LlGetUsedIdentifiers(ProjectPath,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
+        UsedIdentifiers:=LlGetUsedIdentifiers(AProjektFile,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
         DataProvider:=InitDataProvider(JobHandle,AFilter);
 
         if DrillDown Then
