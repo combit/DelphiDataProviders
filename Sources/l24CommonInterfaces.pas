@@ -12,6 +12,7 @@
 unit l24CommonInterfaces;
 
 interface
+{$WEAKPACKAGEUNIT ON}
 
 uses
 	windows,
