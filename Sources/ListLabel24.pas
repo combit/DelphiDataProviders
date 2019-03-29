@@ -67,6 +67,7 @@ type
     FLanguage: TLlLanguage;
     FBaseJob: HLLJOB;
     FIsPrinting: Boolean;
+    FDomDataProvider: TDataSetDataProvider;
 
     FNumCopies: Integer;
     lpfnNtfyProc: TFarProc;
@@ -310,6 +311,7 @@ begin
   FTableColoring := TLlTableColoring.tcListLabel;
   FLanguage := TLlLanguage.lDefault;
   FBaseJob:=-1;
+  FDomDataProvider:=nil;
   JobInit(FBaseJob);
 end;
 
@@ -324,6 +326,7 @@ begin
   FRootTables.Free;
   FPassedTables.Free;
   FUsedIdentifiers.Free;
+  FDomDataProvider.Free;
   FreeAndNil(FDelayedRelations);
   FreeAndNil(FPassedRelations);
   LL24xUnload();
@@ -608,9 +611,10 @@ begin
   size:=cmbtll24x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, nil, 0);
   if (size<=0) then exit;
 
-  GetMem(pszIdentifiers, size+1);
+  GetMem(pszIdentifiers, (size+1)*2);
   cmbtll24x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, pszIdentifiers, size);
   result:=TStringList.Create;
+  result.OwnsObjects:=true;
   result.Delimiter:=';';
   result.StrictDelimiter:=true;
   result.DelimitedText:=pszIdentifiers;
@@ -1112,15 +1116,9 @@ begin
     // alle Felder exportieren falls Listenprojekt
     if (LlProjectType = LL_PROJECT_LIST) then
     Begin
-
-       DataProvider := InitDataProvider(CurrentJobHandle, nil);
-
-       // COM interface wrapper erzeugen...
+       DataProvider:=InitDataProvider(CurrentJobHandle, nil);
        DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-
-       // und bei L&L anmelden
        LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-
     End;
 
     if FAutoFileAlsoNew then
@@ -1282,9 +1280,11 @@ procedure TListLabel24.InitDataSource(projectFile: TString);
 begin
   if (LlUtilsGetProjectType(GetJobHandle, PTChar(projectFile)) = LL_PROJECT_LIST) then
   begin
-    DataProvider:=InitDataProvider(GetJobHandle,nil);
-    DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-    LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+      DataProvider:=InitDataProvider(GetJobHandle,nil);
+      DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+      LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+      if (FDomDataProvider <> nil) then FDomDataProvider.Free;
+      FDomDataProvider:=DataProvider;
   end;
 end;
 
@@ -1538,7 +1538,7 @@ begin
       LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectType, ProjectFilename)
     end;
 
-    UsedIdentifiers.Free;
+    if (UsedIdentifiers <> nil) then UsedIdentifiers.Free;
     UsedIdentifiers:=LlGetUsedIdentifiers(ProjectFilename, LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
 
     if (LlProjectType = LL_PROJECT_LIST) Then
@@ -1566,6 +1566,7 @@ begin
 
           if (LlProjectType = LL_PROJECT_LIST) then
           begin
+
              DataProvider:=InitDataProvider(CurrentJobHandle,nil);
              DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
              LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
@@ -1691,8 +1692,7 @@ begin
           exit;
 
         CurrentJobHandle:=JobHandle;
-        if (UsedIdentifiers <> nil) then
-          UsedIdentifiers.Free;
+        if (UsedIdentifiers <> nil) then UsedIdentifiers.Free;
 
         UsedIdentifiers:=LlGetUsedIdentifiers(AProjektFile,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
         DataProvider:=InitDataProvider(JobHandle,AFilter);
