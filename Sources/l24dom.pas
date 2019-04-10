@@ -6,7 +6,7 @@
   File   : l24dom.pas
   Module : List & Label 24 DOM
   Descr. : Implementation file for the List & Label 24 DOM
-  Version: 24.001
+  Version: 24.002
   ==================================================================================
 }
 
@@ -12037,6 +12037,8 @@ end;
 
 procedure TLlDOMPropertyDefaultFont.SetFont(nFont: TFont);
 begin
+  SetProperty('Default', 'False');
+  
   if fsBold in nFont.Style then
     Bold := 'True'
   else
