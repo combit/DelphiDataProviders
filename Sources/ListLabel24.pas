@@ -6,7 +6,7 @@
  File   : ListLabel24.pas
  Module : List & Label 24
  Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.001
+ Version: 24.002
 ==================================================================================
 }
 
@@ -383,7 +383,7 @@ Begin
            with FPreviewCritSect do
            try
              Acquire;
-             if Assigned(FPreviewThread) and 
+             if Assigned(FPreviewThread) and
                 not TPrintPreviewThread(FPreviewThread).Terminated then
                 TPrintPreviewThread(FPreviewThread).Abort();
            finally
@@ -1234,6 +1234,7 @@ Begin
         end;
       end;
       FreeAndNil(FRelationsOfCurrentProvider);
+      table.Free;
    end
    else
    begin // no DataMember is set... pass all tables to LL
@@ -1492,6 +1493,7 @@ Begin
   DefineData(DataProvider, table);
   DefineSortOrders(table);
   DefineRelatedTables(DataProvider, TableName);
+  table.Free;
 End;
 
 
@@ -1806,3 +1808,4 @@ procedure StrPCopyExt(var Dest: ptChar; Source: TString; MinSize: integer);
   end;
 
 end.
+
