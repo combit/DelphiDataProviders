@@ -2,7 +2,7 @@
 This project is a community effort to write TListLabelDataProvider implementations for usage with reporting tool combit List & Label. While the support for .NET has been around a long time, we're trying to build a similar ecosystem for Delphi through this project. Any help is greatly appreciated.
 
 For a fully functional free 30-day trial version and further information about reporting tool List & Label 
-please visit: https://www.combit.net/en/reporting-tool/
+please visit: https://www.combit.com/reporting-tool/
 
 # What's Available So Far
 The sources feature a new VCL component that uses the data provider interface. This enables a number of great features that were previously unavailable to Delphi developers using our "old" databound component:
@@ -18,7 +18,6 @@ A sample showing how to use the component to bind to FireDAC data is also includ
 Copy the contents of this repository to "...\Program Files(x86)\combit\LL??\Samples\Delphi\FireDAC"
 
 # How Can I Help?
-
 We're happy to receive pull requests. Fields of interest include
 
 * make sure the component is "Delphi-like"
@@ -34,4 +33,4 @@ If you're using List & Label with Delphi, you'll have encountered a set of restr
 * Nested tables
 * Keep blocks together
 
-A big special thank you goes to Andreas Müller of Nord-Vision IT - his contributions to this project were invaluable. Any feedback as well as additional contributions are very welcome, just contact the project's administrator.
+A big special thank you goes to Andreas MÃ¼ller of Nord-Vision IT - his contributions to this project were invaluable. Any feedback as well as additional contributions are very welcome, just contact the project's administrator.
