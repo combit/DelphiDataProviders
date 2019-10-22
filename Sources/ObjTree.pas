@@ -1,19 +1,19 @@
-{=================================================================================
+﻿{=================================================================================
 
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
  File   : ObjTree.pas
- Module : List & Label 24
- Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.000
+ Module : List & Label 25
+ Descr. : Implementation file for the List & Label 25 VCL-Component
+ Version: 25.000
 ==================================================================================
 }
 
 unit ObjTree;
 
 interface
-
+{$WEAKPACKAGEUNIT ON}
 uses Classes, Controls, Windows, ActiveX, SysUtils, Dialogs;
 
 type

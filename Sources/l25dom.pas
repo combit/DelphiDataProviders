@@ -3,59 +3,33 @@
   Copyright © combit GmbH, Konstanz
 
   ----------------------------------------------------------------------------------
-  File   : l24dom.pas
-  Module : List & Label 24 DOM
-  Descr. : Implementation file for the List & Label 24 DOM
-  Version: 24.002
+  File   : l25dom.pas
+  Module : List & Label 25 DOM
+  Descr. : Implementation file for the List & Label 25 DOM
+  Version: 25.000
   ==================================================================================
 }
 
-unit l24dom;
-{$IFNDEF ver90}
-{$IFNDEF ver100}
+unit l25dom;
+{$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
-{$ENDIF}
-{$ENDIF}
+{$ifend}
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
-{$ifndef VER125}
-{$ifndef VER130}
-{$ifndef VER135}
-{$ifndef VER140}
-{$ifndef VER150}
-{$ifndef VER160}
-{$ifndef VER170}
-{$ifndef VER180}
-{$ifndef VER185}
-{$ifndef VER190}
+
+{$if CompilerVersion > 19}
 {$define UNICODE}
+{$define USE_UNICODE_DLL}
 {$define UNICODESTRING_AWARE}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
 
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l24CommonInterfaces,cmbtll24
-  {$IFDEF ver280} // XE7
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l25CommonInterfaces,cmbtll25
+  {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
-  {$ENDIF}
+  {$ifend}
   {$ifdef VER90}
   ,ole2
   {$else}
@@ -133,6 +107,8 @@ type
   TLlDOMPropertyCategoryAxisX = class;
   TLlDOMPropertyCategoryAxisY = class;
   TLlDOMPropertyCategoryAxisBase = class;
+  TLlDOMPropertyGridMode = class;
+  TLlDomPropertyGridLineStyle = class;
   TLlDOMPropertyAnimation = class;
   TLlDOMPropertyXhtmlAnimation = class;
   TLlDOMPropertyAnimationTrigger = class;
@@ -192,6 +168,7 @@ type
   TLlDOMTableLineHeaderList = class;
   TLlDOMTableLineGroupHeaderList = class;
   TLlDOMTableLineGroupFooterList = class;
+  TLlDOMPropertyKeepTogether = class;
   TLlDOMTableLineFieldList = class;
   TLlDOMCrosstabCellSumLabelList = class;
   TLlDOMCrosstabCellGroupLabelList = class;
@@ -219,6 +196,7 @@ type
   TLlDOMChartConditionalColorsList = class;
   TLlDOMPropertyChartTitle = class;
   TLlDOMPropertyOutputFormatterBase = class;
+  TLlDOMPropertyOutputFormatterNone = class;
   TLlDOMPropertyChartFilling = class;
   TLlDOMPropertyChartColorArray = class;
   TLlDOMPropertyChartConditionalColor = class;
@@ -2626,12 +2604,15 @@ type
     procedure SetVisible(const value: TString);
     function GetMaxWidth: TString;
     procedure SetMaxWidth(const value: TString);
+    function GetMinWidth: TString;
+    procedure SetMinWidth(const value: TString);
     function GetTitle: TString;
     procedure SetTitle(const value: TString);
     function GetOuputFormatter: TLlDOMPropertyOutputFormatterBase;
   public
     property Visible: TString read GetVisible write SetVisible;
     property MaxWidth: TString read GetMaxWidth write SetMaxWidth;
+    property MinWidth: TString read GetMinWidth write SetMinWidth;
     property OutputFormatter: TLlDOMPropertyOutputFormatterBase
       read GetOuputFormatter;
     property Title: TString read GetTitle write SetTitle;
@@ -2692,6 +2673,35 @@ type
     property PercentageCompleteCell: TLlDOMPropertyCell
       read GetPercentageCompleteCell;
     property StartDateCell: TLlDOMPropertyCell read GetStartDateCell;
+    destructor Destroy; override;
+  end;
+
+  TLlDomPropertyGridLineStyle = class (TLlDOMItem)
+  private
+    function GetGridLineStyleColor: TString;
+    procedure SetGridLineStyleColor(const value: TString);
+    function GetLineWidth : TString;
+    procedure SetLineWidth (const value: TString);
+  public
+     property GridLineStyleColor: TString read GetGridLineStyleColor write SetGridLineStyleColor;
+     property LineWidth : TString read GetLineWidth write SetLineWidth;
+
+  end;
+
+
+  TLlDomPropertyGridMode = class (TLlDOMItem)
+  private
+    fGridLineStyleDiagram: TLlDomPropertyGridLineStyle;
+    fGridLineStyleTable: TLlDomPropertyGridLineStyle;
+    function GetMode: TString;
+    procedure SetMode(const value: TString);
+    function GetGridLineStyleDiagram: TLlDomPropertyGridLineStyle;
+    function GetGridLineStyleTable: TLlDomPropertyGridLineStyle;
+
+  public
+    property Mode: TString read GetMode write SetMode;
+    property GridLineStyleDiagram: TLlDomPropertyGridLineStyle read GetGridLineStyleDiagram;
+    property GridLineStyleTable: TLlDomPropertyGridLineStyle read GetGridLineStyleTable;
     destructor Destroy; override;
   end;
 
@@ -3707,6 +3717,8 @@ type
 
   TLlDOMPropertyChartEngineBase = class(TLlDOMItem)
   private
+    function GetLabelAlignment: TString;
+    procedure SetLabelAlignment(const value: TString);
     function GetChartType: TString;
     procedure SetChartType(const value: TString);
     function GetDataMode: TString;
@@ -3719,6 +3731,7 @@ type
     procedure SetSubTypeIndex(const value: TString);
     property SubTypeIndex: TString read GetSubTypeIndex write SetSubTypeIndex;
   public
+    property LabelAlignment: TString read GetLabelAlignment write SetLabelAlignment;
     property ChartType: TString read GetChartType write SetChartType;
     property DataMode: TString read GetDataMode write SetDataMode;
     property Flat: TString read GetFlat write SetFlat;
@@ -5312,6 +5325,10 @@ type
       item: TLlDOMPropertyOutputFormatterBase); overload;
   end;
 
+  TLlDOMPropertyOutputFormatterNone = class(TLlDOMPropertyOutputFormatterBase)
+	public
+	constructor Create(item: TLlDOMPropertyOutputFormatterBase); overload;
+  end;
   TLlDOMPropertyOutputFormatterDouble = class(TLlDOMPropertyOutputFormatterBase)
   private
     function GetCountOfDecimals: TString;
@@ -5494,12 +5511,24 @@ type
     constructor Create(item: TLlDOMPropertyOutputFormatterBase); overload;
   end;
 
+  TLlDOMPropertyKeepTogether = class(TLlDOMItem)
+    private
+    function GetDataLineDefinitions: TString;
+    procedure SetDataLineDefinitions(const value: TString);
+    function GetIndexedGroups: TString;
+    procedure SetIndexedGroups(const value: TString);
+    public
+    property DataLineDefinitions: TString read GetDataLineDefinitions write SetDataLineDefinitions;
+    property IndexedGroups: TString read GetIndexedGroups write SetIndexedGroups;
+  end;
+
   TLlDOMPropertyFooterLinesOptions = class(TLlDOMItem)
   private
-    function GetKeepTogether: TString;
-    procedure SetKeepTogether(const value: TString);
+    fKeepTogether: TLlDOMPropertyKeepTogether;
+    function GetKeepTogether: TLlDOMPropertyKeepTogether;
   public
-    property KeepTogether: TString read GetKeepTogether write SetKeepTogether;
+    property KeepTogether: TLlDOMPropertyKeepTogether read GetKeepTogether;
+    destructor Destroy; override;
   end;
 
   TLlDOMPropertyGroupFooterLinesOptions = class(TLlDOMItem)
@@ -5529,10 +5558,10 @@ type
   TLlDOMPropertyDataLinesOptions = class(TLlDOMItem)
   private
     fZebraPattern: TLlDOMPropertyFilling;
+    fKeepTogether: TLlDOMPropertyKeepTogether;
     function GetForceSumCalculation: TString;
     procedure SetForceSumCalculation(const value: TString);
-    function GetKeepTogether: TString;
-    procedure SetKeepTogether(const value: TString);
+    function GetKeepTogether: TLlDOMPropertyKeepTogether;
     function GetSuppress: TString;
     procedure SetSuppress(const value: TString);
     function GetLineOtpionDataZebraPattern: TLlDOMPropertyFilling;
@@ -5546,7 +5575,7 @@ type
       read GetLineOtpionDataZebraPattern;
     property ForceSumCalculation: TString read GetForceSumCalculation
       write SetForceSumCalculation;
-    property KeepTogether: TString read GetKeepTogether write SetKeepTogether;
+    property KeepTogether: TLlDOMPropertyKeepTogether read GetKeepTogether;
     property Suppress: TString read GetSuppress write SetSuppress;
     destructor Destroy; override;
   end;
@@ -6053,19 +6082,27 @@ end;
   private
     fDrillDownLinkList: TLlDOMDrillDownLinkList ;
     function GetDrillDownLinks: TLlDOMDrillDownLinkList;
+    function GetIndexedGroups: TString;
+    procedure SetIndexedGroups(const value: TString);
   public
     constructor Create(list: TLlDOMTableLineDataList); overload;
+    property IndexedGroups: TString read GetIndexedGroups write SetIndexedGroups;
     destructor Destroy; override;
     property DrillDownLinks: TLlDOMDrillDownLinkList read GetDrillDownLinks;
   end;
 
   TLlDOMTableLineFooter = class(TLlDOMTableLineBase)
+private
+    function GetIndexedGroups: TString;
+    procedure SetIndexedGroups(const value: TString);
   public
+    property IndexedGroups: TString read GetIndexedGroups write SetIndexedGroups;
     constructor Create(list: TLlDOMTableLineFooterList); overload;
   end;
 
   TLlDOMTableLineHeader = class(TLlDOMTableLineBase)
   public
+
     constructor Create(list: TLlDOMTableLineHeaderList); overload;
   end;
 
@@ -12037,8 +12074,6 @@ end;
 
 procedure TLlDOMPropertyDefaultFont.SetFont(nFont: TFont);
 begin
-  SetProperty('Default', 'False');
-  
   if fsBold in nFont.Style then
     Bold := 'True'
   else
@@ -13379,6 +13414,7 @@ end;
 destructor TLlDOMPropertyDataLinesOptions.Destroy;
 begin
   fZebraPattern.Free;
+  fKeepTogether.Free;
   inherited;
 end;
 
@@ -13387,11 +13423,23 @@ begin
   result := GetProperty('ForceSumCalculation');
 end;
 
-function TLlDOMPropertyDataLinesOptions.GetKeepTogether: TString;
+function TLlDOMPropertyDataLinesOptions.GetKeepTogether
+  : TLlDOMPropertyKeepTogether;
+var
+  baseObj: TLlDOMItem;
 begin
-  result := GetProperty('KeepTogether');
+  if (fKeepTogether <> nil) then
+  begin
+    result := fKeepTogether
+  end
+  else
+  begin
+    baseObj := GetObject('KeepTogether');
+    fKeepTogether := TLlDOMPropertyKeepTogether.Create(baseObj);
+    baseObj.Free;
+    result := fKeepTogether;
+  end;
 end;
-
 function TLlDOMPropertyDataLinesOptions.GetLineOtpionDataZebraPattern
   : TLlDOMPropertyFilling;
 var
@@ -13419,11 +13467,6 @@ procedure TLlDOMPropertyDataLinesOptions.SetForceSumCalculation
   (const value: TString);
 begin
   SetProperty('ForceSumCalculation', value);
-end;
-
-procedure TLlDOMPropertyDataLinesOptions.SetKeepTogether(const value: TString);
-begin
-  SetProperty('KeepTogether', value);
 end;
 
 procedure TLlDOMPropertyDataLinesOptions.SetSuppress(const value: TString);
@@ -13563,17 +13606,49 @@ begin
 
 end;
 
-{ TLineOptionFooter }
-
-function TLlDOMPropertyFooterLinesOptions.GetKeepTogether: TString;
+function TLlDOMPropertyKeepTogether.GetDataLineDefinitions: TString;
 begin
-  result := GetProperty('KeepTogether');
+   result := GetProperty('DataLineDefinitions');
 end;
 
-procedure TLlDOMPropertyFooterLinesOptions.SetKeepTogether
-  (const value: TString);
+function TLlDOMPropertyKeepTogether.GetIndexedGroups: TString;
 begin
-  SetProperty('KeepTogether', value);
+ result := GetProperty('IndexedGroups');
+end;
+
+procedure TLlDOMPropertyKeepTogether.SetDataLineDefinitions(const value: TString);
+begin
+  SetProperty('DataLineDefinitions', value);
+end;
+
+procedure TLlDOMPropertyKeepTogether.SetIndexedGroups(const value: TString);
+begin
+  SetProperty('IndexedGroups', value);
+end;
+
+{ TLineOptionFooter }
+destructor TLlDOMPropertyFooterLinesOptions.Destroy;
+begin
+  fKeepTogether.Free;
+  inherited;
+end;
+
+function TLlDOMPropertyFooterLinesOptions.GetKeepTogether
+  : TLlDOMPropertyKeepTogether;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fKeepTogether <> nil) then
+  begin
+    result := fKeepTogether
+  end
+  else
+  begin
+    baseObj := GetObject('KeepTogether');
+    fKeepTogether := TLlDOMPropertyKeepTogether.Create(baseObj);
+    baseObj.Free;
+    result := fKeepTogether;
+  end;
 end;
 
 { TLineOptionGroupFooter }
@@ -14460,6 +14535,15 @@ begin
   inherited Create(list, 'Lines', list.Count);
 end;
 
+function TLlDOMTableLineFooter.GetIndexedGroups: TString;
+begin
+  result:= GetProperty('IndexedGroups');
+end;
+
+procedure TLlDOMTableLineFooter.SetIndexedGroups(const value: TString);
+begin
+  SetProperty('IndexedGroups', value);
+end;
 { TLlDOMObjectHeaderTableLine }
 
 constructor TLlDOMTableLineHeader.Create(list: TLlDOMTableLineHeaderList);
@@ -16937,6 +17021,14 @@ begin
 
   inherited;
 end;
+function TLlDOMTableLineData.GetIndexedGroups: TString;
+begin
+  result := GetProperty('IndexedGroups');
+end;
+procedure TLlDOMTableLineData.SetIndexedGroups(const value: Tstring);
+begin
+  SetProperty('IndexedGroups', value);
+end;
 
 function TLlDOMTableLineData.GetDrillDownLinks: TLlDOMDrillDownLinkList;
 begin
@@ -17266,6 +17358,12 @@ begin
 end;
 
 { TLlDOMPropertyOutputFormatterDouble }
+
+constructor TLlDOMPropertyOutputFormatterNone.Create
+  (item: TLlDOMPropertyOutputFormatterBase);
+begin
+  inherited Create('', item);
+end;
 
 constructor TLlDOMPropertyOutputFormatterDouble.Create
   (item: TLlDOMPropertyOutputFormatterBase);
@@ -19667,9 +19765,19 @@ begin
   result := GetProperty('MaxWidth');
 end;
 
+function TLlDOMPropertyCell.GetMinWidth;
+begin
+  result := GetProperty('MinWidth');
+end;
+
 procedure TLlDOMPropertyCell.SetMaxWidth(const value: TString);
 begin
   SetProperty('MaxWidth', value);
+end;
+
+procedure TLlDOMPropertyCell.SetMinWidth(const value: TString);
+begin
+  SetProperty('MinWidth', value);
 end;
 
 function TLlDOMPropertyCell.GetOuputFormatter;
@@ -19771,6 +19879,81 @@ begin
   SetProperty('Title', value);
 end;
 
+{TLlDOMPropertyGridMode}
+
+function TLlDomPropertyGridLineStyle.GetGridLineStyleColor: TString;
+begin
+  result:= GetProperty('GridLineStyleColor');
+end;
+
+function TLlDomPropertyGridLineStyle.GetLineWidth: TString;
+begin
+  result:= GetProperty('LineWidth');
+end;
+
+procedure TLlDomPropertyGridLineStyle.SetGridLineStyleColor(const value: TString);
+begin
+  SetProperty(GridLineStyleColor, value);
+end;
+
+procedure TLlDomPropertyGridLineStyle.SetLineWidth(const value: TString);
+begin
+  SetProperty('LineWidth', value);
+end;
+
+destructor TLlDomPropertyGridMode.Destroy;
+begin
+  fGridLineStyleDiagram.Free;
+  fGridLineStyleTable.Free;
+end;
+
+function TLlDomPropertyGridMode.GetMode: TString;
+begin
+    result:= GetProperty('Mode');
+end;
+
+function TLlDomPropertyGridMode.GetGridLineStyleTable: TLlDomPropertyGridLineStyle;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fGridLineStyleTable <> nil then
+  begin
+    result := fGridLineStyleTable;
+  end
+  else
+  begin
+    baseObj := GetObject('GridLineStyleTable');
+    fGridLineStyleTable := TLlDomPropertyGridLineStyle.Create(baseObj);
+    baseObj.Free;
+    result := fGridLineStyleTable;
+  end;
+
+end;
+
+function TLlDomPropertyGridMode.GetGridLineStyleDiagram: TLlDomPropertyGridLineStyle;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fGridLineStyleDiagram <> nil then
+  begin
+    result := fGridLineStyleDiagram;
+  end
+  else
+  begin
+    baseObj := GetObject('GridLineStyleDiagram');
+    fGridLineStyleDiagram := TLlDomPropertyGridLineStyle.Create(baseObj);
+    baseObj.Free;
+    result := fGridLineStyleDiagram;
+  end;
+
+end;
+
+procedure TLlDomPropertyGridMode.SetMode(const value: TString);
+begin
+  SetProperty('Contents', value);
+end;
+
+{/TLlDOMPropertyGridMode}
 { TLlDOMPropertyTableArea }
 destructor TLlDOMPropertyTableArea.Destroy;
 begin
@@ -21169,9 +21352,19 @@ begin
   result := GetProperty('SubTypeIndex');
 end;
 
+function TLlDOMPropertyChartEngineBase.GetLabelAlignment: TString;
+begin
+  result := GetProperty('LabelAlignment');
+end;
+
 procedure TLlDOMPropertyChartEngineBase.SetChartType(const value: TString);
 begin
   SetProperty('ChartType', value);
+end;
+
+procedure TLlDOMPropertyChartEngineBase.SetLabelAlignment(const value: TString);
+begin
+  SetProperty('LabelAlignment', value);
 end;
 
 procedure TLlDOMPropertyChartEngineBase.SetDataMode(const value: TString);
@@ -24626,7 +24819,7 @@ begin
   inherited;
 end;
 
-destructor TLlDOMPropertyChartEngineTreeMapClustered.destroy;
+destructor TLlDOMPropertyChartEngineTreeMapClustered.Destroy;
 begin
   fYAxis.Free;
   fZAxes.Free;
@@ -30157,7 +30350,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl24.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl25.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -30173,7 +30366,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl24.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl25.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;

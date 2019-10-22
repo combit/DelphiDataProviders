@@ -3,42 +3,53 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : ListLabel24.pas
- Module : List & Label 24
- Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.002
+ File   : ListLabel25.pas
+ Module : List & Label 25
+ Descr. : Implementation file for the List & Label 25 VCL-Component
+ Version: 25.000
 ==================================================================================
 }
 
-unit ListLabel24;
+unit ListLabel25;
 
 interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
-     Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll24x,l24CommonInterfaces,
-     ComCtrls, Vcl.Imaging.jpeg, System.Contnrs, System.SyncObjs, LLDataProvider, LLDataSetDataProvider, System.Generics.Collections;
+     Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll25x,l25CommonInterfaces,
+     ComCtrls, Vcl.Imaging.jpeg, System.Contnrs, System.SyncObjs, LLDataProvider, LLDataSetDataProvider, System.Generics.Collections, System.StrUtils;
 
 type
 
     TString = UnicodeString;
     PXChar = PWideChar;
     XChar  = WideChar;
+    TObjectType = (otMarker, otText, otRectangle, otLine, otBarcode, otTable, otTemplate, otEllipse, otGroup, otRTF, otExtensionObject);
 
     TDefinePrintOptionsEvent = procedure(Sender: TObject) of object;
     TAutoDefineNewPageEvent = procedure(Sender: TObject; IsDesignMode: boolean) of object;
     TAutoDefineNewLineEvent = procedure(Sender: TObject; IsDesignMode: boolean) of object;
     TAutoDefineFieldEvent = procedure(Sender: TObject; IsDesignMode: boolean; var FieldName, FieldContent: TString; var FieldType: integer; var IsHandled: boolean) of object;
     TAutoDefineVariableEvent = procedure(Sender: TObject; IsDesignMode: boolean; var VariableName, VariableContent: TString; var VariableType: integer; var IsHandled: boolean) of object;
+    TSaveFileNameEvent = procedure(Sender: TObject; FileName: TString) of object;
+    TPrintJobInfoEvent = procedure(Sender: TObject; LlJobID: HLLJOB; DeviceName: TString; JobID: cardinal; JobStatus: cardinal) of object;
+    TProjectLoadedEvent = procedure(Sender: TObject) of object;
+    TProjectEvent = procedure(Sender: TObject; IsDesignerPreview: boolean; IsPreDraw: boolean; Canvas: TCanvas; Rect: TRect) of object;
+    TObjectEvent = procedure(Sender: TObject; ObjectName: TString;
+       ObjectType: TObjectType; IsPreDraw: boolean; Canvas: TCanvas; Rect: TRect; var EventResult: integer) of object;
+    TPageEvent = procedure(Sender: TObject; IsDesignerPreview: boolean;
+      IsPreDraw: boolean; var Canvas: TCanvas; Rect: TRect) of object;
+    TAutoNotifyProgress = procedure(Sender: TObject; Progress: integer) of object;
+    LlCore = class;
 
 
   // ==============================================================================================
-  // TListLabel24
+  // TListLabel25
   // ==============================================================================================
 
 	[ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-  TListLabel24 = class(TComponent, ILlDomParent)
+  TListLabel25 = class(TComponent, ILlDomParent)
   private
-
+    FCore: LlCore;
     FAddVarsToFields: Boolean;
     FAutoBoxType: TLlAutoBoxType;
     FAutoDesignerPreview: Boolean;
@@ -68,6 +79,7 @@ type
     FBaseJob: HLLJOB;
     FIsPrinting: Boolean;
     FDomDataProvider: TDataSetDataProvider;
+    FNoPrintJobSupervision: Boolean;
 
     FNumCopies: Integer;
     lpfnNtfyProc: TFarProc;
@@ -97,6 +109,14 @@ type
     FOnAutoDefineVariable: TAutoDefineVariableEvent;
     FOnAutoDefineNewPage: TAutoDefineNewPageEvent;
     FOnAutoDefineNewLine: TAutoDefineNewLineEvent;
+    FOnAutoNotifyProgress: TAutoNotifyProgress;
+    FOnSaveFileName: TSaveFileNameEvent;
+    FOnPrintJobInfo: TPrintJobInfoEvent;
+    FOnProjectLoaded: TProjectLoadedEvent;
+    FOnProjectCallback: TProjectEvent;
+    FOnObjectCallback: TObjectEvent;
+    FOnPageCallback: TPageEvent;
+
 
     property RootTables: TStringList read FRootTables;
     property PassedTables: TStringList read FPassedTables;
@@ -117,8 +137,13 @@ type
     function LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
     function LlSelectFileDlgTitle(ParentHandle: cmbtHWND; Title: TString; ProjectType: Integer; var ProjectName: TString): Integer;
     function LlGetUsedIdentifiers(ProjectName: string; IdentifierTypes: Cardinal): TStringList;
-
-
+    procedure SaveFileNameCallback(pszFileName: PTChar);
+    procedure PrintJobInfoCallback(pSCI:PSCLLPRINTJOBINFO);
+    procedure ProjectLoadedEvent;
+    procedure ProjectCallback(pSCP: PSCLLPROJECT);
+    procedure ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt);
+    procedure PageCallback(pSCP: PSCLLPAGE);
+    procedure NotifyProgressCallback(lParam: Integer);
     Function  JobInit(Var Jobhandle: HJob) : Boolean;
     Procedure JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
 
@@ -127,7 +152,7 @@ type
     Function CheckError(ErrorCode: Integer): Integer;
     Function  OnDesignerPrintPreviewCallback(param: PSCLLDESIGNERPRINTJOB): LongInt;
     Function  OnDrillDownCallback(param: PSCLLDRILLDOWNJOBINFO): LongInt;
-
+    Function  GetCore: LlCore;
   Private
     procedure SetLanguage(const Value: TLlLanguage);
     procedure SetAddVarsToFields(const Value: Boolean);
@@ -156,35 +181,39 @@ type
     procedure SetTableColoring(const Value: TLlTableColoring);
     procedure SetUnits(const Value: TLlUnits);
     procedure SetVarCaseSensitive(const Value: Boolean);
+    procedure SetNoPrintJobSupervision(const Value: Boolean);
 
   public
 
     Constructor Create(AOwner: TComponent); Override;
     destructor Destroy; Override;
-    function  DefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
-    function  DefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
-    function  DefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
-    function  DefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
 
     Procedure Design;
     Procedure Print;
-    Procedure DoPreviewAndDrilldown( AWnd        : HWND;
+    Procedure DoPreviewAndDrilldown( Wnd        : HWND;
                                      DrillDown   : Boolean;
-                                     AProjektFile: String;
-                                     OriginalProjektFile: String;
-                                     AMaxPages   : Integer;
-                                     APreviewFile: String;
+                                     ProjectFile: String;
+                                     OriginalProjectFile: String;
+                                     MaxPages   : Integer;
+                                     PreviewFile: String;
                                      AFilter     : PFilterDescription;
                                      AttachInfo  : THandle);
+    Procedure DoExport(              Wnd        : HWND;
+                                     ProjectFile: String;
+                                     OriginalProjectFile: String;
+                                     MaxPages   : Integer;
+                                     ExportFormat: String);
+
     Procedure AbortPrinting();
 
     Property ShowErrors: Boolean read FShowErrors write SetShowErrors default true;
-
+    Property NoPrintJobSupervision: Boolean read FNoPrintJobSupervision write SetNoPrintJobSupervision Default false;
     // ILlDomParent
     procedure InitDataSource(projectFile: TString);
     procedure DeclareLlXObjectsToLL;
     function GetJobHandle: Integer;
   published
+
 
     Property AddVarsToFields: Boolean read FAddVarsToFields write SetAddVarsToFields default false;
     Property AutoBoxType: TLlAutoBoxType read FAutoBoxType write SetAutoBoxType default TLlAutoBoxType.btNormalMeter;
@@ -213,6 +242,7 @@ type
     Property TableColoring: TLlTableColoring read FTableColoring write SetTableColoring Default TLlTableColoring.tcListLabel;
     Property Language: TLlLanguage read FLanguage write SetLanguage Default TLlLanguage.lDefault;
     Property DataController: TLLDataController read FDataController Write FDataController;
+    Property Core: LlCore read GetCore;
 
     // Events
     property OnDefinePrintOptions: TDefinePrintOptionsEvent read FOnDefinePrintOptionsEvent write FOnDefinePrintOptionsEvent;
@@ -220,6 +250,30 @@ type
     property OnAutoDefineField: TAutoDefineFieldEvent read FOnAutoDefineField write FOnAutoDefineField;
     property OnAutoDefineVariable: TAutoDefineVariableEvent read FOnAutoDefineVariable write FOnAutoDefineVariable;
     property OnAutoDefineNewLine: TAutoDefineNewLineEvent read FOnAutoDefineNewLine write FOnAutoDefineNewLine;
+    property OnAutoNotifyProgress: TAutoNotifyProgress read FOnAutoNotifyProgress write FOnAutoNotifyProgress;
+    property OnSaveFileName: TSaveFileNameEvent read FOnSaveFileName write FOnSaveFileName;
+    property OnPrintJobInfo: TPrintJobInfoEvent read FOnPrintJobInfo write FOnPrintJobInfo;
+    property OnProjectLoaded: TProjectLoadedEvent read FOnProjectLoaded write FOnProjectLoaded;
+    property OnProject: TProjectEvent read FOnProjectCallback write FOnProjectCallback;
+    property OnObject: TObjectEvent read FOnObjectCallback write FOnObjectCallback;
+    property OnPage: TPageEvent read FOnPageCallback write FOnPageCallback;
+  end;
+
+  //Core class
+   LlCore = class (TObject)
+   private
+    fParentObject: TListLabel25;
+   public
+   Constructor Create(ParentObject: TListLabel25);
+   function LlGetOptionString(OptionIndex: integer; var Value: TString): integer;
+   function LlDefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
+   function LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
+   function LlDefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
+   function LlDefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
+   function LlSetOption(OptionIndex: integer; Value: lParam): integer;
+   function LlGetOption(OptionIndex: integer): integer;
+   function LlSetOptionString(OptionIndex: integer; Value: TString): integer;
+
   end;
 
 function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt; export; stdcall;
@@ -246,22 +300,51 @@ Const
 
 function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt;
 var
-  lResult: Integer;
+  lResult: NativeInt;
 begin
   lResult := 0;
   case nMsg of
     LL_NTFY_DESIGNERPRINTJOB:
       Begin
-        lResult :=TListLabel24(lUserParam).OnDesignerPrintPreviewCallback(pSCLLDESIGNERPRINTJOB(lParam));
+        lResult :=TListLabel25(lUserParam).OnDesignerPrintPreviewCallback(pSCLLDESIGNERPRINTJOB(lParam));
       End;
 
     LL_NTFY_VIEWERDRILLDOWN:
       begin
-        lResult:= TListLabel24(lUserParam).OnDrillDownCallBack(PSCLLDRILLDOWNJOBINFO(lParam));
+        lResult:= TListLabel25(lUserParam).OnDrillDownCallBack(PSCLLDRILLDOWNJOBINFO(lParam));
+      end;
+    LL_CMND_SAVEFILENAME:
+      begin
+          (TListLabel25(lUserParam)).SaveFileNameCallback(PTChar(lparam));
+      end;
+    87:// LL_NTFY_PROGRESS
+      begin
+          (TListLabel25(lUserParam)).NotifyProgressCallback(Integer(lparam));
+      end;
+    LL_INFO_PRINTJOBSUPERVISION:
+      begin
+          (TListLabel25(lUserParam)).PrintJobInfoCallback(PSCLLPRINTJOBINFO(lParam));
+      end;
+    LL_NTFY_PROJECTLOADED:
+      begin
+		if (integer(lParam)=0) then
+          (TListLabel25(lUserParam)).ProjectLoadedEvent;
+      end;
+    LL_CMND_PROJECT:
+      begin
+          (TListLabel25(lUserParam)).ProjectCallback(pSCLLPROJECT(lParam));
+      end;
+    LL_CMND_OBJECT:
+      begin
+          (TListLabel25(lUserParam)).ObjectCallback(pSCLLOBJECT(lParam), lResult);
+      end;
+    LL_CMND_PAGE:
+      begin
+          (TListLabel25(lUserParam)).PageCallback(pSCLLPAGE(lParam));
       end;
     LL_NTFY_QUEST_DRILLDOWNDENIED :
       begin
-        if TListLabel24(lUserParam).FDrilldownActive then
+        if TListLabel25(lUserParam).FDrilldownActive then
           lResult:= 1
         else
           lResult:= 0;
@@ -271,12 +354,12 @@ begin
 end;
 
 // =====================================================================
-// TListLabel24
+// TListLabel25
 // =====================================================================
-Constructor TListLabel24.Create(AOwner: TComponent);
+Constructor TListLabel25.Create(AOwner: TComponent);
 begin
   Inherited Create(AOwner);
-  LL24xLoad();
+  LL25xLoad();
   lpfnNtfyProc := nil;
   FDataController := TLLDataController.Create(self);
 
@@ -312,10 +395,13 @@ begin
   FLanguage := TLlLanguage.lDefault;
   FBaseJob:=-1;
   FDomDataProvider:=nil;
+  FCore:=nil;
   JobInit(FBaseJob);
+  GetCore();
+
 end;
 
-destructor TListLabel24.Destroy;
+destructor TListLabel25.Destroy;
 begin
   JobFree(FBaseJob, nil);
   if (lpfnNtfyProc <> nil) then  FreeProcInstance(lpfnNtfyProc);
@@ -329,11 +415,12 @@ begin
   FDomDataProvider.Free;
   FreeAndNil(FDelayedRelations);
   FreeAndNil(FPassedRelations);
-  LL24xUnload();
+  LL25xUnload();
+  FCore.Free;
   inherited Destroy;
 end;
 
-Function TListLabel24.OnDesignerPrintPreviewCallback(param: PSCLLDESIGNERPRINTJOB): LongInt;
+Function TListLabel25.OnDesignerPrintPreviewCallback(param: PSCLLDESIGNERPRINTJOB): LongInt;
 Begin
    result:=0;
    case param^._nFunction of
@@ -433,7 +520,7 @@ Begin
    end;
 End;
 
-Function  TListLabel24.OnDrillDownCallback(param: PSCLLDRILLDOWNJOBINFO): LongInt;
+Function  TListLabel25.OnDrillDownCallback(param: PSCLLDRILLDOWNJOBINFO): LongInt;
 Begin
    result:=0;
    case param._nFunction of
@@ -490,13 +577,119 @@ Begin
    end;
 End;
 
+procedure TListLabel25.NotifyProgressCallback(lParam: Integer);
+begin
+  if(Assigned(FOnAutoNotifyProgress)) then
+    FOnAutoNotifyProgress(Self, lParam);
+end;
+procedure TListLabel25.SaveFileNameCallback(pszFileName: PTChar);
+begin
+  if Assigned(FOnSaveFileName) then
+    FOnSaveFileName(Self, pszFileName);
+end;
 
-procedure TListLabel24.SetVarCaseSensitive(const Value: Boolean);
+procedure TListLabel25.PrintJobInfoCallback(pSCI:PSCLLPRINTJOBINFO);
+begin
+    if Assigned (FOnPrintJobInfo) then
+    begin
+        FOnPrintJobInfo(self, pSCI^._hLlJob, pSCI^._szDevice, pSCI^._dwJobID, pSCI^._dwState);
+    end;
+end;
+
+procedure TListLabel25.ProjectLoadedEvent;
+begin
+  if Assigned(FOnProjectLoaded) then
+    FOnProjectLoaded(Self);
+end;
+
+
+procedure TListLabel25.ProjectCallback(pSCP: PSCLLPROJECT);
+var
+  Canvas: TCanvas;
+  paintDC: HDC;
+  Rect: TRect;
+  Size: TSize;
+  Point: TPoint;
+begin
+  if Assigned(FOnProjectCallback) then
+  begin
+  	paintDC:= pSCP^._hPaintDC;
+    SaveDC(paintDC);
+    Canvas := TCanvas.Create;
+    try
+      Canvas.handle := pSCP^._hPaintDC;
+      GetWindowExtEx(Canvas.handle, Size);
+      GetWindowOrgEx(Canvas.handle, Point);
+      Rect.Top := Point.y;
+      Rect.Bottom := Rect.Top + Size.cy;
+      Rect.Left := Point.x;
+      Rect.Right := Rect.Left + Size.cx;
+      FOnProjectCallback(Self, pSCP^._bDesignerPreview, pSCP^._bPreDraw, Canvas, Rect);
+    finally
+      Canvas.Free;
+	  RestoreDC(paintDC, -1);
+    end;
+  end;
+end;
+
+procedure TListLabel25.ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt);
+var
+  Canvas: TCanvas;
+  Rect: TRect;
+  iResult: integer;
+begin
+  iResult := 0;
+  if Assigned(FOnObjectCallback) then
+  begin
+    SaveDC(pSCO^._hPaintDC);
+    Canvas := TCanvas.Create;
+    try
+      Canvas.Handle := pSCO^._hPaintDC;
+      Rect := pSCO^._rcPaint;
+      FOnObjectCallback(Self, TString(pSCO^._pszName), TObjectType(pSCO^._nType),
+        pSCO^._bPreDraw, Canvas, Rect, iResult);
+      pSCO^._rcPaint := Rect;
+    finally
+      Canvas.Free;
+	  RestoreDC(pSCO^._hPaintDC, -1);
+      lResult:=iResult;
+    end;
+  end;
+end;
+
+procedure TListLabel25.PageCallback(pSCP: PSCLLPAGE);
+var
+  Canvas: TCanvas;
+  Rect: TRect;
+  Size: TSize;
+  Point: TPoint;
+begin
+  if Assigned(FOnPageCallback) then
+  begin
+    SaveDC(pSCP^._hPaintDC);
+    Canvas := TCanvas.Create;
+    try
+      Canvas.handle := pSCP^._hPaintDC;
+      GetWindowExtEx(Canvas.handle, Size);
+      GetWindowOrgEx(Canvas.handle, Point);
+      Rect.Top := Point.y;
+      Rect.Bottom := Rect.Top + Size.cy;
+      Rect.Left := Point.x;
+      Rect.Right := Rect.Left + Size.cx;
+      FOnPageCallback(Self, pSCP^._bDesignerPreview, pSCP^._bPreDraw, Canvas, Rect);
+    finally
+      Canvas.Free;
+	  RestoreDC(pSCP^._hPaintDC, -1);
+    end;
+  end;
+end;
+
+procedure TListLabel25.SetVarCaseSensitive(const Value: Boolean);
 begin
   FVarCaseSensitive := Value;
 end;
 
-procedure TListLabel24.SetLanguage(const Value: TLlLanguage);
+procedure TListLabel25.SetLanguage(const Value: TLlLanguage);
 var
   OldAddVarsToFields: Boolean;
   OldShowErrors: Boolean;
@@ -541,13 +734,13 @@ begin
     LlSetNotificationCallback(FBaseJob, nil);
     LlJobClose(FBaseJob);
   end;
-
+  
   CheckError(LlSetOption(-1, LL_OPTION_MAXRTFVERSION, FMaxRTFVersion));
 
   FBaseJob := LLJobOpen(TEnumTranslator.TranslateLanguage(FLanguage));
   if FBaseJob > -1 then
   begin
-    JobInit(FBaseJob);
+	JobInit(FBaseJob);
     AddVarsToFields := OldAddVarsToFields;
     ShowErrors := OldShowErrors;
     CompressStorage := OldCompressStorage;
@@ -563,14 +756,14 @@ begin
     PreviewZoom := OldPreviewZoom;
     MaximumIdleIterationsPerObject := OldMaximumIdleIterationsPerObject;
     Debug := OldDebug;
-    TableColoring := OldTableColoring;
+    TableColoring := OldTableColoring;    
   end;
 
 end;
 
 // LL helper functions
 
-function TListLabel24.LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
+function TListLabel25.LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
 var
   BufPrinter, BufPort: PTChar;
 
@@ -579,28 +772,28 @@ begin
   GetMem(BufPort, 40 * sizeof(tChar));
   BufPrinter^ := #0;
   BufPort^ := #0;
-  Result := cmbtll24x.LlPrintGetPrinterInfo(CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
+  Result := cmbtll25x.LlPrintGetPrinterInfo(CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
   PrinterName := TString(BufPrinter);
   PrinterPort := TString(BufPort);
   FreeMem(BufPrinter);
   FreeMem(BufPort);
 end;
 
-function TListLabel24.LlSelectFileDlgTitle(ParentHandle: cmbtHWND; Title: TString; ProjectType: Integer; var ProjectName: TString): Integer;
+function TListLabel25.LlSelectFileDlgTitle(ParentHandle: cmbtHWND; Title: TString; ProjectType: Integer; var ProjectName: TString): Integer;
 var
   pszProjectName: PTChar;
 
   begin
   pszProjectName := nil;
   StrPCopyExt(pszProjectName, ProjectName, 1024);
-  Result := cmbtll24x.LlSelectFileDlgTitleEx(CurrentJobHandle, ParentHandle, PTChar(Title), ProjectType, pszProjectName, 1024 - 1, nil);
+  Result := cmbtll25x.LlSelectFileDlgTitleEx(CurrentJobHandle, ParentHandle, PTChar(Title), ProjectType, pszProjectName, 1024 - 1, nil);
   ProjectName := TString(pszProjectName);
   FreeMem(pszProjectName);
 end;
 
 
 
-function TListLabel24.LlGetUsedIdentifiers(ProjectName: string; IdentifierTypes: Cardinal): TStringList;
+function TListLabel25.LlGetUsedIdentifiers(ProjectName: string; IdentifierTypes: Cardinal): TStringList;
 var
   pszIdentifiers: PTChar;
   size: integer;
@@ -608,11 +801,11 @@ var
 
 begin
   result:=nil;
-  size:=cmbtll24x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, nil, 0);
+  size:=cmbtll25x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, nil, 0);
   if (size<=0) then exit;
 
   GetMem(pszIdentifiers, (size+1)*2);
-  cmbtll24x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, pszIdentifiers, size);
+  cmbtll25x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, pszIdentifiers, size);
   result:=TStringList.Create;
   result.OwnsObjects:=true;
   result.Delimiter:=';';
@@ -622,7 +815,7 @@ begin
 end;
 
 
-procedure TListLabel24.SetAddVarsToFields(const Value: Boolean);
+procedure TListLabel25.SetAddVarsToFields(const Value: Boolean);
 begin
 
   FAddVarsToFields := Value;
@@ -630,14 +823,14 @@ begin
 
 end;
 
-procedure TListLabel24.SetShowErrors(const Value: Boolean);
+procedure TListLabel25.SetShowErrors(const Value: Boolean);
 begin
 
   FShowErrors := Value;
 
 end;
 
-procedure TListLabel24.SetUnits(const Value: TLlUnits);
+procedure TListLabel25.SetUnits(const Value: TLlUnits);
 begin
 
   FUnits := Value;
@@ -645,75 +838,83 @@ begin
 
 end;
 
-procedure TListLabel24.SetLicensingInfo(const Value: String);
+procedure TListLabel25.SetNoPrintJobSupervision(const Value: Boolean);
+begin
+
+  FNoPrintJobSupervision := Value;
+  CheckError(LlSetOption(CurrentJobHandle, LL_OPTION_NOPRINTJOBSUPERVISION, Integer(Value)));
+
+end;
+
+procedure TListLabel25.SetLicensingInfo(const Value: String);
 begin
   FLicensingInfo := Value;
 end;
 
-procedure TListLabel24.SetAutoBoxType(const Value: TLlAutoBoxType);
+procedure TListLabel25.SetAutoBoxType(const Value: TLlAutoBoxType);
 begin
 
   FAutoBoxType := Value;
 
 end;
 
-procedure TListLabel24.SetAutoDesignerPreview(const Value: Boolean);
+procedure TListLabel25.SetAutoDesignerPreview(const Value: Boolean);
 begin
 
   FAutoDesignerPreview := Value;
 
 end;
 
-procedure TListLabel24.SetAutoDestination(const Value: TLlPrintMode);
+procedure TListLabel25.SetAutoDestination(const Value: TLlPrintMode);
 begin
 
   FAutoDestination := Value;
 
 end;
 
-procedure TListLabel24.SetAutoDialogTitle(const Value: String);
+procedure TListLabel25.SetAutoDialogTitle(const Value: String);
 begin
 
   FAutoDialogTitle := Value;
 
 end;
 
-procedure TListLabel24.SetAutoFileAlsoNew(const Value: Boolean);
+procedure TListLabel25.SetAutoFileAlsoNew(const Value: Boolean);
 begin
 
   FAutoFileAlsoNew := Value;
 
 end;
 
-procedure TListLabel24.SetAutoProjectFile(const Value: String);
+procedure TListLabel25.SetAutoProjectFile(const Value: String);
 begin
 
   FAutoProjectFile := Value;
 
 end;
 
-procedure TListLabel24.SetAutoProjectType(const Value: TLlProject);
+procedure TListLabel25.SetAutoProjectType(const Value: TLlProject);
 begin
 
   FAutoProjectType := Value;
 
 end;
 
-procedure TListLabel24.SetAutoShowPrintOptions(const Value: Boolean);
+procedure TListLabel25.SetAutoShowPrintOptions(const Value: Boolean);
 begin
 
   FAutoShowPrintOptions := Value;
 
 end;
 
-procedure TListLabel24.SetAutoShowSelectFile(const Value: Boolean);
+procedure TListLabel25.SetAutoShowSelectFile(const Value: Boolean);
 begin
 
   FAutoShowSelectFile := Value;
 
 end;
 
-procedure TListLabel24.SetCompressStorage(const Value: Boolean);
+procedure TListLabel25.SetCompressStorage(const Value: Boolean);
 begin
 
   FCompressStorage := Value;
@@ -721,7 +922,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetConvertCRLF(const Value: Boolean);
+procedure TListLabel25.SetConvertCRLF(const Value: Boolean);
 begin
 
   FConvertCRLF := Value;
@@ -729,7 +930,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetDebug(const Value: TLlDebugFlags);
+procedure TListLabel25.SetDebug(const Value: TLlDebugFlags);
 var
   LlDebugFlags: Integer;
 
@@ -744,7 +945,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetDelayTableHeader(const Value: Boolean);
+procedure TListLabel25.SetDelayTableHeader(const Value: Boolean);
 begin
 
   FDelayTableHeader := Value;
@@ -752,7 +953,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetIncludeFontDescent(const Value: Boolean);
+procedure TListLabel25.SetIncludeFontDescent(const Value: Boolean);
 begin
 
   FIncludeFontDescent := Value;
@@ -760,7 +961,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetIncrementalPreview(const Value: Boolean);
+procedure TListLabel25.SetIncrementalPreview(const Value: Boolean);
 begin
 
   FIncrementalPreview := Value;
@@ -768,7 +969,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetMaximumIdleIterationsPerObject(const Value: Integer);
+procedure TListLabel25.SetMaximumIdleIterationsPerObject(const Value: Integer);
 begin
 
   FMaximumIdleIterationsPerObject := Value;
@@ -776,13 +977,13 @@ begin
 
 end;
 
-procedure TListLabel24.SetMaxRTFVersion(const Value: Integer);
+procedure TListLabel25.SetMaxRTFVersion(const Value: Integer);
 begin
   FMaxRTFVersion := Value;
   SetLanguage(Language); // makes sure to apply the value
 end;
 
-procedure TListLabel24.SetNoParameterCheck(const Value: Boolean);
+procedure TListLabel25.SetNoParameterCheck(const Value: Boolean);
 begin
 
   FNoParameterCheck := Value;
@@ -790,7 +991,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetPreviewZoom(const Value: Integer);
+procedure TListLabel25.SetPreviewZoom(const Value: Integer);
 begin
 
   FPreviewZoom := Value;
@@ -800,7 +1001,7 @@ end;
 
 // Druck Prozeduren
 
-Function TListLabel24.JobInit(Var Jobhandle: HJob): Boolean;
+Function TListLabel25.JobInit(Var Jobhandle: HJob): Boolean;
 Var
   tmp : PChar;
   LlDebugFlags: Integer;
@@ -830,6 +1031,8 @@ begin
 
     lpfnNtfyProc := TFarProc(@NtfyCallback);
     LlSetOption(JobHandle, LL_OPTION_CALLBACKPARAMETER, Integer(self));
+    LlSetOption(JobHandle, LL_OPTION_CALLBACKMASK, LL_CB_PAGE or LL_CB_OBJECT or LL_CB_PROJECT );
+    LlSetOption(JobHandle, LL_OPTION_NOPRINTJOBSUPERVISION, 0);
     LlSetNotificationCallback(JobHandle, lpfnNtfyProc);
     CheckError(LlSetOption(JobHandle, LL_OPTION_ADDVARSTOFIELDS, Integer(FAddVarsToFields)));
     CheckError(LlSetOption(JobHandle, LL_OPTION_COMPRESSSTORAGE, Integer(FCompressStorage)));
@@ -849,7 +1052,7 @@ begin
     CheckError(LlSetOption(JobHandle, LL_OPTION_REPORT_PARAMETERS_REALDATAJOBPARAMETER,1));
     CheckError(LlSetOption(JobHandle, LL_OPTION_EXPANDABLE_REGIONS_REALDATAJOBPARAMETER,1));
     CheckError(LlSetOption(JobHandle, LL_OPTION_INCLUDEFONTDESCENT, Integer(FIncludeFontDescent)));
-    CheckError(LlSetOption(JobHandle, LL_OPTION_NOPRINTERPATHCHECK, Integer(True)));
+	CheckError(LlSetOption(JobHandle, LL_OPTION_NOPRINTERPATHCHECK, Integer(True)));
     CurrentJobHandle:=Jobhandle;
   end;
 
@@ -861,7 +1064,7 @@ begin
 
 end;
 
-Procedure TListLabel24.JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
+Procedure TListLabel25.JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
 begin
   if (DataProvider = nil) or (JobHandle <> FBaseJob) then
   begin
@@ -871,7 +1074,7 @@ begin
   if DataProvider<>nil then DataProvider.Free
 end;
 
-procedure TListLabel24.Notification(AComponent: TComponent; Operation: TOperation);
+procedure TListLabel25.Notification(AComponent: TComponent; Operation: TOperation);
 Var i : INteger;
 begin
   inherited Notification(AComponent, Operation);
@@ -890,7 +1093,7 @@ begin
   end;
 end;
 
-Function TListLabel24.CheckError(ErrorCode: Integer): Integer;
+Function TListLabel25.CheckError(ErrorCode: Integer): Integer;
 Var
   Buffer: Array [0 .. 255] of char;
   ErrorText: TString;
@@ -938,7 +1141,7 @@ begin
   end;
 end;
 
-procedure TListLabel24.CleanUpDataStructure;
+procedure TListLabel25.CleanUpDataStructure;
 begin
   LlDbAddTable(CurrentJobHandle, '', '');
   PassedTables.Clear;
@@ -946,7 +1149,7 @@ begin
   DelayedRelations.Clear;
 end;
 
-procedure TListLabel24.SetProjectPassword(const Value: String);
+procedure TListLabel25.SetProjectPassword(const Value: String);
 var
   tmp: PChar;
 
@@ -959,7 +1162,7 @@ begin
 
 end;
 
-procedure TListLabel24.SetTableColoring(const Value: TLlTableColoring);
+procedure TListLabel25.SetTableColoring(const Value: TLlTableColoring);
 begin
 
   FTableColoring := Value;
@@ -967,96 +1170,126 @@ begin
 
 end;
 
-function TListLabel24.DefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
+function LlCore.LlDefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
 var handled: boolean;
 Begin
-   if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
+   if (fParentObject.UsedIdentifiers <> nil) and (fParentObject.UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
    handled:=false;
-   if Assigned(FOnAutoDefineVariable) then
-      OnAutoDefineVariable(self, not IsPrinting, FieldName,Contents,FieldType,handled);
+   if Assigned(fParentObject.FOnAutoDefineVariable) then
+      fParentObject.OnAutoDefineVariable(self, not fParentObject.IsPrinting, FieldName,Contents,FieldType,handled);
 
    if handled then exit(0);
 
    case FieldType of
       LL_DATE_DELPHI:
-         result := LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
+         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
       LL_TEXT:
-         result := LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
+         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
       LL_Numeric:
-         result:= LlDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
+         result:= cmbtLL25x.LlDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
       LL_NUMERIC_INTEGER:
-         result:= LlDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
+         result:= cmbtLL25x.LlDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
       LL_BOOLEAN:
-        result:= LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
+        result:= cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
       LL_RTF:
-         result := LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
+         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
       else Begin
-         result := LLDefineVariableExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
+         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
       End;
    end;
 End;
 
-function  TListLabel24.DefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): Integer;
+function  LlCore.LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): Integer;
 Begin
-  if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
+  if (fParentObject.UsedIdentifiers <> nil) and (fParentObject.UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
    result:=0;
    case FieldType of
       LL_DRAWING_HMETA:
-         result := LlDefineVariableExtHandle(CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, nil);
+         result := cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, nil);
       LL_DRAWING_HBITMAP:
-         result := LlDefineVariableExtHandle(CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, nil);
+         result := cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, nil);
       LL_DRAWING_HICON:
-         result:= LlDefineVariableExtHandle(CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, nil);
+         result:= cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, nil);
    end;
 End;
 
 //
 
-function TListLabel24.DefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
+function LlCore.LlDefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
 var handled: boolean;
+    tableName: String;
 Begin
-  if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
+  if (fParentObject.UsedIdentifiers <> nil) and (fParentObject.UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
 
   handled:=false;
-  if Assigned(FOnAutoDefineField) then
-      OnAutoDefineField(self, not IsPrinting, FieldName,Contents,FieldType,handled);
+  tableName:=LeftStr(FieldName, Pos('.', FieldName)-1);
+
+  //needed for label projects
+  if (fParentObject.FAutoProjectType <> ptList)  or ((fParentObject.DataController.DataMember = tableName)
+        and (fParentObject.DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables)) then
+    begin
+      if Assigned(fParentObject.FOnAutoDefineVariable) then
+        fParentObject.FOnAutoDefineVariable(self, not fParentObject.IsPrinting, FieldName,Contents,FieldType,handled);
+    end
+  else
+    begin
+      if Assigned(fParentObject.FOnAutoDefineField) then
+        fParentObject.OnAutoDefineField(self, not fParentObject.IsPrinting, FieldName,Contents,FieldType,handled);
+    end;
 
    if handled then exit(0);
 
    case FieldType of
       LL_DATE_DELPHI:
-         result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
+         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
       LL_TEXT:
-         result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
+         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
       LL_Numeric:
-         result:= LlDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
+         result:= cmbtLL25x.LlDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
       LL_NUMERIC_INTEGER:
-         result:= LlDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
+         result:= cmbtLL25x.LlDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
       LL_BOOLEAN:
-        result:= LlDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
+        result:= cmbtLL25x.LlDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
       LL_RTF:
-         result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
+         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
       else Begin
-         result := LLDefineFieldExt(CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
+         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
       End;
    end;
 End;
 
-function  TListLabel24.DefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): Integer;
+function  LlCore.LlDefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): Integer;
 Begin
-  if (UsedIdentifiers <> nil) and (UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
+  if (fParentObject.UsedIdentifiers <> nil) and (fParentObject.UsedIdentifiers.IndexOf(FieldName) = -1) then exit(0);
    result:=0;
    case FieldType of
       LL_DRAWING_HMETA:
-         result := LlDefineFieldExtHandle(CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, nil);
+         result := cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, nil);
       LL_DRAWING_HBITMAP:
-         result := LlDefineFieldExtHandle(CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, nil);
+         result := cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, nil);
       LL_DRAWING_HICON:
-         result:= LlDefineFieldExtHandle(CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, nil);
+         result:= cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, nil);
    end;
 End;
 
-Procedure TListLabel24.Design;
+
+function LlCore.LlSetOption(OptionIndex: Integer; Value: NativeInt): Integer;
+begin
+  Result := cmbtLL25x.LlSetOption(fParentObject.CurrentJobHandle, OptionIndex, Value);
+end;
+
+function LlCore.LlSetOptionString(OptionIndex: integer; Value: TString): integer;
+begin
+  Result := cmbtLL25x.LlSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
+end;
+
+function LlCore.LlGetOption(OptionIndex: integer
+  ): integer;
+begin
+  Result := cmbtLL25x.LlGetOption(fParentObject.CurrentJobHandle, OptionIndex);
+end;
+
+Procedure TListLabel25.Design;
 Var
   OldMaster : Boolean;
   i, err           : Integer;
@@ -1064,6 +1297,7 @@ Var
   DataProvider     : TDataSetDataProvider;
   DataProviderIntf : TDataProviderInterfaceProxyRoot;
   LlProjectType: Integer;
+  LlProjectTypeForFileDialog: Integer;
   ProjectFilename: TString;
   WindowHandle: cmbtHWND;
 
@@ -1103,27 +1337,24 @@ begin
   OldMaster := DataController.DataSource.DataSet.Active;
   DataController.DataSource.DataSet.Active := True;
 
-  if LlProjectType = LL_PROJECT_LIST then
-  Begin
-      for i := 0 to Datacontroller.DetailSources.Count - 1 do
-        Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
-  end;
+  for i := 0 to Datacontroller.DetailSources.Count - 1 do
+    Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
 
   Try
     if Assigned(FOnAutoDefineNewPage) then
       OnAutoDefineNewPage(self, True);
 
-    // alle Felder exportieren falls Listenprojekt
-    if (LlProjectType = LL_PROJECT_LIST) then
-    Begin
-       DataProvider:=InitDataProvider(CurrentJobHandle, nil);
-       DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-       LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-    End;
+    DataProvider:=InitDataProvider(CurrentJobHandle, nil);
+    DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+    LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
 
     if FAutoFileAlsoNew then
     begin
-      LlProjectType := LlProjectType or LL_FILE_ALSONEW;
+      LlProjectTypeForFileDialog := LlProjectType or LL_FILE_ALSONEW;
+    end
+    else
+    begin
+      LlProjectTypeForFileDialog := LlProjectType;
     end;
 
     if not (csDesigning in ComponentState) then
@@ -1133,7 +1364,7 @@ begin
 
     ProjectFilename := FAutoProjectFile;
     if FAutoShowSelectFile then
-      err := CheckError(LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectType, ProjectFilename));
+      err := CheckError(LlSelectFileDlgTitle(WindowHandle, PChar(FAutoDialogTitle), LlProjectTypeForFileDialog, ProjectFilename));
 
     if (err <> CE_Abort) then
       CheckError(LLDefineLayout(CurrentJobHandle, WindowHandle, PChar(FAutoDialogTitle), LlProjectType, PChar(ProjectFilename)));
@@ -1144,7 +1375,7 @@ begin
   end;
 end;
 
-Function TListLabel24.InitDataProvider(JobHandle:HJob; DrillDownFilter: PFilterDescription): TDataSetDataProvider;
+Function TListLabel25.InitDataProvider(JobHandle:HJob; DrillDownFilter: PFilterDescription): TDataSetDataProvider;
 Var
     i             : Integer;
     Tables        : TObjectList<TListLabelTable>;
@@ -1216,6 +1447,12 @@ Begin
       FillRootTables(DataProvider, table.TableName);
       DefineRelatedTables(DataProvider, table.TableName);
 
+       // label projects
+      if FAutoProjectType <> ptList then
+      begin
+        LlDbSetMasterTable(JobHandle, PChar(Table.TableName));
+      end;
+
       for relation in DelayedRelations do
       begin
         if PassedRelations.IndexOf(relation) <> -1 then
@@ -1244,23 +1481,33 @@ Begin
         CheckError(LlDbAddTableEx(JobHandle, Pchar(Table.TableName), Pchar(Table.TableName),1)); // enable advanced sorting
         DefineData(DataProvider, table);
         DefineSortOrders(table);
+
+        // for label projects, only one table (the first) is supported
+        if FAutoProjectType <> ptList then
+        begin
+          LlDbSetMasterTable(JobHandle, PChar(Table.TableName));
+          break;
+        end;
      end;
 
-     // pass relations
-     Relations := DataProvider.Relations;
-     if (Relations <> nil) then
+     // pass relations  for list projects
+     if FAutoProjectType = ptList then
      begin
-        for Relation in Relations do
-        begin
-           LlDbAddTableRelationEx( JobHandle,
-                                   Pchar(Relation.ChildTableName),
-                                   Pchar(Relation.ParentTableName),
-                                   Pchar(Relation.RelationName),
-                                   Pchar(Relation.RelationName),
-                                   Pchar(Relation.ChildTableName + '.' + Relation.ChildColumnName),
-                                   Pchar(Relation.ParentTableName + '.' + Relation.ParentColumnName));
-         end;
-         FreeAndNil(Relations);
+       Relations := DataProvider.Relations;
+       if (Relations <> nil) then
+       begin
+          for Relation in Relations do
+          begin
+             LlDbAddTableRelationEx( JobHandle,
+                                     Pchar(Relation.ChildTableName),
+                                     Pchar(Relation.ParentTableName),
+                                     Pchar(Relation.RelationName),
+                                     Pchar(Relation.RelationName),
+                                     Pchar(Relation.ChildTableName + '.' + Relation.ChildColumnName),
+                                     Pchar(Relation.ParentTableName + '.' + Relation.ParentColumnName));
+           end;
+           FreeAndNil(Relations);
+       end;
      end;
    end;
 
@@ -1270,26 +1517,31 @@ Begin
 End;
 
 
-procedure TListLabel24.DeclareLlXObjectsToLL;
+procedure TListLabel25.DeclareLlXObjectsToLL;
 begin
   // NYI
 end;
 
-procedure TListLabel24.InitDataSource(projectFile: TString);
+procedure TListLabel25.InitDataSource(projectFile: TString);
   var DataProvider: TDataSetDataProvider;
       DataProviderIntf: TDataProviderInterfaceProxyRoot;
+      internalListExt: TString;
 begin
-  if (LlUtilsGetProjectType(GetJobHandle, PTChar(projectFile)) = LL_PROJECT_LIST) then
-  begin
-      DataProvider:=InitDataProvider(GetJobHandle,nil);
-      DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-      LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-      if (FDomDataProvider <> nil) then FDomDataProvider.Free;
-      FDomDataProvider:=DataProvider;
-  end;
+
+  Core.LlGetOptionString(LL_OPTIONSTR_LIST_PRJEXT, internalListExt);
+  if(StringReplace(ExtractFileExt(projectFile), '.', '', [rfReplaceAll, rfIgnoreCase]) = internalListExt) then
+    begin
+        DataProvider:=InitDataProvider(GetJobHandle,nil);
+        DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+        LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+        if (FDomDataProvider <> nil) then FDomDataProvider.Free;
+        FDomDataProvider:=DataProvider;
+    end;
+
 end;
 
-Procedure TListLabel24.DefineData(DataProvider: TDataSetDataProvider; table: TListLabelTable);
+
+Procedure TListLabel25.DefineData(DataProvider: TDataSetDataProvider; table: TListLabelTable);
 Var
   Rows          : TEnumerable<TListLabelTableRow>;
   RowEnumerator : TEnumerator<TListLabelTableRow>;
@@ -1319,31 +1571,24 @@ Begin
         LL_DRAWING_HBITMAP,
         LL_DRAWING_HICON:
         begin
-
-          if (DataController.DataMember = table.TableName) and (DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables) then
+          if ((AutoProjectType <> ptList) or ((DataController.DataMember = table.TableName) and (DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables))) then
           begin
-
-            DefineFieldExtHandle(table.TableName + '.' + Column.ColumnName, Column.ImgHandle, Column.FieldType);
-
+            self.FCore.LlDefineVariableExtHandle(table.TableName + '.' + Column.ColumnName, Column.ImgHandle, Column.FieldType);
           end
           else
           begin
-
-            DefineVariableExtHandle(table.TableName + '.' + Column.ColumnName, Column.ImgHandle, Column.FieldType);
-
+            self.FCore.LlDefineFieldExtHandle(table.TableName + '.' + Column.ColumnName, Column.ImgHandle, Column.FieldType);
           end;
-
         end
         else
         begin
-
-          if (DataController.DataMember = table.TableName) and (DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables) then
+          if ((AutoProjectType <> ptList) or ((DataController.DataMember = table.TableName) and (DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables))) then
           begin
-            DefineVariableExt(table.TableName + '.' + Column.ColumnName, Column.Content, Column.FieldType)
+            self.FCore.LlDefineVariableExt(table.TableName + '.' + Column.ColumnName, Column.Content, Column.FieldType)
           end
           else
           begin
-            DefineFieldExt(table.TableName + '.' + Column.ColumnName, Column.Content, Column.FieldType)
+            self.FCore.LlDefineFieldExt(table.TableName + '.' + Column.ColumnName, Column.Content, Column.FieldType)
           end;
 
         end;
@@ -1360,7 +1605,7 @@ Begin
 End;
 
 
-Procedure TListLabel24.DefineSortOrders(table: TListLabelTable);
+Procedure TListLabel25.DefineSortOrders(table: TListLabelTable);
 Var
   Rows          : TEnumerable<TListLabelTableRow>;
   RowEnumerator : TEnumerator<TListLabelTableRow>;
@@ -1406,7 +1651,7 @@ Begin
 
 End;
 
-procedure TListLabel24.FillRootTables(DataProvider: TDataSetDataProvider;
+procedure TListLabel25.FillRootTables(DataProvider: TDataSetDataProvider;
   DataMember: string);
 begin
   RootTables.Clear;
@@ -1414,7 +1659,7 @@ begin
 end;
 
 
-procedure TListLabel24.GetChildTables(DataProvider: TDataSetDataProvider;
+procedure TListLabel25.GetChildTables(DataProvider: TDataSetDataProvider;
   TableName: string; var Tables: TStringList);
 var
       relation: TListLabelTableRelation;
@@ -1438,12 +1683,12 @@ begin
 end;
 
 
-function TListLabel24.GetJobHandle: Integer;
+function TListLabel25.GetJobHandle: Integer;
 begin
   result:=CurrentJobHandle;
 end;
 
-Procedure TListLabel24.DefineRelatedTables(DataProvider: TDataSetDataProvider; TableName: String);
+Procedure TListLabel25.DefineRelatedTables(DataProvider: TDataSetDataProvider; TableName: String);
 var
   relation: TListLabelTableRelation;
   relationsToPass: TObjectList<TListLabelTableRelation>;
@@ -1475,7 +1720,7 @@ begin
   end;
 end;
 
-Procedure TListLabel24.PassTableAndHierarchy(DataProvider: TDataSetDataProvider; relation: TListLabelTableRelation; TableName: String; onlyFor1To1Relations: boolean);
+Procedure TListLabel25.PassTableAndHierarchy(DataProvider: TDataSetDataProvider; relation: TListLabelTableRelation; TableName: String; onlyFor1To1Relations: boolean);
 var table: TListLabelTable;
     options: cardinal;
 Begin
@@ -1497,7 +1742,7 @@ Begin
 End;
 
 
-Procedure TListLabel24.Print;
+Procedure TListLabel25.Print;
 Var
   i: Integer;
   temp: Array [0 .. 255] of char;
@@ -1566,18 +1811,14 @@ begin
         Try
           OldMaster := Active;
 
-          if (LlProjectType = LL_PROJECT_LIST) then
-          begin
+         DataProvider:=InitDataProvider(CurrentJobHandle,nil);
+         DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+         LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
 
-             DataProvider:=InitDataProvider(CurrentJobHandle,nil);
-             DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-             LlSetOption(CurrentJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+         for i := 0 to Datacontroller.DetailSources.Count - 1 do
+            Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
 
-             for i := 0 to Datacontroller.DetailSources.Count - 1 do
-                Datacontroller.DetailSources[i].Datasource.DataSet.Active := True;
-
-             LlSetOption(CurrentJobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
-          End;
+         LlSetOption(CurrentJobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
 
           if not Active then
           begin
@@ -1651,12 +1892,101 @@ begin
   End;
 End;
 
-Procedure TListLabel24.DoPreviewAndDrilldown( AWnd               : HWND;
+procedure TListLabel25.DoExport(Wnd: HWND; ProjectFile, OriginalProjectFile: String;
+  MaxPages: Integer; ExportFormat: String);
+Var
+  DataProvider    : TDataSetDataProvider;
+  DataProviderIntf: TDataProviderInterfaceProxyRoot;
+  JobHandle       : HJob;
+  OldJobHandle    : HJob;
+  ProjectPath     : STring;
+  ok : Boolean;
+
+begin
+  DataProvider:=nil;
+  JobHandle:=-1;
+  OldJobHandle:=CurrentJobHandle;
+  ok:=true;
+  Try
+    ProjectPath:=StringReplace(ProjectFile, ExtractFileExt(ProjectFile),'',[]);
+
+    with DataController.DataSource.DataSet do
+    begin
+      Try
+        JobHandle := LlJobOpenCopyEx(CurrentJobHandle,LLJOBOPENCOPYEXFLAG_NO_COPY_FIELDLIST or LLJOBOPENCOPYEXFLAG_NO_COPY_DBSTRUCTS or LLJOBOPENCOPYEXFLAG_NO_COPY_XLATTABLES);
+
+        if (JobHandle <= 0) then
+          exit;
+
+        CurrentJobHandle:=JobHandle;
+        if (UsedIdentifiers <> nil) then UsedIdentifiers.Free;
+
+        UsedIdentifiers:=LlGetUsedIdentifiers(ProjectFile,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
+        DataProvider:=InitDataProvider(JobHandle,nil);
+        DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+        LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+        LlSetOption(JobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
+
+        if not Active then
+        begin
+          Active := True;
+          First;
+        end;
+
+        if Assigned(FOnAutoDefineNewPage) then
+          OnAutoDefineNewPage(self, True);
+
+        if not(CheckError(LLPrintWithBoxStart(JobHandle, TEnumTranslator.TranslateProjectType(FAutoProjectType), PChar(ProjectPath), LL_PRINT_EXPORT,
+            TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), Wnd, PChar(FAutoDialogTitle)))) = CE_OK then
+            begin
+              Abort;
+            end;
+        FIsPrinting := true;
+
+        if Assigned(FOnAutoDefineNewPage) then
+          OnAutoDefineNewPage(self, False);
+
+        LlPrintSetOptionString(JobHandle,LL_PRNOPTSTR_EXPORT, PChar(ExportFormat));
+
+        if ExportFormat.Length = 0 then
+        begin
+          LlPrintSetOption(CurrentJobHandle, LL_PRNOPT_PRINTDLG_ONLYPRINTERCOPIES, 1);
+          ok := CheckError(LLPrintOptionsDialog(CurrentJobHandle, Wnd, PChar(FAutoDialogTitle))) = CE_OK;
+        end;
+
+        if not(ok) then
+          begin
+            CheckError(LLPrintEnd(CurrentJobHandle, 0));
+            FIsPrinting := false;
+            Abort;
+          end;
+
+
+
+        while (LlPrint(JobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(JobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(JobHandle, LL_PRNOPT_LASTPAGE)) do
+        begin
+          if Assigned(FOnAutoDefineNewPage) then
+            OnAutoDefineNewPage(self, False);
+        end;
+        LlPrintEnd(JobHandle,0);
+        FIsPrinting := false;
+      finally
+        FIsPrinting := false;
+        JobFree(JobHandle,DataProvider);
+        CurrentJobHandle:=OldJobHandle;
+      end;
+    end;
+  Finally
+    FreeAndNil(FUsedIdentifiers);
+  end;
+End;
+
+Procedure TListLabel25.DoPreviewAndDrilldown( Wnd               : HWND;
                                            DrillDown          : Boolean;
-                                           AProjektFile       : String;
-                                           OriginalProjektFile: String;
-                                           AMaxPages          : Integer;
-                                           APreviewFile       : String;
+                                           ProjectFile       : String;
+                                           OriginalProjectFile: String;
+                                           MaxPages          : Integer;
+                                           PreviewFile       : String;
                                            AFilter            : PFilterDescription;
                                            AttachInfo         : THandle);
 Var
@@ -1683,7 +2013,7 @@ begin
   JobHandle:=-1;
   OldJobHandle:=CurrentJobHandle;
   Try
-    ProjectPath:=StringReplace(AProjektFile, ExtractFileExt(AProjektFile),'',[]);
+    ProjectPath:=StringReplace(ProjectFile, ExtractFileExt(ProjectFile),'',[]);
 
     with DataController.DataSource.DataSet do
     begin
@@ -1696,17 +2026,17 @@ begin
         CurrentJobHandle:=JobHandle;
         if (UsedIdentifiers <> nil) then UsedIdentifiers.Free;
 
-        UsedIdentifiers:=LlGetUsedIdentifiers(AProjektFile,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
+        UsedIdentifiers:=LlGetUsedIdentifiers(ProjectFile,LL_USEDIDENTIFIERSFLAG_VARIABLES or LL_USEDIDENTIFIERSFLAG_FIELDS or LL_USEDIDENTIFIERSFLAG_CHARTFIELDS);
         DataProvider:=InitDataProvider(JobHandle,AFilter);
 
         if DrillDown Then
         Begin
           FDrilldownActive:=True;
-          PreviewFileName:=APreviewFile;
+          PreviewFileName:=PreviewFile;
         end else
         Begin
           PreviewFileName := GetTempFile();
-          LlSetOptionString(JobHandle,LL_OPTIONSTR_ORIGINALPROJECTFILENAME,PChar(OriginalProjektFile));
+          LlSetOptionString(JobHandle,LL_OPTIONSTR_ORIGINALPROJECTFILENAME,PChar(OriginalProjectFile));
         end;
 
         LlSetOptionString(JobHandle,LL_OPTIONSTR_PREVIEWFILENAME, PChar(PreviewFileName));
@@ -1717,14 +2047,11 @@ begin
                                           LL_ASSOCIATEPREVIEWCONTROLFLAG_HANDLE_IS_ATTACHINFO or
                                           LL_ASSOCIATEPREVIEWCONTROLFLAG_PRV_ADD_TO_CONTROL_STACK)
         else
-          LlAssociatePreviewControl(JobHandle, AWnd, 1);
+          LlAssociatePreviewControl(JobHandle, Wnd, 1);
 
-        if (TEnumTranslator.TranslateProjectType(FAutoProjectType) = LL_PROJECT_LIST) then
-        begin
-           DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-           LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-           LlSetOption(JobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
-        End;
+        DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+        LlSetOption(JobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+        LlSetOption(JobHandle,LL_OPTION_SUPPORT_DELAYEDFIELDDEFINITION, 0);
 
         if not Active then
         begin
@@ -1736,7 +2063,7 @@ begin
           OnAutoDefineNewPage(self, True);
 
         if not(CheckError(LLPrintWithBoxStart(JobHandle, TEnumTranslator.TranslateProjectType(FAutoProjectType), PChar(ProjectPath), LL_PRINT_PREVIEW,
-            TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), AWnd, PChar(FAutoDialogTitle)))) = CE_OK then
+            TEnumTranslator.TranslateAutoBoxType(FAutoBoxType), Wnd, PChar(FAutoDialogTitle)))) = CE_OK then
             begin
               Abort;
             end;
@@ -1766,13 +2093,55 @@ begin
 End;
 
 
-Procedure TListLabel24.AbortPrinting();
+Procedure TListLabel25.AbortPrinting();
 begin
   if (CurrentJobHandle > 0) then
   begin
     LlPrintAbort(CurrentJobHandle);
   end;
 end;
+
+function TListLabel25.GetCore: LlCore;
+begin
+
+  if(FCore = nil) then
+    begin
+      FCore := LlCore.Create(Self);
+    end;
+    Result:= FCore
+end;
+
+//
+
+Constructor LlCore.Create(ParentObject: TListLabel25);
+begin
+   fParentObject := ParentObject;
+end;
+
+function LlCore.LlGetOptionString(OptionIndex: integer;
+  var Value: TString): integer;
+var
+  Buffer: PTChar;
+  Length: integer;
+begin
+  Length := cmbTLl25x.LlGetOptionString(fParentObject.CurrentJobHandle, OptionIndex, nil,
+    0);
+  if length>0 then
+  begin
+    GetMem(Buffer, Length * sizeof(TChar));
+    Buffer^ := #0;
+    Result := cmbTLl25x.LlGetOptionString(fParentObject.CurrentJobHandle, OptionIndex, Buffer,
+      Length);
+    Value := TString(Buffer);
+    FreeMem(Buffer);
+  end
+  else
+  begin
+    result:=length;
+    Value:='';
+  end;
+end;
+
 
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 

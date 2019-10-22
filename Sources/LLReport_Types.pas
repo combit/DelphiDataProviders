@@ -1,20 +1,21 @@
-{=================================================================================
+﻿{=================================================================================
 
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : LLThreads.pas
+ File   : LLReport_Types.pas
  Module : LLReport_Types.pas
- Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.000
+ Descr. : Implementation file for the List & Label 25 VCL-Component
+ Version: 25.000
 ==================================================================================
 }
 
 unit LLReport_Types;
 
 interface
+{$WEAKPACKAGEUNIT ON}
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll24x;
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll25x;
 
 Type
 

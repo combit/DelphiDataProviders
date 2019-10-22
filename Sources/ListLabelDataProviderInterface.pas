@@ -1,19 +1,19 @@
-{=================================================================================
+﻿{=================================================================================
 
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
  File   : ListLabelDataProviderInterface.pas
- Module : List & Label 24
- Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.000
+ Module : List & Label 25
+ Descr. : Implementation file for the List & Label 25 VCL-Component
+ Version: 25.000
 ==================================================================================
 }
 
 unit ListLabelDataProviderInterface;
 
 interface
-
+{$WEAKPACKAGEUNIT ON}
 Type
   DefineDelayedInfoType = (diSortOrdersDesigning = 0, diSortOrdersPrinting = 1);
 

@@ -13,7 +13,7 @@ The sources feature a new VCL component that uses the data provider interface. T
 * Expandable regions in tables and crosstabs
 * Interactive sorting in table headers
 
-A sample showing how to use the component to bind to FireDAC data is also included. You should be able to bind to Oracle, MS SQL Server, SQLite, DB2, MySQL, PostgreSQL to name just a few. 
+Samples showing how to use the component to bind to FireDAC data are also included in the full product setup or here on [GitHub](https://github.com/combit/ll-samples/tree/master/Delphi/FireDAC/Samples). You should be able to bind to Oracle, MS SQL Server, SQLite, DB2, MySQL, PostgreSQL to name just a few. 
 
 Copy the contents of this repository to "...\Program Files(x86)\combit\LL??\Samples\Delphi\FireDAC"
 
@@ -21,7 +21,6 @@ Copy the contents of this repository to "...\Program Files(x86)\combit\LL??\Samp
 We're happy to receive pull requests. Fields of interest include
 
 * make sure the component is "Delphi-like"
-* support label projects
 * support DesignerFunctions and DesignerObjects
 * add additional data providers to bind to CSV, XML, JSON etc.
 

@@ -1,19 +1,19 @@
-{=================================================================================
+﻿{=================================================================================
 
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
  File   : LLDataSetDataProvider.pas
- Module : List & Label 24
- Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.000
+ Module : List & Label 25
+ Descr. : Implementation file for the List & Label 25 VCL-Component
+ Version: 25.000
 ==================================================================================
 }
 
 unit LLDataSetDataProvider;
 
 interface
-
+{$WEAKPACKAGEUNIT ON}
 uses LLDataProvider,
      Vcl.StdCtrls, Data.DB, Classes,
      system.Generics.Collections,
@@ -184,7 +184,7 @@ const
     '{\f0\fswiss\fcharset0 Arial;}}\viewkind4\uc1\pard\f0\fs20\par}';
 
 implementation
-uses Sysutils, cmbtll24x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
+uses Sysutils, cmbtll25x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
 
 Constructor TDataSetDescription.Create(ADataset: TDataSet; AKeyField: String; ASortDescription: String; AFilter: String  );
 Begin
@@ -336,10 +336,10 @@ end;
 
 destructor TDataSetDataProvider.Destroy;
 begin
-  inherited Destroy;
   FDataSets.Free;
   FRelations.Free;
   FImageStorage.Free;
+  inherited Destroy;
 end;
 
 function TDataSetDataProvider.GetRelation(RelationName: string): TListLabelTableRelation;
@@ -696,7 +696,8 @@ Var BufferStream : TMemoryStream;
     dummy        : TStrings;
     PictureStream : TStream;
     PicContainer  : TPicture;
-    JpegPic       : TJPEGImage;
+    wic           : TWICImage;
+
 const DigitBool: array[Boolean] of string = ('0', '1');
 begin
     BufferStream:=nil;
@@ -739,41 +740,62 @@ begin
            FFieldType:=LL_TEXT;
           if not(Field.IsNull)then FFieldContent:=TWideStringField(Field).Value;
         end;
-      ftGraphic:
+      ftGraphic, ftBlob:
             Begin
               Try
                 PictureStream := Field.DataSet.CreateBlobStream(Field, bmRead);
                 if PictureStream <> Nil then
                 Begin
                   PictureStream.Seek(0, soBeginning);
-                  PicContainer := FProvider.FImageStorage.AddItem;
-                  PicContainer.Graphic := TBitmap.Create;
                   if PictureStream.Size > 0 then
-                  begin
-                    // Nur Daten laden wenn auch wirklich welche da sind,
-                    // ansonsten bricht die Druckroutine einfach ab
-                    JpegPic := TJPEGImage.Create;
-                    JpegPic.LoadFromStream(PictureStream);
-                    PicContainer.Graphic.Assign(JpegPic);
-                  end;
-
-                  if PicContainer.Graphic is TMetafile then
-                  begin
-                    FFieldType:=LL_DRAWING_HMETA;
-                    FHandle:=PicContainer.Metafile.Handle;
-                  end
-                  else if PicContainer.Graphic is TBitmap then begin
-                    FFieldType:=LL_DRAWING_HBITMAP;
-                    FHandle:=PicContainer.Bitmap.Handle;
-                  end
-                  else if PicContainer.Graphic is TIcon then begin
-                    FFieldType:=LL_DRAWING_HICON;
-                    FHandle:=PicContainer.Icon.Handle;
+                    begin
+                      wic := TWICImage.Create;
+                      try
+                      wic.LoadFromStream(PictureStream);
+                      except on e: EInvalidGraphic do
+                        begin
+                        try
+                        //special handling for northwind pictures
+                          PictureStream.Position:= 78;
+                          wic.LoadFromStream(PictureStream);
+                          //if the blobcontent is not a image we create one empty
+                             except on e: EInvalidGraphic do
+                             begin
+                              FFieldType:=LL_DRAWING_HBITMAP;
+                              FHandle:= 0; exit;
+                             end;
+                        end;
+                      end;
+                    end;
+                    PicContainer := FProvider.FImageStorage.AddItem;
+                    PicContainer.Bitmap.Assign(wic);
+                    if PicContainer.Graphic is TMetafile then
+                    begin
+                      FFieldType:=LL_DRAWING_HMETA;
+                      FHandle:=PicContainer.Metafile.Handle;
+                    end
+                    else if PicContainer.Graphic is TBitmap then begin
+                      FFieldType:=LL_DRAWING_HBITMAP;
+                      FHandle:=PicContainer.Bitmap.Handle;
+                    end
+                    else if PicContainer.Graphic is TIcon then begin
+                      FFieldType:=LL_DRAWING_HICON;
+                      FHandle:=PicContainer.Icon.Handle;
+                    end;
                   end;
                 end;
               finally
-                if Assigned(JpegPic) then FreeAndNil(JpegPic);
+                if Assigned(wic) then
+                begin
+                  FreeAndNil(wic);
+                end
+                else
+                begin
+                  FFieldType := LL_TEXT;
+                  if not(Field.IsNull)then FFieldContent := Field.AsString;
+                end;
                 if Assigned(PictureStream) then FreeAndNil(PictureStream);
+
               end;
             End;
 

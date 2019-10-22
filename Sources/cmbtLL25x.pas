@@ -1,50 +1,18 @@
-(* Pascal/Delphi runtime linkage constants and function definitions for LL24.DLL *)
+(* Pascal/Delphi runtime linkage constants and function definitions for LL25.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2018-12-05 23:12:56] *)
+(*  [build of 2019-10-08 00:10:34] *)
 
-unit cmbtLL24x;
+unit cmbtLL25x;
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
+{$if CompilerVersion > 12}
 {$define ADOAVAILABLE}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
-{$ifndef VER125}
-{$ifndef VER130}
-{$ifndef VER135}
-{$ifndef VER140}
-{$ifndef VER150}
-{$ifndef VER160}
-{$ifndef VER170}
-{$ifndef VER180}
-{$ifndef VER185}
-{$ifndef VER190}
+{$if CompilerVersion > 19}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
 {$ifdef WIN64}
 {$A16}
@@ -697,6 +665,10 @@ const
                     (* lParam = &scLLNtfyExporterPageCount *)
   LL_NTFY_FIND_AND_REPLACE       = 112;
                     (* lParam = &scLLNtfyFindAndReplace, returns: 0 to replace, 1 to skip, 2 to cancel search globally *)
+  LL_NTFY_PROJECTLOAD_EX         = 113;
+                    (* lParam = &scLLNtfyProjectLoadEx, called before a project is loaded. SetErrortext to abort loading. *)
+  LL_NTFY_JOBWILLCHANGE          = 114;
+                    (* internal *)
   OBJECT_LABEL                   = 1;
                     (* old - please do not use any more *)
   OBJECT_LIST                    = 2;
@@ -1338,12 +1310,13 @@ const
   LL_OPTION_VARLISTDISPLAY_VARSORT_MASK = $000f;
   LL_OPTION_VARLISTDISPLAY_FOLDERPOS_DECLARATIONORDER = $0000;
   LL_OPTION_VARLISTDISPLAY_FOLDERPOS_ALPHA = $0010;
-                    (* only if LL_OPTION_VARLISTDISPLAY_VARSORT_ALPHA is set  *)
+                    (* only if LL_OPTION_VARLISTDISPLAY_VARSORT_ALPHA* is set  *)
   LL_OPTION_VARLISTDISPLAY_FOLDERPOS_TOP = $0020;
   LL_OPTION_VARLISTDISPLAY_FOLDERPOS_BOTTOM = $0030;
   LL_OPTION_VARLISTDISPLAY_FOLDERPOS_MASK = $00f0;
   LL_OPTION_VARLISTDISPLAY_LLFOLDERPOS_BOTTOM = $0100;
   LL_OPTION_VARLISTDISPLAY_INITSCROLLPOS_TOP = $0200;
+  LL_OPTION_VARLISTDISPLAY_ALPHASORT_RESPECT_NUMBERS = $0400;
   LL_OPTION_WORKAROUND_RTFBUG_EMPTYFIRSTPAGE = 122;
   LL_OPTION_FORMULASTRINGCOMPARISONS_CASESENSITIVE = 123;
                     (* default: true *)
@@ -1380,7 +1353,7 @@ const
   LL_OPTION_NOPRINTERPATHCHECK   = 137;
                     (* default: false *)
   LL_OPTION_SUPPORT_HUGESTORAGEFS = 138;
-                    (* default: true *)
+                    (* deprecated, always true *)
   LL_OPTION_NOAUTOPROPERTYCORRECTION = 139;
                     (* default: false *)
   LL_OPTION_NOVARLISTRESET_ON_RESETPROJECTSTATE = 140;
@@ -1800,6 +1773,24 @@ const
                     (* r/o *)
   LL_OPTION_MULTISECTIONPRINT_MERGE = 344;
                     (* r/o *)
+  LL_OPTION_COMPAT_ALLOW_FIELDS_IN_STATIC_TABLE = 345;
+                    (* default: FALSE *)
+  LL_OPTION_COMPAT_GROUPHEADER_SAME_PAGE_LOCAL_ONLY = 346;
+                    (* default: false (must be set to true to behave as LL24) *)
+  LL_OPTION_RESERVED_348         = 348;
+                    (* see #37979 *)
+  LL_OPTION_COMPAT_PROHIBITFILTERRELATIONS = 349;
+                    (* default: FALSE *)
+  LL_OPTION_ONLY_SHOW_EXISTING_PAPERSIZES_FOR_PRINTER = 350;
+                    (* default: false... do not add system defined papers to the ist of the printer's paper sizes unless the driver does not return any *)
+  LL_OPTION_DEFAULT_DECIMALS     = 351;
+                    (* default: settings from registry/2. ATTENTION: global option *)
+  LL_OPTION_ILLPREPRINTTEXTPROCESSOR = 353;
+                    (* ILLPrePrintTextProcessor *)
+  LL_OPTION_USERVAR_TRACKTEMPLATEOVERRIDE = 354;
+                    (* default: false *)
+  LL_OPTION_PROJECTVAR_IGNOREEMPTY = 355;
+                    (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -1965,6 +1956,7 @@ const
   LL_PRINTERCONFIG_RESTORE       = 2;
   LL_PRJTYPE_OPTION_FORCEDEFAULTSETTINGS = $8000;
   LL_PRJTYPE_OPTION_CREATEPARTSFROMPROJECT = $4000;
+  LL_PRJTYPE_OPTION_NOMERGEPRINTERSETTINGS = $2000;
   LL_RTFTEXTMODE_RTF             = $0000;
   LL_RTFTEXTMODE_PLAIN           = $0001;
   LL_RTFTEXTMODE_EVALUATED       = $0000;
@@ -2106,6 +2098,7 @@ const
   LL_ERR_NOT_SUPPORTED_IN_THIS_OS = -106;
                     (* the OS does not support this function *)
   LL_ERR_NO_MORE_DATA            = -107;
+  LL_WRN_FIRSTWARNING            = -900;
   LL_WRN_REPORTPARAMETERS_COLLECTION_FINISHED = -994;
                     (* internal use *)
   LL_WRN_ISNULL                  = -995;
@@ -5562,1399 +5555,1399 @@ const
    LlExprParseQueryDelayedDefine: pfnLlExprParseQueryDelayedDefine = NIL;
    LlExprTypeMask: pfnLlExprTypeMask = NIL;
 
-function  LL24xModuleName: String;
-function  LL24xLoad: integer;
-procedure LL24xUnload;
+function  LL25xModuleName: String;
+function  LL25xLoad: integer;
+procedure LL25xUnload;
 
 implementation
 
-var hDLLLL24: HMODULE = 0;
-var nDLLLL24Usage: longint = 0;
+var hDLLLL25: HMODULE = 0;
+var nDLLLL25Usage: longint = 0;
 
 {$ifdef WIN64}
-  const LibNameLL24DLL = 'CXLL24.DLL';
+  const LibNameLL25DLL = 'CXLL25.DLL';
  {$else}
-  const LibNameLL24DLL = 'CMLL24.DLL';
+  const LibNameLL25DLL = 'CMLL25.DLL';
 {$endif}
 
-function  LL24xModuleName: String;
+function  LL25xModuleName: String;
 begin
-  Result := LibNameLL24DLL;
+  Result := LibNameLL25DLL;
 end;
 
-function  LL24xLoad: integer;
+function  LL25xLoad: integer;
 var nError: integer;
 begin
   Result := 0;
-  inc(nDLLLL24Usage);
-  if (nDLLLL24Usage = 1) then
+  inc(nDLLLL25Usage);
+  if (nDLLLL25Usage = 1) then
     begin
     nError := SetErrorMode($8000); { SEM_NOOPENFILEERRORBOX }
     {$ifdef UNICODESTRING_AWARE}
-      hDLLLL24 := LoadLibrary(pWideChar(LL24xModuleName()));
+      hDLLLL25 := LoadLibrary(pWideChar(LL25xModuleName()));
      {$else}
-      hDLLLL24 := LoadLibrary(pChar(LL24xModuleName()));
+      hDLLLL25 := LoadLibrary(pChar(LL25xModuleName()));
     {$endif}
     SetErrorMode(nError);
 
-    if (hDLLLL24 = 0) then
+    if (hDLLLL25 = 0) then
       begin
       Result := -1;
-      dec(nDLLLL24Usage);
+      dec(nDLLLL25Usage);
       end
      else
       begin
-      @LlJobOpen            := GetProcAddress(hDLLLL24,'LlJobOpen');
-      @LlJobOpenLCID        := GetProcAddress(hDLLLL24,'LlJobOpenLCID');
-      @LlJobClose           := GetProcAddress(hDLLLL24,'LlJobClose');
-      @LlSetDebug           := GetProcAddress(hDLLLL24,'LlSetDebug');
-      @LlGetVersion         := GetProcAddress(hDLLLL24,'LlGetVersion');
-      @LlGetNotificationMessage := GetProcAddress(hDLLLL24,'LlGetNotificationMessage');
-      @LlSetNotificationMessage := GetProcAddress(hDLLLL24,'LlSetNotificationMessage');
-      @LlSetNotificationCallback := GetProcAddress(hDLLLL24,'LlSetNotificationCallback');
+      @LlJobOpen            := GetProcAddress(hDLLLL25,'LlJobOpen');
+      @LlJobOpenLCID        := GetProcAddress(hDLLLL25,'LlJobOpenLCID');
+      @LlJobClose           := GetProcAddress(hDLLLL25,'LlJobClose');
+      @LlSetDebug           := GetProcAddress(hDLLLL25,'LlSetDebug');
+      @LlGetVersion         := GetProcAddress(hDLLLL25,'LlGetVersion');
+      @LlGetNotificationMessage := GetProcAddress(hDLLLL25,'LlGetNotificationMessage');
+      @LlSetNotificationMessage := GetProcAddress(hDLLLL25,'LlSetNotificationMessage');
+      @LlSetNotificationCallback := GetProcAddress(hDLLLL25,'LlSetNotificationCallback');
       {$ifdef UNICODE}
-          @LlDefineFieldO := GetProcAddress(hDLLLL24,'LlDefineFieldA');
+          @LlDefineFieldO := GetProcAddress(hDLLLL25,'LlDefineFieldA');
         {$else}
-          @LlDefineField := GetProcAddress(hDLLLL24,'LlDefineFieldA');
+          @LlDefineField := GetProcAddress(hDLLLL25,'LlDefineFieldA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineField := GetProcAddress(hDLLLL24,'LlDefineFieldW');
+          @LlDefineField := GetProcAddress(hDLLLL25,'LlDefineFieldW');
         {$else}
-          @LlDefineFieldO := GetProcAddress(hDLLLL24,'LlDefineFieldW');
+          @LlDefineFieldO := GetProcAddress(hDLLLL25,'LlDefineFieldW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineFieldExtO := GetProcAddress(hDLLLL24,'LlDefineFieldExtA');
+          @LlDefineFieldExtO := GetProcAddress(hDLLLL25,'LlDefineFieldExtA');
         {$else}
-          @LlDefineFieldExt := GetProcAddress(hDLLLL24,'LlDefineFieldExtA');
+          @LlDefineFieldExt := GetProcAddress(hDLLLL25,'LlDefineFieldExtA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineFieldExt := GetProcAddress(hDLLLL24,'LlDefineFieldExtW');
+          @LlDefineFieldExt := GetProcAddress(hDLLLL25,'LlDefineFieldExtW');
         {$else}
-          @LlDefineFieldExtO := GetProcAddress(hDLLLL24,'LlDefineFieldExtW');
+          @LlDefineFieldExtO := GetProcAddress(hDLLLL25,'LlDefineFieldExtW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineFieldExtHandleO := GetProcAddress(hDLLLL24,'LlDefineFieldExtHandleA');
+          @LlDefineFieldExtHandleO := GetProcAddress(hDLLLL25,'LlDefineFieldExtHandleA');
         {$else}
-          @LlDefineFieldExtHandle := GetProcAddress(hDLLLL24,'LlDefineFieldExtHandleA');
+          @LlDefineFieldExtHandle := GetProcAddress(hDLLLL25,'LlDefineFieldExtHandleA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineFieldExtHandle := GetProcAddress(hDLLLL24,'LlDefineFieldExtHandleW');
+          @LlDefineFieldExtHandle := GetProcAddress(hDLLLL25,'LlDefineFieldExtHandleW');
         {$else}
-          @LlDefineFieldExtHandleO := GetProcAddress(hDLLLL24,'LlDefineFieldExtHandleW');
+          @LlDefineFieldExtHandleO := GetProcAddress(hDLLLL25,'LlDefineFieldExtHandleW');
       {$endif}
-      @LlDefineFieldStart   := GetProcAddress(hDLLLL24,'LlDefineFieldStart');
+      @LlDefineFieldStart   := GetProcAddress(hDLLLL25,'LlDefineFieldStart');
       {$ifdef UNICODE}
-          @LlDefineVariableO := GetProcAddress(hDLLLL24,'LlDefineVariableA');
+          @LlDefineVariableO := GetProcAddress(hDLLLL25,'LlDefineVariableA');
         {$else}
-          @LlDefineVariable := GetProcAddress(hDLLLL24,'LlDefineVariableA');
+          @LlDefineVariable := GetProcAddress(hDLLLL25,'LlDefineVariableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariable := GetProcAddress(hDLLLL24,'LlDefineVariableW');
+          @LlDefineVariable := GetProcAddress(hDLLLL25,'LlDefineVariableW');
         {$else}
-          @LlDefineVariableO := GetProcAddress(hDLLLL24,'LlDefineVariableW');
+          @LlDefineVariableO := GetProcAddress(hDLLLL25,'LlDefineVariableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableExtO := GetProcAddress(hDLLLL24,'LlDefineVariableExtA');
+          @LlDefineVariableExtO := GetProcAddress(hDLLLL25,'LlDefineVariableExtA');
         {$else}
-          @LlDefineVariableExt := GetProcAddress(hDLLLL24,'LlDefineVariableExtA');
+          @LlDefineVariableExt := GetProcAddress(hDLLLL25,'LlDefineVariableExtA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableExt := GetProcAddress(hDLLLL24,'LlDefineVariableExtW');
+          @LlDefineVariableExt := GetProcAddress(hDLLLL25,'LlDefineVariableExtW');
         {$else}
-          @LlDefineVariableExtO := GetProcAddress(hDLLLL24,'LlDefineVariableExtW');
+          @LlDefineVariableExtO := GetProcAddress(hDLLLL25,'LlDefineVariableExtW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableExtHandleO := GetProcAddress(hDLLLL24,'LlDefineVariableExtHandleA');
+          @LlDefineVariableExtHandleO := GetProcAddress(hDLLLL25,'LlDefineVariableExtHandleA');
         {$else}
-          @LlDefineVariableExtHandle := GetProcAddress(hDLLLL24,'LlDefineVariableExtHandleA');
+          @LlDefineVariableExtHandle := GetProcAddress(hDLLLL25,'LlDefineVariableExtHandleA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableExtHandle := GetProcAddress(hDLLLL24,'LlDefineVariableExtHandleW');
+          @LlDefineVariableExtHandle := GetProcAddress(hDLLLL25,'LlDefineVariableExtHandleW');
         {$else}
-          @LlDefineVariableExtHandleO := GetProcAddress(hDLLLL24,'LlDefineVariableExtHandleW');
+          @LlDefineVariableExtHandleO := GetProcAddress(hDLLLL25,'LlDefineVariableExtHandleW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableNameO := GetProcAddress(hDLLLL24,'LlDefineVariableNameA');
+          @LlDefineVariableNameO := GetProcAddress(hDLLLL25,'LlDefineVariableNameA');
         {$else}
-          @LlDefineVariableName := GetProcAddress(hDLLLL24,'LlDefineVariableNameA');
+          @LlDefineVariableName := GetProcAddress(hDLLLL25,'LlDefineVariableNameA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableName := GetProcAddress(hDLLLL24,'LlDefineVariableNameW');
+          @LlDefineVariableName := GetProcAddress(hDLLLL25,'LlDefineVariableNameW');
         {$else}
-          @LlDefineVariableNameO := GetProcAddress(hDLLLL24,'LlDefineVariableNameW');
+          @LlDefineVariableNameO := GetProcAddress(hDLLLL25,'LlDefineVariableNameW');
       {$endif}
-      @LlDefineVariableStart := GetProcAddress(hDLLLL24,'LlDefineVariableStart');
+      @LlDefineVariableStart := GetProcAddress(hDLLLL25,'LlDefineVariableStart');
       {$ifdef UNICODE}
-          @LlDefineSumVariableO := GetProcAddress(hDLLLL24,'LlDefineSumVariableA');
+          @LlDefineSumVariableO := GetProcAddress(hDLLLL25,'LlDefineSumVariableA');
         {$else}
-          @LlDefineSumVariable := GetProcAddress(hDLLLL24,'LlDefineSumVariableA');
+          @LlDefineSumVariable := GetProcAddress(hDLLLL25,'LlDefineSumVariableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineSumVariable := GetProcAddress(hDLLLL24,'LlDefineSumVariableW');
+          @LlDefineSumVariable := GetProcAddress(hDLLLL25,'LlDefineSumVariableW');
         {$else}
-          @LlDefineSumVariableO := GetProcAddress(hDLLLL24,'LlDefineSumVariableW');
+          @LlDefineSumVariableO := GetProcAddress(hDLLLL25,'LlDefineSumVariableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineLayoutO := GetProcAddress(hDLLLL24,'LlDefineLayoutA');
+          @LlDefineLayoutO := GetProcAddress(hDLLLL25,'LlDefineLayoutA');
         {$else}
-          @LlDefineLayout := GetProcAddress(hDLLLL24,'LlDefineLayoutA');
+          @LlDefineLayout := GetProcAddress(hDLLLL25,'LlDefineLayoutA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineLayout := GetProcAddress(hDLLLL24,'LlDefineLayoutW');
+          @LlDefineLayout := GetProcAddress(hDLLLL25,'LlDefineLayoutW');
         {$else}
-          @LlDefineLayoutO := GetProcAddress(hDLLLL24,'LlDefineLayoutW');
+          @LlDefineLayoutO := GetProcAddress(hDLLLL25,'LlDefineLayoutW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDlgEditLineO := GetProcAddress(hDLLLL24,'LlDlgEditLineA');
+          @LlDlgEditLineO := GetProcAddress(hDLLLL25,'LlDlgEditLineA');
         {$else}
-          @LlDlgEditLine := GetProcAddress(hDLLLL24,'LlDlgEditLineA');
+          @LlDlgEditLine := GetProcAddress(hDLLLL25,'LlDlgEditLineA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDlgEditLine := GetProcAddress(hDLLLL24,'LlDlgEditLineW');
+          @LlDlgEditLine := GetProcAddress(hDLLLL25,'LlDlgEditLineW');
         {$else}
-          @LlDlgEditLineO := GetProcAddress(hDLLLL24,'LlDlgEditLineW');
+          @LlDlgEditLineO := GetProcAddress(hDLLLL25,'LlDlgEditLineW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDlgEditLineExO := GetProcAddress(hDLLLL24,'LlDlgEditLineExA');
+          @LlDlgEditLineExO := GetProcAddress(hDLLLL25,'LlDlgEditLineExA');
         {$else}
-          @LlDlgEditLineEx := GetProcAddress(hDLLLL24,'LlDlgEditLineExA');
+          @LlDlgEditLineEx := GetProcAddress(hDLLLL25,'LlDlgEditLineExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDlgEditLineEx := GetProcAddress(hDLLLL24,'LlDlgEditLineExW');
+          @LlDlgEditLineEx := GetProcAddress(hDLLLL25,'LlDlgEditLineExW');
         {$else}
-          @LlDlgEditLineExO := GetProcAddress(hDLLLL24,'LlDlgEditLineExW');
+          @LlDlgEditLineExO := GetProcAddress(hDLLLL25,'LlDlgEditLineExW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewSetTempPathO := GetProcAddress(hDLLLL24,'LlPreviewSetTempPathA');
+          @LlPreviewSetTempPathO := GetProcAddress(hDLLLL25,'LlPreviewSetTempPathA');
         {$else}
-          @LlPreviewSetTempPath := GetProcAddress(hDLLLL24,'LlPreviewSetTempPathA');
+          @LlPreviewSetTempPath := GetProcAddress(hDLLLL25,'LlPreviewSetTempPathA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewSetTempPath := GetProcAddress(hDLLLL24,'LlPreviewSetTempPathW');
+          @LlPreviewSetTempPath := GetProcAddress(hDLLLL25,'LlPreviewSetTempPathW');
         {$else}
-          @LlPreviewSetTempPathO := GetProcAddress(hDLLLL24,'LlPreviewSetTempPathW');
+          @LlPreviewSetTempPathO := GetProcAddress(hDLLLL25,'LlPreviewSetTempPathW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewDeleteFilesO := GetProcAddress(hDLLLL24,'LlPreviewDeleteFilesA');
+          @LlPreviewDeleteFilesO := GetProcAddress(hDLLLL25,'LlPreviewDeleteFilesA');
         {$else}
-          @LlPreviewDeleteFiles := GetProcAddress(hDLLLL24,'LlPreviewDeleteFilesA');
+          @LlPreviewDeleteFiles := GetProcAddress(hDLLLL25,'LlPreviewDeleteFilesA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewDeleteFiles := GetProcAddress(hDLLLL24,'LlPreviewDeleteFilesW');
+          @LlPreviewDeleteFiles := GetProcAddress(hDLLLL25,'LlPreviewDeleteFilesW');
         {$else}
-          @LlPreviewDeleteFilesO := GetProcAddress(hDLLLL24,'LlPreviewDeleteFilesW');
+          @LlPreviewDeleteFilesO := GetProcAddress(hDLLLL25,'LlPreviewDeleteFilesW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewDisplayO := GetProcAddress(hDLLLL24,'LlPreviewDisplayA');
+          @LlPreviewDisplayO := GetProcAddress(hDLLLL25,'LlPreviewDisplayA');
         {$else}
-          @LlPreviewDisplay := GetProcAddress(hDLLLL24,'LlPreviewDisplayA');
+          @LlPreviewDisplay := GetProcAddress(hDLLLL25,'LlPreviewDisplayA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewDisplay := GetProcAddress(hDLLLL24,'LlPreviewDisplayW');
+          @LlPreviewDisplay := GetProcAddress(hDLLLL25,'LlPreviewDisplayW');
         {$else}
-          @LlPreviewDisplayO := GetProcAddress(hDLLLL24,'LlPreviewDisplayW');
+          @LlPreviewDisplayO := GetProcAddress(hDLLLL25,'LlPreviewDisplayW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewDisplayExO := GetProcAddress(hDLLLL24,'LlPreviewDisplayExA');
+          @LlPreviewDisplayExO := GetProcAddress(hDLLLL25,'LlPreviewDisplayExA');
         {$else}
-          @LlPreviewDisplayEx := GetProcAddress(hDLLLL24,'LlPreviewDisplayExA');
+          @LlPreviewDisplayEx := GetProcAddress(hDLLLL25,'LlPreviewDisplayExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPreviewDisplayEx := GetProcAddress(hDLLLL24,'LlPreviewDisplayExW');
+          @LlPreviewDisplayEx := GetProcAddress(hDLLLL25,'LlPreviewDisplayExW');
         {$else}
-          @LlPreviewDisplayExO := GetProcAddress(hDLLLL24,'LlPreviewDisplayExW');
+          @LlPreviewDisplayExO := GetProcAddress(hDLLLL25,'LlPreviewDisplayExW');
       {$endif}
-      @LlPrint              := GetProcAddress(hDLLLL24,'LlPrint');
-      @LlPrintAbort         := GetProcAddress(hDLLLL24,'LlPrintAbort');
-      @LlPrintCheckLineFit  := GetProcAddress(hDLLLL24,'LlPrintCheckLineFit');
-      @LlPrintEnd           := GetProcAddress(hDLLLL24,'LlPrintEnd');
-      @LlPrintFields        := GetProcAddress(hDLLLL24,'LlPrintFields');
-      @LlPrintFieldsEnd     := GetProcAddress(hDLLLL24,'LlPrintFieldsEnd');
-      @LlPrintGetCurrentPage := GetProcAddress(hDLLLL24,'LlPrintGetCurrentPage');
-      @LlPrintGetItemsPerPage := GetProcAddress(hDLLLL24,'LlPrintGetItemsPerPage');
-      @LlPrintGetItemsPerTable := GetProcAddress(hDLLLL24,'LlPrintGetItemsPerTable');
+      @LlPrint              := GetProcAddress(hDLLLL25,'LlPrint');
+      @LlPrintAbort         := GetProcAddress(hDLLLL25,'LlPrintAbort');
+      @LlPrintCheckLineFit  := GetProcAddress(hDLLLL25,'LlPrintCheckLineFit');
+      @LlPrintEnd           := GetProcAddress(hDLLLL25,'LlPrintEnd');
+      @LlPrintFields        := GetProcAddress(hDLLLL25,'LlPrintFields');
+      @LlPrintFieldsEnd     := GetProcAddress(hDLLLL25,'LlPrintFieldsEnd');
+      @LlPrintGetCurrentPage := GetProcAddress(hDLLLL25,'LlPrintGetCurrentPage');
+      @LlPrintGetItemsPerPage := GetProcAddress(hDLLLL25,'LlPrintGetItemsPerPage');
+      @LlPrintGetItemsPerTable := GetProcAddress(hDLLLL25,'LlPrintGetItemsPerTable');
       {$ifdef UNICODE}
-          @LlPrintGetRemainingItemsPerTableO := GetProcAddress(hDLLLL24,'LlPrintGetRemainingItemsPerTableA');
+          @LlPrintGetRemainingItemsPerTableO := GetProcAddress(hDLLLL25,'LlPrintGetRemainingItemsPerTableA');
         {$else}
-          @LlPrintGetRemainingItemsPerTable := GetProcAddress(hDLLLL24,'LlPrintGetRemainingItemsPerTableA');
+          @LlPrintGetRemainingItemsPerTable := GetProcAddress(hDLLLL25,'LlPrintGetRemainingItemsPerTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetRemainingItemsPerTable := GetProcAddress(hDLLLL24,'LlPrintGetRemainingItemsPerTableW');
+          @LlPrintGetRemainingItemsPerTable := GetProcAddress(hDLLLL25,'LlPrintGetRemainingItemsPerTableW');
         {$else}
-          @LlPrintGetRemainingItemsPerTableO := GetProcAddress(hDLLLL24,'LlPrintGetRemainingItemsPerTableW');
+          @LlPrintGetRemainingItemsPerTableO := GetProcAddress(hDLLLL25,'LlPrintGetRemainingItemsPerTableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetRemItemsPerTableO := GetProcAddress(hDLLLL24,'LlPrintGetRemItemsPerTableA');
+          @LlPrintGetRemItemsPerTableO := GetProcAddress(hDLLLL25,'LlPrintGetRemItemsPerTableA');
         {$else}
-          @LlPrintGetRemItemsPerTable := GetProcAddress(hDLLLL24,'LlPrintGetRemItemsPerTableA');
+          @LlPrintGetRemItemsPerTable := GetProcAddress(hDLLLL25,'LlPrintGetRemItemsPerTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetRemItemsPerTable := GetProcAddress(hDLLLL24,'LlPrintGetRemItemsPerTableW');
+          @LlPrintGetRemItemsPerTable := GetProcAddress(hDLLLL25,'LlPrintGetRemItemsPerTableW');
         {$else}
-          @LlPrintGetRemItemsPerTableO := GetProcAddress(hDLLLL24,'LlPrintGetRemItemsPerTableW');
+          @LlPrintGetRemItemsPerTableO := GetProcAddress(hDLLLL25,'LlPrintGetRemItemsPerTableW');
       {$endif}
-      @LlPrintGetOption     := GetProcAddress(hDLLLL24,'LlPrintGetOption');
+      @LlPrintGetOption     := GetProcAddress(hDLLLL25,'LlPrintGetOption');
       {$ifdef UNICODE}
-          @LlPrintGetPrinterInfoO := GetProcAddress(hDLLLL24,'LlPrintGetPrinterInfoA');
+          @LlPrintGetPrinterInfoO := GetProcAddress(hDLLLL25,'LlPrintGetPrinterInfoA');
         {$else}
-          @LlPrintGetPrinterInfo := GetProcAddress(hDLLLL24,'LlPrintGetPrinterInfoA');
+          @LlPrintGetPrinterInfo := GetProcAddress(hDLLLL25,'LlPrintGetPrinterInfoA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetPrinterInfo := GetProcAddress(hDLLLL24,'LlPrintGetPrinterInfoW');
+          @LlPrintGetPrinterInfo := GetProcAddress(hDLLLL25,'LlPrintGetPrinterInfoW');
         {$else}
-          @LlPrintGetPrinterInfoO := GetProcAddress(hDLLLL24,'LlPrintGetPrinterInfoW');
+          @LlPrintGetPrinterInfoO := GetProcAddress(hDLLLL25,'LlPrintGetPrinterInfoW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintOptionsDialogO := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogA');
+          @LlPrintOptionsDialogO := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogA');
         {$else}
-          @LlPrintOptionsDialog := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogA');
+          @LlPrintOptionsDialog := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintOptionsDialog := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogW');
+          @LlPrintOptionsDialog := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogW');
         {$else}
-          @LlPrintOptionsDialogO := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogW');
+          @LlPrintOptionsDialogO := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogW');
       {$endif}
-      @LlPrintSelectOffsetEx := GetProcAddress(hDLLLL24,'LlPrintSelectOffsetEx');
+      @LlPrintSelectOffsetEx := GetProcAddress(hDLLLL25,'LlPrintSelectOffsetEx');
       {$ifdef UNICODE}
-          @LlPrintSetBoxTextO := GetProcAddress(hDLLLL24,'LlPrintSetBoxTextA');
+          @LlPrintSetBoxTextO := GetProcAddress(hDLLLL25,'LlPrintSetBoxTextA');
         {$else}
-          @LlPrintSetBoxText := GetProcAddress(hDLLLL24,'LlPrintSetBoxTextA');
+          @LlPrintSetBoxText := GetProcAddress(hDLLLL25,'LlPrintSetBoxTextA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintSetBoxText := GetProcAddress(hDLLLL24,'LlPrintSetBoxTextW');
+          @LlPrintSetBoxText := GetProcAddress(hDLLLL25,'LlPrintSetBoxTextW');
         {$else}
-          @LlPrintSetBoxTextO := GetProcAddress(hDLLLL24,'LlPrintSetBoxTextW');
+          @LlPrintSetBoxTextO := GetProcAddress(hDLLLL25,'LlPrintSetBoxTextW');
       {$endif}
-      @LlPrintSetOption     := GetProcAddress(hDLLLL24,'LlPrintSetOption');
-      @LlPrintUpdateBox     := GetProcAddress(hDLLLL24,'LlPrintUpdateBox');
+      @LlPrintSetOption     := GetProcAddress(hDLLLL25,'LlPrintSetOption');
+      @LlPrintUpdateBox     := GetProcAddress(hDLLLL25,'LlPrintUpdateBox');
       {$ifdef UNICODE}
-          @LlPrintStartO := GetProcAddress(hDLLLL24,'LlPrintStartA');
+          @LlPrintStartO := GetProcAddress(hDLLLL25,'LlPrintStartA');
         {$else}
-          @LlPrintStart := GetProcAddress(hDLLLL24,'LlPrintStartA');
+          @LlPrintStart := GetProcAddress(hDLLLL25,'LlPrintStartA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintStart := GetProcAddress(hDLLLL24,'LlPrintStartW');
+          @LlPrintStart := GetProcAddress(hDLLLL25,'LlPrintStartW');
         {$else}
-          @LlPrintStartO := GetProcAddress(hDLLLL24,'LlPrintStartW');
+          @LlPrintStartO := GetProcAddress(hDLLLL25,'LlPrintStartW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintWithBoxStartO := GetProcAddress(hDLLLL24,'LlPrintWithBoxStartA');
+          @LlPrintWithBoxStartO := GetProcAddress(hDLLLL25,'LlPrintWithBoxStartA');
         {$else}
-          @LlPrintWithBoxStart := GetProcAddress(hDLLLL24,'LlPrintWithBoxStartA');
+          @LlPrintWithBoxStart := GetProcAddress(hDLLLL25,'LlPrintWithBoxStartA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintWithBoxStart := GetProcAddress(hDLLLL24,'LlPrintWithBoxStartW');
+          @LlPrintWithBoxStart := GetProcAddress(hDLLLL25,'LlPrintWithBoxStartW');
         {$else}
-          @LlPrintWithBoxStartO := GetProcAddress(hDLLLL24,'LlPrintWithBoxStartW');
+          @LlPrintWithBoxStartO := GetProcAddress(hDLLLL25,'LlPrintWithBoxStartW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrinterSetupO := GetProcAddress(hDLLLL24,'LlPrinterSetupA');
+          @LlPrinterSetupO := GetProcAddress(hDLLLL25,'LlPrinterSetupA');
         {$else}
-          @LlPrinterSetup := GetProcAddress(hDLLLL24,'LlPrinterSetupA');
+          @LlPrinterSetup := GetProcAddress(hDLLLL25,'LlPrinterSetupA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrinterSetup := GetProcAddress(hDLLLL24,'LlPrinterSetupW');
+          @LlPrinterSetup := GetProcAddress(hDLLLL25,'LlPrinterSetupW');
         {$else}
-          @LlPrinterSetupO := GetProcAddress(hDLLLL24,'LlPrinterSetupW');
+          @LlPrinterSetupO := GetProcAddress(hDLLLL25,'LlPrinterSetupW');
       {$endif}
       {$ifdef UNICODE}
-          @LlSelectFileDlgTitleExO := GetProcAddress(hDLLLL24,'LlSelectFileDlgTitleExA');
+          @LlSelectFileDlgTitleExO := GetProcAddress(hDLLLL25,'LlSelectFileDlgTitleExA');
         {$else}
-          @LlSelectFileDlgTitleEx := GetProcAddress(hDLLLL24,'LlSelectFileDlgTitleExA');
+          @LlSelectFileDlgTitleEx := GetProcAddress(hDLLLL25,'LlSelectFileDlgTitleExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSelectFileDlgTitleEx := GetProcAddress(hDLLLL24,'LlSelectFileDlgTitleExW');
+          @LlSelectFileDlgTitleEx := GetProcAddress(hDLLLL25,'LlSelectFileDlgTitleExW');
         {$else}
-          @LlSelectFileDlgTitleExO := GetProcAddress(hDLLLL24,'LlSelectFileDlgTitleExW');
+          @LlSelectFileDlgTitleExO := GetProcAddress(hDLLLL25,'LlSelectFileDlgTitleExW');
       {$endif}
-      @LlSetDlgboxMode      := GetProcAddress(hDLLLL24,'LlSetDlgboxMode');
-      @LlGetDlgboxMode      := GetProcAddress(hDLLLL24,'LlGetDlgboxMode');
+      @LlSetDlgboxMode      := GetProcAddress(hDLLLL25,'LlSetDlgboxMode');
+      @LlGetDlgboxMode      := GetProcAddress(hDLLLL25,'LlGetDlgboxMode');
       {$ifdef UNICODE}
-          @LlExprParseO := GetProcAddress(hDLLLL24,'LlExprParseA');
+          @LlExprParseO := GetProcAddress(hDLLLL25,'LlExprParseA');
         {$else}
-          @LlExprParse := GetProcAddress(hDLLLL24,'LlExprParseA');
+          @LlExprParse := GetProcAddress(hDLLLL25,'LlExprParseA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprParse := GetProcAddress(hDLLLL24,'LlExprParseW');
+          @LlExprParse := GetProcAddress(hDLLLL25,'LlExprParseW');
         {$else}
-          @LlExprParseO := GetProcAddress(hDLLLL24,'LlExprParseW');
+          @LlExprParseO := GetProcAddress(hDLLLL25,'LlExprParseW');
       {$endif}
-      @LlExprType           := GetProcAddress(hDLLLL24,'LlExprType');
+      @LlExprType           := GetProcAddress(hDLLLL25,'LlExprType');
       {$ifdef UNICODE}
-          @LlExprErrorO := GetProcAddress(hDLLLL24,'LlExprErrorA');
+          @LlExprErrorO := GetProcAddress(hDLLLL25,'LlExprErrorA');
         {$else}
-          @LlExprError := GetProcAddress(hDLLLL24,'LlExprErrorA');
+          @LlExprError := GetProcAddress(hDLLLL25,'LlExprErrorA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprError := GetProcAddress(hDLLLL24,'LlExprErrorW');
+          @LlExprError := GetProcAddress(hDLLLL25,'LlExprErrorW');
         {$else}
-          @LlExprErrorO := GetProcAddress(hDLLLL24,'LlExprErrorW');
+          @LlExprErrorO := GetProcAddress(hDLLLL25,'LlExprErrorW');
       {$endif}
-      @LlExprFree           := GetProcAddress(hDLLLL24,'LlExprFree');
+      @LlExprFree           := GetProcAddress(hDLLLL25,'LlExprFree');
       {$ifdef UNICODE}
-          @LlExprEvaluateO := GetProcAddress(hDLLLL24,'LlExprEvaluateA');
+          @LlExprEvaluateO := GetProcAddress(hDLLLL25,'LlExprEvaluateA');
         {$else}
-          @LlExprEvaluate := GetProcAddress(hDLLLL24,'LlExprEvaluateA');
+          @LlExprEvaluate := GetProcAddress(hDLLLL25,'LlExprEvaluateA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprEvaluate := GetProcAddress(hDLLLL24,'LlExprEvaluateW');
+          @LlExprEvaluate := GetProcAddress(hDLLLL25,'LlExprEvaluateW');
         {$else}
-          @LlExprEvaluateO := GetProcAddress(hDLLLL24,'LlExprEvaluateW');
+          @LlExprEvaluateO := GetProcAddress(hDLLLL25,'LlExprEvaluateW');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprGetUsedVarsO := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsA');
+          @LlExprGetUsedVarsO := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsA');
         {$else}
-          @LlExprGetUsedVars := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsA');
+          @LlExprGetUsedVars := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprGetUsedVars := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsW');
+          @LlExprGetUsedVars := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsW');
         {$else}
-          @LlExprGetUsedVarsO := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsW');
+          @LlExprGetUsedVarsO := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsW');
       {$endif}
-      @LlSetOption          := GetProcAddress(hDLLLL24,'LlSetOption');
-      @LlGetOption          := GetProcAddress(hDLLLL24,'LlGetOption');
+      @LlSetOption          := GetProcAddress(hDLLLL25,'LlSetOption');
+      @LlGetOption          := GetProcAddress(hDLLLL25,'LlGetOption');
       {$ifdef UNICODE}
-          @LlSetOptionStringO := GetProcAddress(hDLLLL24,'LlSetOptionStringA');
+          @LlSetOptionStringO := GetProcAddress(hDLLLL25,'LlSetOptionStringA');
         {$else}
-          @LlSetOptionString := GetProcAddress(hDLLLL24,'LlSetOptionStringA');
+          @LlSetOptionString := GetProcAddress(hDLLLL25,'LlSetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetOptionString := GetProcAddress(hDLLLL24,'LlSetOptionStringW');
+          @LlSetOptionString := GetProcAddress(hDLLLL25,'LlSetOptionStringW');
         {$else}
-          @LlSetOptionStringO := GetProcAddress(hDLLLL24,'LlSetOptionStringW');
+          @LlSetOptionStringO := GetProcAddress(hDLLLL25,'LlSetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetOptionStringO := GetProcAddress(hDLLLL24,'LlGetOptionStringA');
+          @LlGetOptionStringO := GetProcAddress(hDLLLL25,'LlGetOptionStringA');
         {$else}
-          @LlGetOptionString := GetProcAddress(hDLLLL24,'LlGetOptionStringA');
+          @LlGetOptionString := GetProcAddress(hDLLLL25,'LlGetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetOptionString := GetProcAddress(hDLLLL24,'LlGetOptionStringW');
+          @LlGetOptionString := GetProcAddress(hDLLLL25,'LlGetOptionStringW');
         {$else}
-          @LlGetOptionStringO := GetProcAddress(hDLLLL24,'LlGetOptionStringW');
+          @LlGetOptionStringO := GetProcAddress(hDLLLL25,'LlGetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintSetOptionStringO := GetProcAddress(hDLLLL24,'LlPrintSetOptionStringA');
+          @LlPrintSetOptionStringO := GetProcAddress(hDLLLL25,'LlPrintSetOptionStringA');
         {$else}
-          @LlPrintSetOptionString := GetProcAddress(hDLLLL24,'LlPrintSetOptionStringA');
+          @LlPrintSetOptionString := GetProcAddress(hDLLLL25,'LlPrintSetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintSetOptionString := GetProcAddress(hDLLLL24,'LlPrintSetOptionStringW');
+          @LlPrintSetOptionString := GetProcAddress(hDLLLL25,'LlPrintSetOptionStringW');
         {$else}
-          @LlPrintSetOptionStringO := GetProcAddress(hDLLLL24,'LlPrintSetOptionStringW');
+          @LlPrintSetOptionStringO := GetProcAddress(hDLLLL25,'LlPrintSetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetOptionStringO := GetProcAddress(hDLLLL24,'LlPrintGetOptionStringA');
+          @LlPrintGetOptionStringO := GetProcAddress(hDLLLL25,'LlPrintGetOptionStringA');
         {$else}
-          @LlPrintGetOptionString := GetProcAddress(hDLLLL24,'LlPrintGetOptionStringA');
+          @LlPrintGetOptionString := GetProcAddress(hDLLLL25,'LlPrintGetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetOptionString := GetProcAddress(hDLLLL24,'LlPrintGetOptionStringW');
+          @LlPrintGetOptionString := GetProcAddress(hDLLLL25,'LlPrintGetOptionStringW');
         {$else}
-          @LlPrintGetOptionStringO := GetProcAddress(hDLLLL24,'LlPrintGetOptionStringW');
+          @LlPrintGetOptionStringO := GetProcAddress(hDLLLL25,'LlPrintGetOptionStringW');
       {$endif}
-      @LlDesignerProhibitAction := GetProcAddress(hDLLLL24,'LlDesignerProhibitAction');
+      @LlDesignerProhibitAction := GetProcAddress(hDLLLL25,'LlDesignerProhibitAction');
       {$ifdef UNICODE}
-          @LlDesignerProhibitFunctionO := GetProcAddress(hDLLLL24,'LlDesignerProhibitFunctionA');
+          @LlDesignerProhibitFunctionO := GetProcAddress(hDLLLL25,'LlDesignerProhibitFunctionA');
         {$else}
-          @LlDesignerProhibitFunction := GetProcAddress(hDLLLL24,'LlDesignerProhibitFunctionA');
+          @LlDesignerProhibitFunction := GetProcAddress(hDLLLL25,'LlDesignerProhibitFunctionA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerProhibitFunction := GetProcAddress(hDLLLL24,'LlDesignerProhibitFunctionW');
+          @LlDesignerProhibitFunction := GetProcAddress(hDLLLL25,'LlDesignerProhibitFunctionW');
         {$else}
-          @LlDesignerProhibitFunctionO := GetProcAddress(hDLLLL24,'LlDesignerProhibitFunctionW');
+          @LlDesignerProhibitFunctionO := GetProcAddress(hDLLLL25,'LlDesignerProhibitFunctionW');
       {$endif}
-      @LlDesignerProhibitFunctionGroup := GetProcAddress(hDLLLL24,'LlDesignerProhibitFunctionGroup');
+      @LlDesignerProhibitFunctionGroup := GetProcAddress(hDLLLL25,'LlDesignerProhibitFunctionGroup');
       {$ifdef UNICODE}
-          @LlPrintEnableObjectO := GetProcAddress(hDLLLL24,'LlPrintEnableObjectA');
+          @LlPrintEnableObjectO := GetProcAddress(hDLLLL25,'LlPrintEnableObjectA');
         {$else}
-          @LlPrintEnableObject := GetProcAddress(hDLLLL24,'LlPrintEnableObjectA');
+          @LlPrintEnableObject := GetProcAddress(hDLLLL25,'LlPrintEnableObjectA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintEnableObject := GetProcAddress(hDLLLL24,'LlPrintEnableObjectW');
+          @LlPrintEnableObject := GetProcAddress(hDLLLL25,'LlPrintEnableObjectW');
         {$else}
-          @LlPrintEnableObjectO := GetProcAddress(hDLLLL24,'LlPrintEnableObjectW');
+          @LlPrintEnableObjectO := GetProcAddress(hDLLLL25,'LlPrintEnableObjectW');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetFileExtensionsO := GetProcAddress(hDLLLL24,'LlSetFileExtensionsA');
+          @LlSetFileExtensionsO := GetProcAddress(hDLLLL25,'LlSetFileExtensionsA');
         {$else}
-          @LlSetFileExtensions := GetProcAddress(hDLLLL24,'LlSetFileExtensionsA');
+          @LlSetFileExtensions := GetProcAddress(hDLLLL25,'LlSetFileExtensionsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetFileExtensions := GetProcAddress(hDLLLL24,'LlSetFileExtensionsW');
+          @LlSetFileExtensions := GetProcAddress(hDLLLL25,'LlSetFileExtensionsW');
         {$else}
-          @LlSetFileExtensionsO := GetProcAddress(hDLLLL24,'LlSetFileExtensionsW');
+          @LlSetFileExtensionsO := GetProcAddress(hDLLLL25,'LlSetFileExtensionsW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetTextCharsPrintedO := GetProcAddress(hDLLLL24,'LlPrintGetTextCharsPrintedA');
+          @LlPrintGetTextCharsPrintedO := GetProcAddress(hDLLLL25,'LlPrintGetTextCharsPrintedA');
         {$else}
-          @LlPrintGetTextCharsPrinted := GetProcAddress(hDLLLL24,'LlPrintGetTextCharsPrintedA');
+          @LlPrintGetTextCharsPrinted := GetProcAddress(hDLLLL25,'LlPrintGetTextCharsPrintedA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetTextCharsPrinted := GetProcAddress(hDLLLL24,'LlPrintGetTextCharsPrintedW');
+          @LlPrintGetTextCharsPrinted := GetProcAddress(hDLLLL25,'LlPrintGetTextCharsPrintedW');
         {$else}
-          @LlPrintGetTextCharsPrintedO := GetProcAddress(hDLLLL24,'LlPrintGetTextCharsPrintedW');
+          @LlPrintGetTextCharsPrintedO := GetProcAddress(hDLLLL25,'LlPrintGetTextCharsPrintedW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetFieldCharsPrintedO := GetProcAddress(hDLLLL24,'LlPrintGetFieldCharsPrintedA');
+          @LlPrintGetFieldCharsPrintedO := GetProcAddress(hDLLLL25,'LlPrintGetFieldCharsPrintedA');
         {$else}
-          @LlPrintGetFieldCharsPrinted := GetProcAddress(hDLLLL24,'LlPrintGetFieldCharsPrintedA');
+          @LlPrintGetFieldCharsPrinted := GetProcAddress(hDLLLL25,'LlPrintGetFieldCharsPrintedA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetFieldCharsPrinted := GetProcAddress(hDLLLL24,'LlPrintGetFieldCharsPrintedW');
+          @LlPrintGetFieldCharsPrinted := GetProcAddress(hDLLLL25,'LlPrintGetFieldCharsPrintedW');
         {$else}
-          @LlPrintGetFieldCharsPrintedO := GetProcAddress(hDLLLL24,'LlPrintGetFieldCharsPrintedW');
+          @LlPrintGetFieldCharsPrintedO := GetProcAddress(hDLLLL25,'LlPrintGetFieldCharsPrintedW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintIsVariableUsedO := GetProcAddress(hDLLLL24,'LlPrintIsVariableUsedA');
+          @LlPrintIsVariableUsedO := GetProcAddress(hDLLLL25,'LlPrintIsVariableUsedA');
         {$else}
-          @LlPrintIsVariableUsed := GetProcAddress(hDLLLL24,'LlPrintIsVariableUsedA');
+          @LlPrintIsVariableUsed := GetProcAddress(hDLLLL25,'LlPrintIsVariableUsedA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintIsVariableUsed := GetProcAddress(hDLLLL24,'LlPrintIsVariableUsedW');
+          @LlPrintIsVariableUsed := GetProcAddress(hDLLLL25,'LlPrintIsVariableUsedW');
         {$else}
-          @LlPrintIsVariableUsedO := GetProcAddress(hDLLLL24,'LlPrintIsVariableUsedW');
+          @LlPrintIsVariableUsedO := GetProcAddress(hDLLLL25,'LlPrintIsVariableUsedW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintIsFieldUsedO := GetProcAddress(hDLLLL24,'LlPrintIsFieldUsedA');
+          @LlPrintIsFieldUsedO := GetProcAddress(hDLLLL25,'LlPrintIsFieldUsedA');
         {$else}
-          @LlPrintIsFieldUsed := GetProcAddress(hDLLLL24,'LlPrintIsFieldUsedA');
+          @LlPrintIsFieldUsed := GetProcAddress(hDLLLL25,'LlPrintIsFieldUsedA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintIsFieldUsed := GetProcAddress(hDLLLL24,'LlPrintIsFieldUsedW');
+          @LlPrintIsFieldUsed := GetProcAddress(hDLLLL25,'LlPrintIsFieldUsedW');
         {$else}
-          @LlPrintIsFieldUsedO := GetProcAddress(hDLLLL24,'LlPrintIsFieldUsedW');
+          @LlPrintIsFieldUsedO := GetProcAddress(hDLLLL25,'LlPrintIsFieldUsedW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintOptionsDialogTitleO := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogTitleA');
+          @LlPrintOptionsDialogTitleO := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogTitleA');
         {$else}
-          @LlPrintOptionsDialogTitle := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogTitleA');
+          @LlPrintOptionsDialogTitle := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogTitleA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintOptionsDialogTitle := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogTitleW');
+          @LlPrintOptionsDialogTitle := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogTitleW');
         {$else}
-          @LlPrintOptionsDialogTitleO := GetProcAddress(hDLLLL24,'LlPrintOptionsDialogTitleW');
+          @LlPrintOptionsDialogTitleO := GetProcAddress(hDLLLL25,'LlPrintOptionsDialogTitleW');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetPrinterToDefaultO := GetProcAddress(hDLLLL24,'LlSetPrinterToDefaultA');
+          @LlSetPrinterToDefaultO := GetProcAddress(hDLLLL25,'LlSetPrinterToDefaultA');
         {$else}
-          @LlSetPrinterToDefault := GetProcAddress(hDLLLL24,'LlSetPrinterToDefaultA');
+          @LlSetPrinterToDefault := GetProcAddress(hDLLLL25,'LlSetPrinterToDefaultA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetPrinterToDefault := GetProcAddress(hDLLLL24,'LlSetPrinterToDefaultW');
+          @LlSetPrinterToDefault := GetProcAddress(hDLLLL25,'LlSetPrinterToDefaultW');
         {$else}
-          @LlSetPrinterToDefaultO := GetProcAddress(hDLLLL24,'LlSetPrinterToDefaultW');
+          @LlSetPrinterToDefaultO := GetProcAddress(hDLLLL25,'LlSetPrinterToDefaultW');
       {$endif}
-      @LlDefineSortOrderStart := GetProcAddress(hDLLLL24,'LlDefineSortOrderStart');
+      @LlDefineSortOrderStart := GetProcAddress(hDLLLL25,'LlDefineSortOrderStart');
       {$ifdef UNICODE}
-          @LlDefineSortOrderO := GetProcAddress(hDLLLL24,'LlDefineSortOrderA');
+          @LlDefineSortOrderO := GetProcAddress(hDLLLL25,'LlDefineSortOrderA');
         {$else}
-          @LlDefineSortOrder := GetProcAddress(hDLLLL24,'LlDefineSortOrderA');
+          @LlDefineSortOrder := GetProcAddress(hDLLLL25,'LlDefineSortOrderA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineSortOrder := GetProcAddress(hDLLLL24,'LlDefineSortOrderW');
+          @LlDefineSortOrder := GetProcAddress(hDLLLL25,'LlDefineSortOrderW');
         {$else}
-          @LlDefineSortOrderO := GetProcAddress(hDLLLL24,'LlDefineSortOrderW');
+          @LlDefineSortOrderO := GetProcAddress(hDLLLL25,'LlDefineSortOrderW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetSortOrderO := GetProcAddress(hDLLLL24,'LlPrintGetSortOrderA');
+          @LlPrintGetSortOrderO := GetProcAddress(hDLLLL25,'LlPrintGetSortOrderA');
         {$else}
-          @LlPrintGetSortOrder := GetProcAddress(hDLLLL24,'LlPrintGetSortOrderA');
+          @LlPrintGetSortOrder := GetProcAddress(hDLLLL25,'LlPrintGetSortOrderA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetSortOrder := GetProcAddress(hDLLLL24,'LlPrintGetSortOrderW');
+          @LlPrintGetSortOrder := GetProcAddress(hDLLLL25,'LlPrintGetSortOrderW');
         {$else}
-          @LlPrintGetSortOrderO := GetProcAddress(hDLLLL24,'LlPrintGetSortOrderW');
+          @LlPrintGetSortOrderO := GetProcAddress(hDLLLL25,'LlPrintGetSortOrderW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineGroupingO := GetProcAddress(hDLLLL24,'LlDefineGroupingA');
+          @LlDefineGroupingO := GetProcAddress(hDLLLL25,'LlDefineGroupingA');
         {$else}
-          @LlDefineGrouping := GetProcAddress(hDLLLL24,'LlDefineGroupingA');
+          @LlDefineGrouping := GetProcAddress(hDLLLL25,'LlDefineGroupingA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineGrouping := GetProcAddress(hDLLLL24,'LlDefineGroupingW');
+          @LlDefineGrouping := GetProcAddress(hDLLLL25,'LlDefineGroupingW');
         {$else}
-          @LlDefineGroupingO := GetProcAddress(hDLLLL24,'LlDefineGroupingW');
+          @LlDefineGroupingO := GetProcAddress(hDLLLL25,'LlDefineGroupingW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetGroupingO := GetProcAddress(hDLLLL24,'LlPrintGetGroupingA');
+          @LlPrintGetGroupingO := GetProcAddress(hDLLLL25,'LlPrintGetGroupingA');
         {$else}
-          @LlPrintGetGrouping := GetProcAddress(hDLLLL24,'LlPrintGetGroupingA');
+          @LlPrintGetGrouping := GetProcAddress(hDLLLL25,'LlPrintGetGroupingA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetGrouping := GetProcAddress(hDLLLL24,'LlPrintGetGroupingW');
+          @LlPrintGetGrouping := GetProcAddress(hDLLLL25,'LlPrintGetGroupingW');
         {$else}
-          @LlPrintGetGroupingO := GetProcAddress(hDLLLL24,'LlPrintGetGroupingW');
+          @LlPrintGetGroupingO := GetProcAddress(hDLLLL25,'LlPrintGetGroupingW');
       {$endif}
       {$ifdef UNICODE}
-          @LlAddCtlSupportO := GetProcAddress(hDLLLL24,'LlAddCtlSupportA');
+          @LlAddCtlSupportO := GetProcAddress(hDLLLL25,'LlAddCtlSupportA');
         {$else}
-          @LlAddCtlSupport := GetProcAddress(hDLLLL24,'LlAddCtlSupportA');
+          @LlAddCtlSupport := GetProcAddress(hDLLLL25,'LlAddCtlSupportA');
       {$endif}
       {$ifdef UNICODE}
-          @LlAddCtlSupport := GetProcAddress(hDLLLL24,'LlAddCtlSupportW');
+          @LlAddCtlSupport := GetProcAddress(hDLLLL25,'LlAddCtlSupportW');
         {$else}
-          @LlAddCtlSupportO := GetProcAddress(hDLLLL24,'LlAddCtlSupportW');
+          @LlAddCtlSupportO := GetProcAddress(hDLLLL25,'LlAddCtlSupportW');
       {$endif}
-      @LlPrintBeginGroup    := GetProcAddress(hDLLLL24,'LlPrintBeginGroup');
-      @LlPrintEndGroup      := GetProcAddress(hDLLLL24,'LlPrintEndGroup');
-      @LlPrintGroupLine     := GetProcAddress(hDLLLL24,'LlPrintGroupLine');
-      @LlPrintGroupHeader   := GetProcAddress(hDLLLL24,'LlPrintGroupHeader');
+      @LlPrintBeginGroup    := GetProcAddress(hDLLLL25,'LlPrintBeginGroup');
+      @LlPrintEndGroup      := GetProcAddress(hDLLLL25,'LlPrintEndGroup');
+      @LlPrintGroupLine     := GetProcAddress(hDLLLL25,'LlPrintGroupLine');
+      @LlPrintGroupHeader   := GetProcAddress(hDLLLL25,'LlPrintGroupHeader');
       {$ifdef UNICODE}
-          @LlPrintGetFilterExpressionO := GetProcAddress(hDLLLL24,'LlPrintGetFilterExpressionA');
+          @LlPrintGetFilterExpressionO := GetProcAddress(hDLLLL25,'LlPrintGetFilterExpressionA');
         {$else}
-          @LlPrintGetFilterExpression := GetProcAddress(hDLLLL24,'LlPrintGetFilterExpressionA');
+          @LlPrintGetFilterExpression := GetProcAddress(hDLLLL25,'LlPrintGetFilterExpressionA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetFilterExpression := GetProcAddress(hDLLLL24,'LlPrintGetFilterExpressionW');
+          @LlPrintGetFilterExpression := GetProcAddress(hDLLLL25,'LlPrintGetFilterExpressionW');
         {$else}
-          @LlPrintGetFilterExpressionO := GetProcAddress(hDLLLL24,'LlPrintGetFilterExpressionW');
+          @LlPrintGetFilterExpressionO := GetProcAddress(hDLLLL25,'LlPrintGetFilterExpressionW');
       {$endif}
-      @LlPrintWillMatchFilter := GetProcAddress(hDLLLL24,'LlPrintWillMatchFilter');
-      @LlPrintDidMatchFilter := GetProcAddress(hDLLLL24,'LlPrintDidMatchFilter');
+      @LlPrintWillMatchFilter := GetProcAddress(hDLLLL25,'LlPrintWillMatchFilter');
+      @LlPrintDidMatchFilter := GetProcAddress(hDLLLL25,'LlPrintDidMatchFilter');
       {$ifdef UNICODE}
-          @LlGetFieldContentsO := GetProcAddress(hDLLLL24,'LlGetFieldContentsA');
+          @LlGetFieldContentsO := GetProcAddress(hDLLLL25,'LlGetFieldContentsA');
         {$else}
-          @LlGetFieldContents := GetProcAddress(hDLLLL24,'LlGetFieldContentsA');
+          @LlGetFieldContents := GetProcAddress(hDLLLL25,'LlGetFieldContentsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetFieldContents := GetProcAddress(hDLLLL24,'LlGetFieldContentsW');
+          @LlGetFieldContents := GetProcAddress(hDLLLL25,'LlGetFieldContentsW');
         {$else}
-          @LlGetFieldContentsO := GetProcAddress(hDLLLL24,'LlGetFieldContentsW');
+          @LlGetFieldContentsO := GetProcAddress(hDLLLL25,'LlGetFieldContentsW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetVariableContentsO := GetProcAddress(hDLLLL24,'LlGetVariableContentsA');
+          @LlGetVariableContentsO := GetProcAddress(hDLLLL25,'LlGetVariableContentsA');
         {$else}
-          @LlGetVariableContents := GetProcAddress(hDLLLL24,'LlGetVariableContentsA');
+          @LlGetVariableContents := GetProcAddress(hDLLLL25,'LlGetVariableContentsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetVariableContents := GetProcAddress(hDLLLL24,'LlGetVariableContentsW');
+          @LlGetVariableContents := GetProcAddress(hDLLLL25,'LlGetVariableContentsW');
         {$else}
-          @LlGetVariableContentsO := GetProcAddress(hDLLLL24,'LlGetVariableContentsW');
+          @LlGetVariableContentsO := GetProcAddress(hDLLLL25,'LlGetVariableContentsW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetSumVariableContentsO := GetProcAddress(hDLLLL24,'LlGetSumVariableContentsA');
+          @LlGetSumVariableContentsO := GetProcAddress(hDLLLL25,'LlGetSumVariableContentsA');
         {$else}
-          @LlGetSumVariableContents := GetProcAddress(hDLLLL24,'LlGetSumVariableContentsA');
+          @LlGetSumVariableContents := GetProcAddress(hDLLLL25,'LlGetSumVariableContentsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetSumVariableContents := GetProcAddress(hDLLLL24,'LlGetSumVariableContentsW');
+          @LlGetSumVariableContents := GetProcAddress(hDLLLL25,'LlGetSumVariableContentsW');
         {$else}
-          @LlGetSumVariableContentsO := GetProcAddress(hDLLLL24,'LlGetSumVariableContentsW');
+          @LlGetSumVariableContentsO := GetProcAddress(hDLLLL25,'LlGetSumVariableContentsW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetUserVariableContentsO := GetProcAddress(hDLLLL24,'LlGetUserVariableContentsA');
+          @LlGetUserVariableContentsO := GetProcAddress(hDLLLL25,'LlGetUserVariableContentsA');
         {$else}
-          @LlGetUserVariableContents := GetProcAddress(hDLLLL24,'LlGetUserVariableContentsA');
+          @LlGetUserVariableContents := GetProcAddress(hDLLLL25,'LlGetUserVariableContentsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetUserVariableContents := GetProcAddress(hDLLLL24,'LlGetUserVariableContentsW');
+          @LlGetUserVariableContents := GetProcAddress(hDLLLL25,'LlGetUserVariableContentsW');
         {$else}
-          @LlGetUserVariableContentsO := GetProcAddress(hDLLLL24,'LlGetUserVariableContentsW');
+          @LlGetUserVariableContentsO := GetProcAddress(hDLLLL25,'LlGetUserVariableContentsW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetVariableTypeO := GetProcAddress(hDLLLL24,'LlGetVariableTypeA');
+          @LlGetVariableTypeO := GetProcAddress(hDLLLL25,'LlGetVariableTypeA');
         {$else}
-          @LlGetVariableType := GetProcAddress(hDLLLL24,'LlGetVariableTypeA');
+          @LlGetVariableType := GetProcAddress(hDLLLL25,'LlGetVariableTypeA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetVariableType := GetProcAddress(hDLLLL24,'LlGetVariableTypeW');
+          @LlGetVariableType := GetProcAddress(hDLLLL25,'LlGetVariableTypeW');
         {$else}
-          @LlGetVariableTypeO := GetProcAddress(hDLLLL24,'LlGetVariableTypeW');
+          @LlGetVariableTypeO := GetProcAddress(hDLLLL25,'LlGetVariableTypeW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetFieldTypeO := GetProcAddress(hDLLLL24,'LlGetFieldTypeA');
+          @LlGetFieldTypeO := GetProcAddress(hDLLLL25,'LlGetFieldTypeA');
         {$else}
-          @LlGetFieldType := GetProcAddress(hDLLLL24,'LlGetFieldTypeA');
+          @LlGetFieldType := GetProcAddress(hDLLLL25,'LlGetFieldTypeA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetFieldType := GetProcAddress(hDLLLL24,'LlGetFieldTypeW');
+          @LlGetFieldType := GetProcAddress(hDLLLL25,'LlGetFieldTypeW');
         {$else}
-          @LlGetFieldTypeO := GetProcAddress(hDLLLL24,'LlGetFieldTypeW');
+          @LlGetFieldTypeO := GetProcAddress(hDLLLL25,'LlGetFieldTypeW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetColumnInfoO := GetProcAddress(hDLLLL24,'LlPrintGetColumnInfoA');
+          @LlPrintGetColumnInfoO := GetProcAddress(hDLLLL25,'LlPrintGetColumnInfoA');
         {$else}
-          @LlPrintGetColumnInfo := GetProcAddress(hDLLLL24,'LlPrintGetColumnInfoA');
+          @LlPrintGetColumnInfo := GetProcAddress(hDLLLL25,'LlPrintGetColumnInfoA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetColumnInfo := GetProcAddress(hDLLLL24,'LlPrintGetColumnInfoW');
+          @LlPrintGetColumnInfo := GetProcAddress(hDLLLL25,'LlPrintGetColumnInfoW');
         {$else}
-          @LlPrintGetColumnInfoO := GetProcAddress(hDLLLL24,'LlPrintGetColumnInfoW');
+          @LlPrintGetColumnInfoO := GetProcAddress(hDLLLL25,'LlPrintGetColumnInfoW');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetPrinterDefaultsDirO := GetProcAddress(hDLLLL24,'LlSetPrinterDefaultsDirA');
+          @LlSetPrinterDefaultsDirO := GetProcAddress(hDLLLL25,'LlSetPrinterDefaultsDirA');
         {$else}
-          @LlSetPrinterDefaultsDir := GetProcAddress(hDLLLL24,'LlSetPrinterDefaultsDirA');
+          @LlSetPrinterDefaultsDir := GetProcAddress(hDLLLL25,'LlSetPrinterDefaultsDirA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetPrinterDefaultsDir := GetProcAddress(hDLLLL24,'LlSetPrinterDefaultsDirW');
+          @LlSetPrinterDefaultsDir := GetProcAddress(hDLLLL25,'LlSetPrinterDefaultsDirW');
         {$else}
-          @LlSetPrinterDefaultsDirO := GetProcAddress(hDLLLL24,'LlSetPrinterDefaultsDirW');
+          @LlSetPrinterDefaultsDirO := GetProcAddress(hDLLLL25,'LlSetPrinterDefaultsDirW');
       {$endif}
       {$ifdef UNICODE}
-          @LlCreateSketchO := GetProcAddress(hDLLLL24,'LlCreateSketchA');
+          @LlCreateSketchO := GetProcAddress(hDLLLL25,'LlCreateSketchA');
         {$else}
-          @LlCreateSketch := GetProcAddress(hDLLLL24,'LlCreateSketchA');
+          @LlCreateSketch := GetProcAddress(hDLLLL25,'LlCreateSketchA');
       {$endif}
       {$ifdef UNICODE}
-          @LlCreateSketch := GetProcAddress(hDLLLL24,'LlCreateSketchW');
+          @LlCreateSketch := GetProcAddress(hDLLLL25,'LlCreateSketchW');
         {$else}
-          @LlCreateSketchO := GetProcAddress(hDLLLL24,'LlCreateSketchW');
+          @LlCreateSketchO := GetProcAddress(hDLLLL25,'LlCreateSketchW');
       {$endif}
-      @LlViewerProhibitAction := GetProcAddress(hDLLLL24,'LlViewerProhibitAction');
+      @LlViewerProhibitAction := GetProcAddress(hDLLLL25,'LlViewerProhibitAction');
       {$ifdef UNICODE}
-          @LlPrintCopyPrinterConfigurationO := GetProcAddress(hDLLLL24,'LlPrintCopyPrinterConfigurationA');
+          @LlPrintCopyPrinterConfigurationO := GetProcAddress(hDLLLL25,'LlPrintCopyPrinterConfigurationA');
         {$else}
-          @LlPrintCopyPrinterConfiguration := GetProcAddress(hDLLLL24,'LlPrintCopyPrinterConfigurationA');
+          @LlPrintCopyPrinterConfiguration := GetProcAddress(hDLLLL25,'LlPrintCopyPrinterConfigurationA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintCopyPrinterConfiguration := GetProcAddress(hDLLLL24,'LlPrintCopyPrinterConfigurationW');
+          @LlPrintCopyPrinterConfiguration := GetProcAddress(hDLLLL25,'LlPrintCopyPrinterConfigurationW');
         {$else}
-          @LlPrintCopyPrinterConfigurationO := GetProcAddress(hDLLLL24,'LlPrintCopyPrinterConfigurationW');
+          @LlPrintCopyPrinterConfigurationO := GetProcAddress(hDLLLL25,'LlPrintCopyPrinterConfigurationW');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetPrinterInPrinterFileO := GetProcAddress(hDLLLL24,'LlSetPrinterInPrinterFileA');
+          @LlSetPrinterInPrinterFileO := GetProcAddress(hDLLLL25,'LlSetPrinterInPrinterFileA');
         {$else}
-          @LlSetPrinterInPrinterFile := GetProcAddress(hDLLLL24,'LlSetPrinterInPrinterFileA');
+          @LlSetPrinterInPrinterFile := GetProcAddress(hDLLLL25,'LlSetPrinterInPrinterFileA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetPrinterInPrinterFile := GetProcAddress(hDLLLL24,'LlSetPrinterInPrinterFileW');
+          @LlSetPrinterInPrinterFile := GetProcAddress(hDLLLL25,'LlSetPrinterInPrinterFileW');
         {$else}
-          @LlSetPrinterInPrinterFileO := GetProcAddress(hDLLLL24,'LlSetPrinterInPrinterFileW');
+          @LlSetPrinterInPrinterFileO := GetProcAddress(hDLLLL25,'LlSetPrinterInPrinterFileW');
       {$endif}
-      @LlRTFCreateObject    := GetProcAddress(hDLLLL24,'LlRTFCreateObject');
-      @LlRTFDeleteObject    := GetProcAddress(hDLLLL24,'LlRTFDeleteObject');
+      @LlRTFCreateObject    := GetProcAddress(hDLLLL25,'LlRTFCreateObject');
+      @LlRTFDeleteObject    := GetProcAddress(hDLLLL25,'LlRTFDeleteObject');
       {$ifdef UNICODE}
-          @LlRTFSetTextO := GetProcAddress(hDLLLL24,'LlRTFSetTextA');
+          @LlRTFSetTextO := GetProcAddress(hDLLLL25,'LlRTFSetTextA');
         {$else}
-          @LlRTFSetText := GetProcAddress(hDLLLL24,'LlRTFSetTextA');
+          @LlRTFSetText := GetProcAddress(hDLLLL25,'LlRTFSetTextA');
       {$endif}
       {$ifdef UNICODE}
-          @LlRTFSetText := GetProcAddress(hDLLLL24,'LlRTFSetTextW');
+          @LlRTFSetText := GetProcAddress(hDLLLL25,'LlRTFSetTextW');
         {$else}
-          @LlRTFSetTextO := GetProcAddress(hDLLLL24,'LlRTFSetTextW');
+          @LlRTFSetTextO := GetProcAddress(hDLLLL25,'LlRTFSetTextW');
       {$endif}
-      @LlRTFGetTextLength   := GetProcAddress(hDLLLL24,'LlRTFGetTextLength');
+      @LlRTFGetTextLength   := GetProcAddress(hDLLLL25,'LlRTFGetTextLength');
       {$ifdef UNICODE}
-          @LlRTFGetTextO := GetProcAddress(hDLLLL24,'LlRTFGetTextA');
+          @LlRTFGetTextO := GetProcAddress(hDLLLL25,'LlRTFGetTextA');
         {$else}
-          @LlRTFGetText := GetProcAddress(hDLLLL24,'LlRTFGetTextA');
+          @LlRTFGetText := GetProcAddress(hDLLLL25,'LlRTFGetTextA');
       {$endif}
       {$ifdef UNICODE}
-          @LlRTFGetText := GetProcAddress(hDLLLL24,'LlRTFGetTextW');
+          @LlRTFGetText := GetProcAddress(hDLLLL25,'LlRTFGetTextW');
         {$else}
-          @LlRTFGetTextO := GetProcAddress(hDLLLL24,'LlRTFGetTextW');
+          @LlRTFGetTextO := GetProcAddress(hDLLLL25,'LlRTFGetTextW');
       {$endif}
-      @LlRTFEditObject      := GetProcAddress(hDLLLL24,'LlRTFEditObject');
-      @LlRTFCopyToClipboard := GetProcAddress(hDLLLL24,'LlRTFCopyToClipboard');
-      @LlRTFDisplay         := GetProcAddress(hDLLLL24,'LlRTFDisplay');
-      @LlRTFEditorProhibitAction := GetProcAddress(hDLLLL24,'LlRTFEditorProhibitAction');
-      @LlRTFEditorInvokeAction := GetProcAddress(hDLLLL24,'LlRTFEditorInvokeAction');
+      @LlRTFEditObject      := GetProcAddress(hDLLLL25,'LlRTFEditObject');
+      @LlRTFCopyToClipboard := GetProcAddress(hDLLLL25,'LlRTFCopyToClipboard');
+      @LlRTFDisplay         := GetProcAddress(hDLLLL25,'LlRTFDisplay');
+      @LlRTFEditorProhibitAction := GetProcAddress(hDLLLL25,'LlRTFEditorProhibitAction');
+      @LlRTFEditorInvokeAction := GetProcAddress(hDLLLL25,'LlRTFEditorInvokeAction');
       {$ifdef UNICODE}
-          @LlDebugOutputO := GetProcAddress(hDLLLL24,'LlDebugOutputA');
+          @LlDebugOutputO := GetProcAddress(hDLLLL25,'LlDebugOutputA');
         {$else}
-          @LlDebugOutput := GetProcAddress(hDLLLL24,'LlDebugOutputA');
+          @LlDebugOutput := GetProcAddress(hDLLLL25,'LlDebugOutputA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDebugOutput := GetProcAddress(hDLLLL24,'LlDebugOutputW');
+          @LlDebugOutput := GetProcAddress(hDLLLL25,'LlDebugOutputW');
         {$else}
-          @LlDebugOutputO := GetProcAddress(hDLLLL24,'LlDebugOutputW');
+          @LlDebugOutputO := GetProcAddress(hDLLLL25,'LlDebugOutputW');
       {$endif}
-      @LlEnumGetFirstVar    := GetProcAddress(hDLLLL24,'LlEnumGetFirstVar');
-      @LlEnumGetFirstField  := GetProcAddress(hDLLLL24,'LlEnumGetFirstField');
-      @LlEnumGetNextEntry   := GetProcAddress(hDLLLL24,'LlEnumGetNextEntry');
+      @LlEnumGetFirstVar    := GetProcAddress(hDLLLL25,'LlEnumGetFirstVar');
+      @LlEnumGetFirstField  := GetProcAddress(hDLLLL25,'LlEnumGetFirstField');
+      @LlEnumGetNextEntry   := GetProcAddress(hDLLLL25,'LlEnumGetNextEntry');
       {$ifdef UNICODE}
-          @LlEnumGetEntryO := GetProcAddress(hDLLLL24,'LlEnumGetEntryA');
+          @LlEnumGetEntryO := GetProcAddress(hDLLLL25,'LlEnumGetEntryA');
         {$else}
-          @LlEnumGetEntry := GetProcAddress(hDLLLL24,'LlEnumGetEntryA');
+          @LlEnumGetEntry := GetProcAddress(hDLLLL25,'LlEnumGetEntryA');
       {$endif}
       {$ifdef UNICODE}
-          @LlEnumGetEntry := GetProcAddress(hDLLLL24,'LlEnumGetEntryW');
+          @LlEnumGetEntry := GetProcAddress(hDLLLL25,'LlEnumGetEntryW');
         {$else}
-          @LlEnumGetEntryO := GetProcAddress(hDLLLL24,'LlEnumGetEntryW');
+          @LlEnumGetEntryO := GetProcAddress(hDLLLL25,'LlEnumGetEntryW');
       {$endif}
-      @LlPrintResetObjectStates := GetProcAddress(hDLLLL24,'LlPrintResetObjectStates');
+      @LlPrintResetObjectStates := GetProcAddress(hDLLLL25,'LlPrintResetObjectStates');
       {$ifdef UNICODE}
-          @LlXSetParameterO := GetProcAddress(hDLLLL24,'LlXSetParameterA');
+          @LlXSetParameterO := GetProcAddress(hDLLLL25,'LlXSetParameterA');
         {$else}
-          @LlXSetParameter := GetProcAddress(hDLLLL24,'LlXSetParameterA');
+          @LlXSetParameter := GetProcAddress(hDLLLL25,'LlXSetParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlXSetParameter := GetProcAddress(hDLLLL24,'LlXSetParameterW');
+          @LlXSetParameter := GetProcAddress(hDLLLL25,'LlXSetParameterW');
         {$else}
-          @LlXSetParameterO := GetProcAddress(hDLLLL24,'LlXSetParameterW');
+          @LlXSetParameterO := GetProcAddress(hDLLLL25,'LlXSetParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlXGetParameterO := GetProcAddress(hDLLLL24,'LlXGetParameterA');
+          @LlXGetParameterO := GetProcAddress(hDLLLL25,'LlXGetParameterA');
         {$else}
-          @LlXGetParameter := GetProcAddress(hDLLLL24,'LlXGetParameterA');
+          @LlXGetParameter := GetProcAddress(hDLLLL25,'LlXGetParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlXGetParameter := GetProcAddress(hDLLLL24,'LlXGetParameterW');
+          @LlXGetParameter := GetProcAddress(hDLLLL25,'LlXGetParameterW');
         {$else}
-          @LlXGetParameterO := GetProcAddress(hDLLLL24,'LlXGetParameterW');
+          @LlXGetParameterO := GetProcAddress(hDLLLL25,'LlXGetParameterW');
       {$endif}
-      @LlPrintResetProjectState := GetProcAddress(hDLLLL24,'LlPrintResetProjectState');
-      @LlDefineChartFieldStart := GetProcAddress(hDLLLL24,'LlDefineChartFieldStart');
+      @LlPrintResetProjectState := GetProcAddress(hDLLLL25,'LlPrintResetProjectState');
+      @LlDefineChartFieldStart := GetProcAddress(hDLLLL25,'LlDefineChartFieldStart');
       {$ifdef UNICODE}
-          @LlDefineChartFieldExtO := GetProcAddress(hDLLLL24,'LlDefineChartFieldExtA');
+          @LlDefineChartFieldExtO := GetProcAddress(hDLLLL25,'LlDefineChartFieldExtA');
         {$else}
-          @LlDefineChartFieldExt := GetProcAddress(hDLLLL24,'LlDefineChartFieldExtA');
+          @LlDefineChartFieldExt := GetProcAddress(hDLLLL25,'LlDefineChartFieldExtA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineChartFieldExt := GetProcAddress(hDLLLL24,'LlDefineChartFieldExtW');
+          @LlDefineChartFieldExt := GetProcAddress(hDLLLL25,'LlDefineChartFieldExtW');
         {$else}
-          @LlDefineChartFieldExtO := GetProcAddress(hDLLLL24,'LlDefineChartFieldExtW');
+          @LlDefineChartFieldExtO := GetProcAddress(hDLLLL25,'LlDefineChartFieldExtW');
       {$endif}
-      @LlPrintDeclareChartRow := GetProcAddress(hDLLLL24,'LlPrintDeclareChartRow');
-      @LlPrintGetChartObjectCount := GetProcAddress(hDLLLL24,'LlPrintGetChartObjectCount');
+      @LlPrintDeclareChartRow := GetProcAddress(hDLLLL25,'LlPrintDeclareChartRow');
+      @LlPrintGetChartObjectCount := GetProcAddress(hDLLLL25,'LlPrintGetChartObjectCount');
       {$ifdef UNICODE}
-          @LlPrintIsChartFieldUsedO := GetProcAddress(hDLLLL24,'LlPrintIsChartFieldUsedA');
+          @LlPrintIsChartFieldUsedO := GetProcAddress(hDLLLL25,'LlPrintIsChartFieldUsedA');
         {$else}
-          @LlPrintIsChartFieldUsed := GetProcAddress(hDLLLL24,'LlPrintIsChartFieldUsedA');
+          @LlPrintIsChartFieldUsed := GetProcAddress(hDLLLL25,'LlPrintIsChartFieldUsedA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintIsChartFieldUsed := GetProcAddress(hDLLLL24,'LlPrintIsChartFieldUsedW');
+          @LlPrintIsChartFieldUsed := GetProcAddress(hDLLLL25,'LlPrintIsChartFieldUsedW');
         {$else}
-          @LlPrintIsChartFieldUsedO := GetProcAddress(hDLLLL24,'LlPrintIsChartFieldUsedW');
+          @LlPrintIsChartFieldUsedO := GetProcAddress(hDLLLL25,'LlPrintIsChartFieldUsedW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetChartFieldContentsO := GetProcAddress(hDLLLL24,'LlGetChartFieldContentsA');
+          @LlGetChartFieldContentsO := GetProcAddress(hDLLLL25,'LlGetChartFieldContentsA');
         {$else}
-          @LlGetChartFieldContents := GetProcAddress(hDLLLL24,'LlGetChartFieldContentsA');
+          @LlGetChartFieldContents := GetProcAddress(hDLLLL25,'LlGetChartFieldContentsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetChartFieldContents := GetProcAddress(hDLLLL24,'LlGetChartFieldContentsW');
+          @LlGetChartFieldContents := GetProcAddress(hDLLLL25,'LlGetChartFieldContentsW');
         {$else}
-          @LlGetChartFieldContentsO := GetProcAddress(hDLLLL24,'LlGetChartFieldContentsW');
+          @LlGetChartFieldContentsO := GetProcAddress(hDLLLL25,'LlGetChartFieldContentsW');
       {$endif}
-      @LlEnumGetFirstChartField := GetProcAddress(hDLLLL24,'LlEnumGetFirstChartField');
-      @LlSetNotificationCallbackExt := GetProcAddress(hDLLLL24,'LlSetNotificationCallbackExt');
-      @LlExprEvaluateVar    := GetProcAddress(hDLLLL24,'LlExprEvaluateVar');
-      @LlExprTypeVar        := GetProcAddress(hDLLLL24,'LlExprTypeVar');
+      @LlEnumGetFirstChartField := GetProcAddress(hDLLLL25,'LlEnumGetFirstChartField');
+      @LlSetNotificationCallbackExt := GetProcAddress(hDLLLL25,'LlSetNotificationCallbackExt');
+      @LlExprEvaluateVar    := GetProcAddress(hDLLLL25,'LlExprEvaluateVar');
+      @LlExprTypeVar        := GetProcAddress(hDLLLL25,'LlExprTypeVar');
       {$ifdef UNICODE}
-          @LlGetPrinterFromPrinterFileO := GetProcAddress(hDLLLL24,'LlGetPrinterFromPrinterFileA');
+          @LlGetPrinterFromPrinterFileO := GetProcAddress(hDLLLL25,'LlGetPrinterFromPrinterFileA');
         {$else}
-          @LlGetPrinterFromPrinterFile := GetProcAddress(hDLLLL24,'LlGetPrinterFromPrinterFileA');
+          @LlGetPrinterFromPrinterFile := GetProcAddress(hDLLLL25,'LlGetPrinterFromPrinterFileA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetPrinterFromPrinterFile := GetProcAddress(hDLLLL24,'LlGetPrinterFromPrinterFileW');
+          @LlGetPrinterFromPrinterFile := GetProcAddress(hDLLLL25,'LlGetPrinterFromPrinterFileW');
         {$else}
-          @LlGetPrinterFromPrinterFileO := GetProcAddress(hDLLLL24,'LlGetPrinterFromPrinterFileW');
+          @LlGetPrinterFromPrinterFileO := GetProcAddress(hDLLLL25,'LlGetPrinterFromPrinterFileW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetRemainingSpacePerTableO := GetProcAddress(hDLLLL24,'LlPrintGetRemainingSpacePerTableA');
+          @LlPrintGetRemainingSpacePerTableO := GetProcAddress(hDLLLL25,'LlPrintGetRemainingSpacePerTableA');
         {$else}
-          @LlPrintGetRemainingSpacePerTable := GetProcAddress(hDLLLL24,'LlPrintGetRemainingSpacePerTableA');
+          @LlPrintGetRemainingSpacePerTable := GetProcAddress(hDLLLL25,'LlPrintGetRemainingSpacePerTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetRemainingSpacePerTable := GetProcAddress(hDLLLL24,'LlPrintGetRemainingSpacePerTableW');
+          @LlPrintGetRemainingSpacePerTable := GetProcAddress(hDLLLL25,'LlPrintGetRemainingSpacePerTableW');
         {$else}
-          @LlPrintGetRemainingSpacePerTableO := GetProcAddress(hDLLLL24,'LlPrintGetRemainingSpacePerTableW');
+          @LlPrintGetRemainingSpacePerTableO := GetProcAddress(hDLLLL25,'LlPrintGetRemainingSpacePerTableW');
       {$endif}
-      @LlDrawToolbarBackground := GetProcAddress(hDLLLL24,'LlDrawToolbarBackground');
+      @LlDrawToolbarBackground := GetProcAddress(hDLLLL25,'LlDrawToolbarBackground');
       {$ifdef UNICODE}
-          @LlSetDefaultProjectParameterO := GetProcAddress(hDLLLL24,'LlSetDefaultProjectParameterA');
+          @LlSetDefaultProjectParameterO := GetProcAddress(hDLLLL25,'LlSetDefaultProjectParameterA');
         {$else}
-          @LlSetDefaultProjectParameter := GetProcAddress(hDLLLL24,'LlSetDefaultProjectParameterA');
+          @LlSetDefaultProjectParameter := GetProcAddress(hDLLLL25,'LlSetDefaultProjectParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlSetDefaultProjectParameter := GetProcAddress(hDLLLL24,'LlSetDefaultProjectParameterW');
+          @LlSetDefaultProjectParameter := GetProcAddress(hDLLLL25,'LlSetDefaultProjectParameterW');
         {$else}
-          @LlSetDefaultProjectParameterO := GetProcAddress(hDLLLL24,'LlSetDefaultProjectParameterW');
+          @LlSetDefaultProjectParameterO := GetProcAddress(hDLLLL25,'LlSetDefaultProjectParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetDefaultProjectParameterO := GetProcAddress(hDLLLL24,'LlGetDefaultProjectParameterA');
+          @LlGetDefaultProjectParameterO := GetProcAddress(hDLLLL25,'LlGetDefaultProjectParameterA');
         {$else}
-          @LlGetDefaultProjectParameter := GetProcAddress(hDLLLL24,'LlGetDefaultProjectParameterA');
+          @LlGetDefaultProjectParameter := GetProcAddress(hDLLLL25,'LlGetDefaultProjectParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetDefaultProjectParameter := GetProcAddress(hDLLLL24,'LlGetDefaultProjectParameterW');
+          @LlGetDefaultProjectParameter := GetProcAddress(hDLLLL25,'LlGetDefaultProjectParameterW');
         {$else}
-          @LlGetDefaultProjectParameterO := GetProcAddress(hDLLLL24,'LlGetDefaultProjectParameterW');
+          @LlGetDefaultProjectParameterO := GetProcAddress(hDLLLL25,'LlGetDefaultProjectParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintSetProjectParameterO := GetProcAddress(hDLLLL24,'LlPrintSetProjectParameterA');
+          @LlPrintSetProjectParameterO := GetProcAddress(hDLLLL25,'LlPrintSetProjectParameterA');
         {$else}
-          @LlPrintSetProjectParameter := GetProcAddress(hDLLLL24,'LlPrintSetProjectParameterA');
+          @LlPrintSetProjectParameter := GetProcAddress(hDLLLL25,'LlPrintSetProjectParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintSetProjectParameter := GetProcAddress(hDLLLL24,'LlPrintSetProjectParameterW');
+          @LlPrintSetProjectParameter := GetProcAddress(hDLLLL25,'LlPrintSetProjectParameterW');
         {$else}
-          @LlPrintSetProjectParameterO := GetProcAddress(hDLLLL24,'LlPrintSetProjectParameterW');
+          @LlPrintSetProjectParameterO := GetProcAddress(hDLLLL25,'LlPrintSetProjectParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetProjectParameterO := GetProcAddress(hDLLLL24,'LlPrintGetProjectParameterA');
+          @LlPrintGetProjectParameterO := GetProcAddress(hDLLLL25,'LlPrintGetProjectParameterA');
         {$else}
-          @LlPrintGetProjectParameter := GetProcAddress(hDLLLL24,'LlPrintGetProjectParameterA');
+          @LlPrintGetProjectParameter := GetProcAddress(hDLLLL25,'LlPrintGetProjectParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintGetProjectParameter := GetProcAddress(hDLLLL24,'LlPrintGetProjectParameterW');
+          @LlPrintGetProjectParameter := GetProcAddress(hDLLLL25,'LlPrintGetProjectParameterW');
         {$else}
-          @LlPrintGetProjectParameterO := GetProcAddress(hDLLLL24,'LlPrintGetProjectParameterW');
+          @LlPrintGetProjectParameterO := GetProcAddress(hDLLLL25,'LlPrintGetProjectParameterW');
       {$endif}
-      @LlCreateObject       := GetProcAddress(hDLLLL24,'LlCreateObject');
+      @LlCreateObject       := GetProcAddress(hDLLLL25,'LlCreateObject');
       {$ifdef UNICODE}
-          @LlExprContainsVariableO := GetProcAddress(hDLLLL24,'LlExprContainsVariableA');
+          @LlExprContainsVariableO := GetProcAddress(hDLLLL25,'LlExprContainsVariableA');
         {$else}
-          @LlExprContainsVariable := GetProcAddress(hDLLLL24,'LlExprContainsVariableA');
+          @LlExprContainsVariable := GetProcAddress(hDLLLL25,'LlExprContainsVariableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprContainsVariable := GetProcAddress(hDLLLL24,'LlExprContainsVariableW');
+          @LlExprContainsVariable := GetProcAddress(hDLLLL25,'LlExprContainsVariableW');
         {$else}
-          @LlExprContainsVariableO := GetProcAddress(hDLLLL24,'LlExprContainsVariableW');
+          @LlExprContainsVariableO := GetProcAddress(hDLLLL25,'LlExprContainsVariableW');
       {$endif}
-      @LlExprIsConstant     := GetProcAddress(hDLLLL24,'LlExprIsConstant');
+      @LlExprIsConstant     := GetProcAddress(hDLLLL25,'LlExprIsConstant');
       {$ifdef UNICODE}
-          @LlProfileStartO := GetProcAddress(hDLLLL24,'LlProfileStartA');
+          @LlProfileStartO := GetProcAddress(hDLLLL25,'LlProfileStartA');
         {$else}
-          @LlProfileStart := GetProcAddress(hDLLLL24,'LlProfileStartA');
+          @LlProfileStart := GetProcAddress(hDLLLL25,'LlProfileStartA');
       {$endif}
       {$ifdef UNICODE}
-          @LlProfileStart := GetProcAddress(hDLLLL24,'LlProfileStartW');
+          @LlProfileStart := GetProcAddress(hDLLLL25,'LlProfileStartW');
         {$else}
-          @LlProfileStartO := GetProcAddress(hDLLLL24,'LlProfileStartW');
+          @LlProfileStartO := GetProcAddress(hDLLLL25,'LlProfileStartW');
       {$endif}
-      @LlProfileEnd         := GetProcAddress(hDLLLL24,'LlProfileEnd');
-      @LlDumpMemory         := GetProcAddress(hDLLLL24,'LlDumpMemory');
+      @LlProfileEnd         := GetProcAddress(hDLLLL25,'LlProfileEnd');
+      @LlDumpMemory         := GetProcAddress(hDLLLL25,'LlDumpMemory');
       {$ifdef UNICODE}
-          @LlDbAddTableO := GetProcAddress(hDLLLL24,'LlDbAddTableA');
+          @LlDbAddTableO := GetProcAddress(hDLLLL25,'LlDbAddTableA');
         {$else}
-          @LlDbAddTable := GetProcAddress(hDLLLL24,'LlDbAddTableA');
+          @LlDbAddTable := GetProcAddress(hDLLLL25,'LlDbAddTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTable := GetProcAddress(hDLLLL24,'LlDbAddTableW');
+          @LlDbAddTable := GetProcAddress(hDLLLL25,'LlDbAddTableW');
         {$else}
-          @LlDbAddTableO := GetProcAddress(hDLLLL24,'LlDbAddTableW');
+          @LlDbAddTableO := GetProcAddress(hDLLLL25,'LlDbAddTableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableRelationO := GetProcAddress(hDLLLL24,'LlDbAddTableRelationA');
+          @LlDbAddTableRelationO := GetProcAddress(hDLLLL25,'LlDbAddTableRelationA');
         {$else}
-          @LlDbAddTableRelation := GetProcAddress(hDLLLL24,'LlDbAddTableRelationA');
+          @LlDbAddTableRelation := GetProcAddress(hDLLLL25,'LlDbAddTableRelationA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableRelation := GetProcAddress(hDLLLL24,'LlDbAddTableRelationW');
+          @LlDbAddTableRelation := GetProcAddress(hDLLLL25,'LlDbAddTableRelationW');
         {$else}
-          @LlDbAddTableRelationO := GetProcAddress(hDLLLL24,'LlDbAddTableRelationW');
+          @LlDbAddTableRelationO := GetProcAddress(hDLLLL25,'LlDbAddTableRelationW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableSortOrderO := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderA');
+          @LlDbAddTableSortOrderO := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderA');
         {$else}
-          @LlDbAddTableSortOrder := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderA');
+          @LlDbAddTableSortOrder := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableSortOrder := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderW');
+          @LlDbAddTableSortOrder := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderW');
         {$else}
-          @LlDbAddTableSortOrderO := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderW');
+          @LlDbAddTableSortOrderO := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintDbGetCurrentTableO := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableA');
+          @LlPrintDbGetCurrentTableO := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableA');
         {$else}
-          @LlPrintDbGetCurrentTable := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableA');
+          @LlPrintDbGetCurrentTable := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintDbGetCurrentTable := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableW');
+          @LlPrintDbGetCurrentTable := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableW');
         {$else}
-          @LlPrintDbGetCurrentTableO := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableW');
+          @LlPrintDbGetCurrentTableO := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintDbGetCurrentTableRelationO := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableRelationA');
+          @LlPrintDbGetCurrentTableRelationO := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableRelationA');
         {$else}
-          @LlPrintDbGetCurrentTableRelation := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableRelationA');
+          @LlPrintDbGetCurrentTableRelation := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableRelationA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintDbGetCurrentTableRelation := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableRelationW');
+          @LlPrintDbGetCurrentTableRelation := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableRelationW');
         {$else}
-          @LlPrintDbGetCurrentTableRelationO := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableRelationW');
+          @LlPrintDbGetCurrentTableRelationO := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableRelationW');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintDbGetCurrentTableSortOrderO := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableSortOrderA');
+          @LlPrintDbGetCurrentTableSortOrderO := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableSortOrderA');
         {$else}
-          @LlPrintDbGetCurrentTableSortOrder := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableSortOrderA');
+          @LlPrintDbGetCurrentTableSortOrder := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableSortOrderA');
       {$endif}
       {$ifdef UNICODE}
-          @LlPrintDbGetCurrentTableSortOrder := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableSortOrderW');
+          @LlPrintDbGetCurrentTableSortOrder := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableSortOrderW');
         {$else}
-          @LlPrintDbGetCurrentTableSortOrderO := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableSortOrderW');
+          @LlPrintDbGetCurrentTableSortOrderO := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableSortOrderW');
       {$endif}
-      @LlDbDumpStructure    := GetProcAddress(hDLLLL24,'LlDbDumpStructure');
-      @LlPrintDbGetRootTableCount := GetProcAddress(hDLLLL24,'LlPrintDbGetRootTableCount');
+      @LlDbDumpStructure    := GetProcAddress(hDLLLL25,'LlDbDumpStructure');
+      @LlPrintDbGetRootTableCount := GetProcAddress(hDLLLL25,'LlPrintDbGetRootTableCount');
       {$ifdef UNICODE}
-          @LlDbSetMasterTableO := GetProcAddress(hDLLLL24,'LlDbSetMasterTableA');
+          @LlDbSetMasterTableO := GetProcAddress(hDLLLL25,'LlDbSetMasterTableA');
         {$else}
-          @LlDbSetMasterTable := GetProcAddress(hDLLLL24,'LlDbSetMasterTableA');
+          @LlDbSetMasterTable := GetProcAddress(hDLLLL25,'LlDbSetMasterTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbSetMasterTable := GetProcAddress(hDLLLL24,'LlDbSetMasterTableW');
+          @LlDbSetMasterTable := GetProcAddress(hDLLLL25,'LlDbSetMasterTableW');
         {$else}
-          @LlDbSetMasterTableO := GetProcAddress(hDLLLL24,'LlDbSetMasterTableW');
+          @LlDbSetMasterTableO := GetProcAddress(hDLLLL25,'LlDbSetMasterTableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbGetMasterTableO := GetProcAddress(hDLLLL24,'LlDbGetMasterTableA');
+          @LlDbGetMasterTableO := GetProcAddress(hDLLLL25,'LlDbGetMasterTableA');
         {$else}
-          @LlDbGetMasterTable := GetProcAddress(hDLLLL24,'LlDbGetMasterTableA');
+          @LlDbGetMasterTable := GetProcAddress(hDLLLL25,'LlDbGetMasterTableA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbGetMasterTable := GetProcAddress(hDLLLL24,'LlDbGetMasterTableW');
+          @LlDbGetMasterTable := GetProcAddress(hDLLLL25,'LlDbGetMasterTableW');
         {$else}
-          @LlDbGetMasterTableO := GetProcAddress(hDLLLL24,'LlDbGetMasterTableW');
+          @LlDbGetMasterTableO := GetProcAddress(hDLLLL25,'LlDbGetMasterTableW');
       {$endif}
       {$ifdef UNICODE}
-          @LlXSetExportParameterO := GetProcAddress(hDLLLL24,'LlXSetExportParameterA');
+          @LlXSetExportParameterO := GetProcAddress(hDLLLL25,'LlXSetExportParameterA');
         {$else}
-          @LlXSetExportParameter := GetProcAddress(hDLLLL24,'LlXSetExportParameterA');
+          @LlXSetExportParameter := GetProcAddress(hDLLLL25,'LlXSetExportParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlXSetExportParameter := GetProcAddress(hDLLLL24,'LlXSetExportParameterW');
+          @LlXSetExportParameter := GetProcAddress(hDLLLL25,'LlXSetExportParameterW');
         {$else}
-          @LlXSetExportParameterO := GetProcAddress(hDLLLL24,'LlXSetExportParameterW');
+          @LlXSetExportParameterO := GetProcAddress(hDLLLL25,'LlXSetExportParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlXGetExportParameterO := GetProcAddress(hDLLLL24,'LlXGetExportParameterA');
+          @LlXGetExportParameterO := GetProcAddress(hDLLLL25,'LlXGetExportParameterA');
         {$else}
-          @LlXGetExportParameter := GetProcAddress(hDLLLL24,'LlXGetExportParameterA');
+          @LlXGetExportParameter := GetProcAddress(hDLLLL25,'LlXGetExportParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlXGetExportParameter := GetProcAddress(hDLLLL24,'LlXGetExportParameterW');
+          @LlXGetExportParameter := GetProcAddress(hDLLLL25,'LlXGetExportParameterW');
         {$else}
-          @LlXGetExportParameterO := GetProcAddress(hDLLLL24,'LlXGetExportParameterW');
+          @LlXGetExportParameterO := GetProcAddress(hDLLLL25,'LlXGetExportParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlXlatNameO := GetProcAddress(hDLLLL24,'LlXlatNameA');
+          @LlXlatNameO := GetProcAddress(hDLLLL25,'LlXlatNameA');
         {$else}
-          @LlXlatName := GetProcAddress(hDLLLL24,'LlXlatNameA');
+          @LlXlatName := GetProcAddress(hDLLLL25,'LlXlatNameA');
       {$endif}
       {$ifdef UNICODE}
-          @LlXlatName := GetProcAddress(hDLLLL24,'LlXlatNameW');
+          @LlXlatName := GetProcAddress(hDLLLL25,'LlXlatNameW');
         {$else}
-          @LlXlatNameO := GetProcAddress(hDLLLL24,'LlXlatNameW');
+          @LlXlatNameO := GetProcAddress(hDLLLL25,'LlXlatNameW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableVarO := GetProcAddress(hDLLLL24,'LlDefineVariableVarA');
+          @LlDefineVariableVarO := GetProcAddress(hDLLLL25,'LlDefineVariableVarA');
         {$else}
-          @LlDefineVariableVar := GetProcAddress(hDLLLL24,'LlDefineVariableVarA');
+          @LlDefineVariableVar := GetProcAddress(hDLLLL25,'LlDefineVariableVarA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineVariableVar := GetProcAddress(hDLLLL24,'LlDefineVariableVarW');
+          @LlDefineVariableVar := GetProcAddress(hDLLLL25,'LlDefineVariableVarW');
         {$else}
-          @LlDefineVariableVarO := GetProcAddress(hDLLLL24,'LlDefineVariableVarW');
+          @LlDefineVariableVarO := GetProcAddress(hDLLLL25,'LlDefineVariableVarW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineFieldVarO := GetProcAddress(hDLLLL24,'LlDefineFieldVarA');
+          @LlDefineFieldVarO := GetProcAddress(hDLLLL25,'LlDefineFieldVarA');
         {$else}
-          @LlDefineFieldVar := GetProcAddress(hDLLLL24,'LlDefineFieldVarA');
+          @LlDefineFieldVar := GetProcAddress(hDLLLL25,'LlDefineFieldVarA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineFieldVar := GetProcAddress(hDLLLL24,'LlDefineFieldVarW');
+          @LlDefineFieldVar := GetProcAddress(hDLLLL25,'LlDefineFieldVarW');
         {$else}
-          @LlDefineFieldVarO := GetProcAddress(hDLLLL24,'LlDefineFieldVarW');
+          @LlDefineFieldVarO := GetProcAddress(hDLLLL25,'LlDefineFieldVarW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineChartFieldVarO := GetProcAddress(hDLLLL24,'LlDefineChartFieldVarA');
+          @LlDefineChartFieldVarO := GetProcAddress(hDLLLL25,'LlDefineChartFieldVarA');
         {$else}
-          @LlDefineChartFieldVar := GetProcAddress(hDLLLL24,'LlDefineChartFieldVarA');
+          @LlDefineChartFieldVar := GetProcAddress(hDLLLL25,'LlDefineChartFieldVarA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDefineChartFieldVar := GetProcAddress(hDLLLL24,'LlDefineChartFieldVarW');
+          @LlDefineChartFieldVar := GetProcAddress(hDLLLL25,'LlDefineChartFieldVarW');
         {$else}
-          @LlDefineChartFieldVarO := GetProcAddress(hDLLLL24,'LlDefineChartFieldVarW');
+          @LlDefineChartFieldVarO := GetProcAddress(hDLLLL25,'LlDefineChartFieldVarW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerProhibitEditingObjectO := GetProcAddress(hDLLLL24,'LlDesignerProhibitEditingObjectA');
+          @LlDesignerProhibitEditingObjectO := GetProcAddress(hDLLLL25,'LlDesignerProhibitEditingObjectA');
         {$else}
-          @LlDesignerProhibitEditingObject := GetProcAddress(hDLLLL24,'LlDesignerProhibitEditingObjectA');
+          @LlDesignerProhibitEditingObject := GetProcAddress(hDLLLL25,'LlDesignerProhibitEditingObjectA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerProhibitEditingObject := GetProcAddress(hDLLLL24,'LlDesignerProhibitEditingObjectW');
+          @LlDesignerProhibitEditingObject := GetProcAddress(hDLLLL25,'LlDesignerProhibitEditingObjectW');
         {$else}
-          @LlDesignerProhibitEditingObjectO := GetProcAddress(hDLLLL24,'LlDesignerProhibitEditingObjectW');
+          @LlDesignerProhibitEditingObjectO := GetProcAddress(hDLLLL25,'LlDesignerProhibitEditingObjectW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetUsedIdentifiersO := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersA');
+          @LlGetUsedIdentifiersO := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersA');
         {$else}
-          @LlGetUsedIdentifiers := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersA');
+          @LlGetUsedIdentifiers := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetUsedIdentifiers := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersW');
+          @LlGetUsedIdentifiers := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersW');
         {$else}
-          @LlGetUsedIdentifiersO := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersW');
+          @LlGetUsedIdentifiersO := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersW');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprGetUsedVarsExO := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsExA');
+          @LlExprGetUsedVarsExO := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsExA');
         {$else}
-          @LlExprGetUsedVarsEx := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsExA');
+          @LlExprGetUsedVarsEx := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprGetUsedVarsEx := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsExW');
+          @LlExprGetUsedVarsEx := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsExW');
         {$else}
-          @LlExprGetUsedVarsExO := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsExW');
+          @LlExprGetUsedVarsExO := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsExW');
       {$endif}
-      @LlDomGetProject      := GetProcAddress(hDLLLL24,'LlDomGetProject');
+      @LlDomGetProject      := GetProcAddress(hDLLLL25,'LlDomGetProject');
       {$ifdef UNICODE}
-          @LlDomGetPropertyO := GetProcAddress(hDLLLL24,'LlDomGetPropertyA');
+          @LlDomGetPropertyO := GetProcAddress(hDLLLL25,'LlDomGetPropertyA');
         {$else}
-          @LlDomGetProperty := GetProcAddress(hDLLLL24,'LlDomGetPropertyA');
+          @LlDomGetProperty := GetProcAddress(hDLLLL25,'LlDomGetPropertyA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDomGetProperty := GetProcAddress(hDLLLL24,'LlDomGetPropertyW');
+          @LlDomGetProperty := GetProcAddress(hDLLLL25,'LlDomGetPropertyW');
         {$else}
-          @LlDomGetPropertyO := GetProcAddress(hDLLLL24,'LlDomGetPropertyW');
+          @LlDomGetPropertyO := GetProcAddress(hDLLLL25,'LlDomGetPropertyW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDomSetPropertyO := GetProcAddress(hDLLLL24,'LlDomSetPropertyA');
+          @LlDomSetPropertyO := GetProcAddress(hDLLLL25,'LlDomSetPropertyA');
         {$else}
-          @LlDomSetProperty := GetProcAddress(hDLLLL24,'LlDomSetPropertyA');
+          @LlDomSetProperty := GetProcAddress(hDLLLL25,'LlDomSetPropertyA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDomSetProperty := GetProcAddress(hDLLLL24,'LlDomSetPropertyW');
+          @LlDomSetProperty := GetProcAddress(hDLLLL25,'LlDomSetPropertyW');
         {$else}
-          @LlDomSetPropertyO := GetProcAddress(hDLLLL24,'LlDomSetPropertyW');
+          @LlDomSetPropertyO := GetProcAddress(hDLLLL25,'LlDomSetPropertyW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDomGetObjectO := GetProcAddress(hDLLLL24,'LlDomGetObjectA');
+          @LlDomGetObjectO := GetProcAddress(hDLLLL25,'LlDomGetObjectA');
         {$else}
-          @LlDomGetObject := GetProcAddress(hDLLLL24,'LlDomGetObjectA');
+          @LlDomGetObject := GetProcAddress(hDLLLL25,'LlDomGetObjectA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDomGetObject := GetProcAddress(hDLLLL24,'LlDomGetObjectW');
+          @LlDomGetObject := GetProcAddress(hDLLLL25,'LlDomGetObjectW');
         {$else}
-          @LlDomGetObjectO := GetProcAddress(hDLLLL24,'LlDomGetObjectW');
+          @LlDomGetObjectO := GetProcAddress(hDLLLL25,'LlDomGetObjectW');
       {$endif}
-      @LlDomGetSubobjectCount := GetProcAddress(hDLLLL24,'LlDomGetSubobjectCount');
-      @LlDomGetSubobject    := GetProcAddress(hDLLLL24,'LlDomGetSubobject');
+      @LlDomGetSubobjectCount := GetProcAddress(hDLLLL25,'LlDomGetSubobjectCount');
+      @LlDomGetSubobject    := GetProcAddress(hDLLLL25,'LlDomGetSubobject');
       {$ifdef UNICODE}
-          @LlDomCreateSubobjectO := GetProcAddress(hDLLLL24,'LlDomCreateSubobjectA');
+          @LlDomCreateSubobjectO := GetProcAddress(hDLLLL25,'LlDomCreateSubobjectA');
         {$else}
-          @LlDomCreateSubobject := GetProcAddress(hDLLLL24,'LlDomCreateSubobjectA');
+          @LlDomCreateSubobject := GetProcAddress(hDLLLL25,'LlDomCreateSubobjectA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDomCreateSubobject := GetProcAddress(hDLLLL24,'LlDomCreateSubobjectW');
+          @LlDomCreateSubobject := GetProcAddress(hDLLLL25,'LlDomCreateSubobjectW');
         {$else}
-          @LlDomCreateSubobjectO := GetProcAddress(hDLLLL24,'LlDomCreateSubobjectW');
+          @LlDomCreateSubobjectO := GetProcAddress(hDLLLL25,'LlDomCreateSubobjectW');
       {$endif}
-      @LlDomDeleteSubobject := GetProcAddress(hDLLLL24,'LlDomDeleteSubobject');
+      @LlDomDeleteSubobject := GetProcAddress(hDLLLL25,'LlDomDeleteSubobject');
       {$ifdef UNICODE}
-          @LlProjectOpenO := GetProcAddress(hDLLLL24,'LlProjectOpenA');
+          @LlProjectOpenO := GetProcAddress(hDLLLL25,'LlProjectOpenA');
         {$else}
-          @LlProjectOpen := GetProcAddress(hDLLLL24,'LlProjectOpenA');
+          @LlProjectOpen := GetProcAddress(hDLLLL25,'LlProjectOpenA');
       {$endif}
       {$ifdef UNICODE}
-          @LlProjectOpen := GetProcAddress(hDLLLL24,'LlProjectOpenW');
+          @LlProjectOpen := GetProcAddress(hDLLLL25,'LlProjectOpenW');
         {$else}
-          @LlProjectOpenO := GetProcAddress(hDLLLL24,'LlProjectOpenW');
+          @LlProjectOpenO := GetProcAddress(hDLLLL25,'LlProjectOpenW');
       {$endif}
       {$ifdef UNICODE}
-          @LlProjectSaveO := GetProcAddress(hDLLLL24,'LlProjectSaveA');
+          @LlProjectSaveO := GetProcAddress(hDLLLL25,'LlProjectSaveA');
         {$else}
-          @LlProjectSave := GetProcAddress(hDLLLL24,'LlProjectSaveA');
+          @LlProjectSave := GetProcAddress(hDLLLL25,'LlProjectSaveA');
       {$endif}
       {$ifdef UNICODE}
-          @LlProjectSave := GetProcAddress(hDLLLL24,'LlProjectSaveW');
+          @LlProjectSave := GetProcAddress(hDLLLL25,'LlProjectSaveW');
         {$else}
-          @LlProjectSaveO := GetProcAddress(hDLLLL24,'LlProjectSaveW');
+          @LlProjectSaveO := GetProcAddress(hDLLLL25,'LlProjectSaveW');
       {$endif}
-      @LlProjectClose       := GetProcAddress(hDLLLL24,'LlProjectClose');
-      @LlAssociatePreviewControl := GetProcAddress(hDLLLL24,'LlAssociatePreviewControl');
+      @LlProjectClose       := GetProcAddress(hDLLLL25,'LlProjectClose');
+      @LlAssociatePreviewControl := GetProcAddress(hDLLLL25,'LlAssociatePreviewControl');
       {$ifdef UNICODE}
-          @LlGetErrortextO := GetProcAddress(hDLLLL24,'LlGetErrortextA');
+          @LlGetErrortextO := GetProcAddress(hDLLLL25,'LlGetErrortextA');
         {$else}
-          @LlGetErrortext := GetProcAddress(hDLLLL24,'LlGetErrortextA');
+          @LlGetErrortext := GetProcAddress(hDLLLL25,'LlGetErrortextA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetErrortext := GetProcAddress(hDLLLL24,'LlGetErrortextW');
+          @LlGetErrortext := GetProcAddress(hDLLLL25,'LlGetErrortextW');
         {$else}
-          @LlGetErrortextO := GetProcAddress(hDLLLL24,'LlGetErrortextW');
+          @LlGetErrortextO := GetProcAddress(hDLLLL25,'LlGetErrortextW');
       {$endif}
-      @LlSetPreviewOption   := GetProcAddress(hDLLLL24,'LlSetPreviewOption');
-      @LlGetPreviewOption   := GetProcAddress(hDLLLL24,'LlGetPreviewOption');
-      @LlDesignerInvokeAction := GetProcAddress(hDLLLL24,'LlDesignerInvokeAction');
-      @LlDesignerRefreshWorkspace := GetProcAddress(hDLLLL24,'LlDesignerRefreshWorkspace');
+      @LlSetPreviewOption   := GetProcAddress(hDLLLL25,'LlSetPreviewOption');
+      @LlGetPreviewOption   := GetProcAddress(hDLLLL25,'LlGetPreviewOption');
+      @LlDesignerInvokeAction := GetProcAddress(hDLLLL25,'LlDesignerInvokeAction');
+      @LlDesignerRefreshWorkspace := GetProcAddress(hDLLLL25,'LlDesignerRefreshWorkspace');
       {$ifdef UNICODE}
-          @LlDesignerFileOpenO := GetProcAddress(hDLLLL24,'LlDesignerFileOpenA');
+          @LlDesignerFileOpenO := GetProcAddress(hDLLLL25,'LlDesignerFileOpenA');
         {$else}
-          @LlDesignerFileOpen := GetProcAddress(hDLLLL24,'LlDesignerFileOpenA');
+          @LlDesignerFileOpen := GetProcAddress(hDLLLL25,'LlDesignerFileOpenA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerFileOpen := GetProcAddress(hDLLLL24,'LlDesignerFileOpenW');
+          @LlDesignerFileOpen := GetProcAddress(hDLLLL25,'LlDesignerFileOpenW');
         {$else}
-          @LlDesignerFileOpenO := GetProcAddress(hDLLLL24,'LlDesignerFileOpenW');
+          @LlDesignerFileOpenO := GetProcAddress(hDLLLL25,'LlDesignerFileOpenW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerFileSaveO := GetProcAddress(hDLLLL24,'LlDesignerFileSaveA');
+          @LlDesignerFileSaveO := GetProcAddress(hDLLLL25,'LlDesignerFileSaveA');
         {$else}
-          @LlDesignerFileSave := GetProcAddress(hDLLLL24,'LlDesignerFileSaveA');
+          @LlDesignerFileSave := GetProcAddress(hDLLLL25,'LlDesignerFileSaveA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerFileSave := GetProcAddress(hDLLLL24,'LlDesignerFileSaveW');
+          @LlDesignerFileSave := GetProcAddress(hDLLLL25,'LlDesignerFileSaveW');
         {$else}
-          @LlDesignerFileSaveO := GetProcAddress(hDLLLL24,'LlDesignerFileSaveW');
+          @LlDesignerFileSaveO := GetProcAddress(hDLLLL25,'LlDesignerFileSaveW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerAddActionO := GetProcAddress(hDLLLL24,'LlDesignerAddActionA');
+          @LlDesignerAddActionO := GetProcAddress(hDLLLL25,'LlDesignerAddActionA');
         {$else}
-          @LlDesignerAddAction := GetProcAddress(hDLLLL24,'LlDesignerAddActionA');
+          @LlDesignerAddAction := GetProcAddress(hDLLLL25,'LlDesignerAddActionA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerAddAction := GetProcAddress(hDLLLL24,'LlDesignerAddActionW');
+          @LlDesignerAddAction := GetProcAddress(hDLLLL25,'LlDesignerAddActionW');
         {$else}
-          @LlDesignerAddActionO := GetProcAddress(hDLLLL24,'LlDesignerAddActionW');
+          @LlDesignerAddActionO := GetProcAddress(hDLLLL25,'LlDesignerAddActionW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerGetOptionStringO := GetProcAddress(hDLLLL24,'LlDesignerGetOptionStringA');
+          @LlDesignerGetOptionStringO := GetProcAddress(hDLLLL25,'LlDesignerGetOptionStringA');
         {$else}
-          @LlDesignerGetOptionString := GetProcAddress(hDLLLL24,'LlDesignerGetOptionStringA');
+          @LlDesignerGetOptionString := GetProcAddress(hDLLLL25,'LlDesignerGetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerGetOptionString := GetProcAddress(hDLLLL24,'LlDesignerGetOptionStringW');
+          @LlDesignerGetOptionString := GetProcAddress(hDLLLL25,'LlDesignerGetOptionStringW');
         {$else}
-          @LlDesignerGetOptionStringO := GetProcAddress(hDLLLL24,'LlDesignerGetOptionStringW');
+          @LlDesignerGetOptionStringO := GetProcAddress(hDLLLL25,'LlDesignerGetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerSetOptionStringO := GetProcAddress(hDLLLL24,'LlDesignerSetOptionStringA');
+          @LlDesignerSetOptionStringO := GetProcAddress(hDLLLL25,'LlDesignerSetOptionStringA');
         {$else}
-          @LlDesignerSetOptionString := GetProcAddress(hDLLLL24,'LlDesignerSetOptionStringA');
+          @LlDesignerSetOptionString := GetProcAddress(hDLLLL25,'LlDesignerSetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDesignerSetOptionString := GetProcAddress(hDLLLL24,'LlDesignerSetOptionStringW');
+          @LlDesignerSetOptionString := GetProcAddress(hDLLLL25,'LlDesignerSetOptionStringW');
         {$else}
-          @LlDesignerSetOptionStringO := GetProcAddress(hDLLLL24,'LlDesignerSetOptionStringW');
+          @LlDesignerSetOptionStringO := GetProcAddress(hDLLLL25,'LlDesignerSetOptionStringW');
       {$endif}
-      @LlJobOpenCopy        := GetProcAddress(hDLLLL24,'LlJobOpenCopy');
+      @LlJobOpenCopy        := GetProcAddress(hDLLLL25,'LlJobOpenCopy');
       {$ifdef UNICODE}
-          @LlGetProjectParameterO := GetProcAddress(hDLLLL24,'LlGetProjectParameterA');
+          @LlGetProjectParameterO := GetProcAddress(hDLLLL25,'LlGetProjectParameterA');
         {$else}
-          @LlGetProjectParameter := GetProcAddress(hDLLLL24,'LlGetProjectParameterA');
+          @LlGetProjectParameter := GetProcAddress(hDLLLL25,'LlGetProjectParameterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetProjectParameter := GetProcAddress(hDLLLL24,'LlGetProjectParameterW');
+          @LlGetProjectParameter := GetProcAddress(hDLLLL25,'LlGetProjectParameterW');
         {$else}
-          @LlGetProjectParameterO := GetProcAddress(hDLLLL24,'LlGetProjectParameterW');
+          @LlGetProjectParameterO := GetProcAddress(hDLLLL25,'LlGetProjectParameterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertBLOBToStringO := GetProcAddress(hDLLLL24,'LlConvertBLOBToStringA');
+          @LlConvertBLOBToStringO := GetProcAddress(hDLLLL25,'LlConvertBLOBToStringA');
         {$else}
-          @LlConvertBLOBToString := GetProcAddress(hDLLLL24,'LlConvertBLOBToStringA');
+          @LlConvertBLOBToString := GetProcAddress(hDLLLL25,'LlConvertBLOBToStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertBLOBToString := GetProcAddress(hDLLLL24,'LlConvertBLOBToStringW');
+          @LlConvertBLOBToString := GetProcAddress(hDLLLL25,'LlConvertBLOBToStringW');
         {$else}
-          @LlConvertBLOBToStringO := GetProcAddress(hDLLLL24,'LlConvertBLOBToStringW');
+          @LlConvertBLOBToStringO := GetProcAddress(hDLLLL25,'LlConvertBLOBToStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStringToBLOBO := GetProcAddress(hDLLLL24,'LlConvertStringToBLOBA');
+          @LlConvertStringToBLOBO := GetProcAddress(hDLLLL25,'LlConvertStringToBLOBA');
         {$else}
-          @LlConvertStringToBLOB := GetProcAddress(hDLLLL24,'LlConvertStringToBLOBA');
+          @LlConvertStringToBLOB := GetProcAddress(hDLLLL25,'LlConvertStringToBLOBA');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStringToBLOB := GetProcAddress(hDLLLL24,'LlConvertStringToBLOBW');
+          @LlConvertStringToBLOB := GetProcAddress(hDLLLL25,'LlConvertStringToBLOBW');
         {$else}
-          @LlConvertStringToBLOBO := GetProcAddress(hDLLLL24,'LlConvertStringToBLOBW');
+          @LlConvertStringToBLOBO := GetProcAddress(hDLLLL25,'LlConvertStringToBLOBW');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStreamToStringO := GetProcAddress(hDLLLL24,'LlConvertStreamToStringA');
+          @LlConvertStreamToStringO := GetProcAddress(hDLLLL25,'LlConvertStreamToStringA');
         {$else}
-          @LlConvertStreamToString := GetProcAddress(hDLLLL24,'LlConvertStreamToStringA');
+          @LlConvertStreamToString := GetProcAddress(hDLLLL25,'LlConvertStreamToStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStreamToString := GetProcAddress(hDLLLL24,'LlConvertStreamToStringW');
+          @LlConvertStreamToString := GetProcAddress(hDLLLL25,'LlConvertStreamToStringW');
         {$else}
-          @LlConvertStreamToStringO := GetProcAddress(hDLLLL24,'LlConvertStreamToStringW');
+          @LlConvertStreamToStringO := GetProcAddress(hDLLLL25,'LlConvertStreamToStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStringToStreamO := GetProcAddress(hDLLLL24,'LlConvertStringToStreamA');
+          @LlConvertStringToStreamO := GetProcAddress(hDLLLL25,'LlConvertStringToStreamA');
         {$else}
-          @LlConvertStringToStream := GetProcAddress(hDLLLL24,'LlConvertStringToStreamA');
+          @LlConvertStringToStream := GetProcAddress(hDLLLL25,'LlConvertStringToStreamA');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStringToStream := GetProcAddress(hDLLLL24,'LlConvertStringToStreamW');
+          @LlConvertStringToStream := GetProcAddress(hDLLLL25,'LlConvertStringToStreamW');
         {$else}
-          @LlConvertStringToStreamO := GetProcAddress(hDLLLL24,'LlConvertStringToStreamW');
+          @LlConvertStringToStreamO := GetProcAddress(hDLLLL25,'LlConvertStringToStreamW');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertHGLOBALToStringO := GetProcAddress(hDLLLL24,'LlConvertHGLOBALToStringA');
+          @LlConvertHGLOBALToStringO := GetProcAddress(hDLLLL25,'LlConvertHGLOBALToStringA');
         {$else}
-          @LlConvertHGLOBALToString := GetProcAddress(hDLLLL24,'LlConvertHGLOBALToStringA');
+          @LlConvertHGLOBALToString := GetProcAddress(hDLLLL25,'LlConvertHGLOBALToStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertHGLOBALToString := GetProcAddress(hDLLLL24,'LlConvertHGLOBALToStringW');
+          @LlConvertHGLOBALToString := GetProcAddress(hDLLLL25,'LlConvertHGLOBALToStringW');
         {$else}
-          @LlConvertHGLOBALToStringO := GetProcAddress(hDLLLL24,'LlConvertHGLOBALToStringW');
+          @LlConvertHGLOBALToStringO := GetProcAddress(hDLLLL25,'LlConvertHGLOBALToStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStringToHGLOBALO := GetProcAddress(hDLLLL24,'LlConvertStringToHGLOBALA');
+          @LlConvertStringToHGLOBALO := GetProcAddress(hDLLLL25,'LlConvertStringToHGLOBALA');
         {$else}
-          @LlConvertStringToHGLOBAL := GetProcAddress(hDLLLL24,'LlConvertStringToHGLOBALA');
+          @LlConvertStringToHGLOBAL := GetProcAddress(hDLLLL25,'LlConvertStringToHGLOBALA');
       {$endif}
       {$ifdef UNICODE}
-          @LlConvertStringToHGLOBAL := GetProcAddress(hDLLLL24,'LlConvertStringToHGLOBALW');
+          @LlConvertStringToHGLOBAL := GetProcAddress(hDLLLL25,'LlConvertStringToHGLOBALW');
         {$else}
-          @LlConvertStringToHGLOBALO := GetProcAddress(hDLLLL24,'LlConvertStringToHGLOBALW');
+          @LlConvertStringToHGLOBALO := GetProcAddress(hDLLLL25,'LlConvertStringToHGLOBALW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableRelationExO := GetProcAddress(hDLLLL24,'LlDbAddTableRelationExA');
+          @LlDbAddTableRelationExO := GetProcAddress(hDLLLL25,'LlDbAddTableRelationExA');
         {$else}
-          @LlDbAddTableRelationEx := GetProcAddress(hDLLLL24,'LlDbAddTableRelationExA');
+          @LlDbAddTableRelationEx := GetProcAddress(hDLLLL25,'LlDbAddTableRelationExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableRelationEx := GetProcAddress(hDLLLL24,'LlDbAddTableRelationExW');
+          @LlDbAddTableRelationEx := GetProcAddress(hDLLLL25,'LlDbAddTableRelationExW');
         {$else}
-          @LlDbAddTableRelationExO := GetProcAddress(hDLLLL24,'LlDbAddTableRelationExW');
+          @LlDbAddTableRelationExO := GetProcAddress(hDLLLL25,'LlDbAddTableRelationExW');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableSortOrderExO := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderExA');
+          @LlDbAddTableSortOrderExO := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderExA');
         {$else}
-          @LlDbAddTableSortOrderEx := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderExA');
+          @LlDbAddTableSortOrderEx := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableSortOrderEx := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderExW');
+          @LlDbAddTableSortOrderEx := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderExW');
         {$else}
-          @LlDbAddTableSortOrderExO := GetProcAddress(hDLLLL24,'LlDbAddTableSortOrderExW');
+          @LlDbAddTableSortOrderExO := GetProcAddress(hDLLLL25,'LlDbAddTableSortOrderExW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetUsedIdentifiersExO := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersExA');
+          @LlGetUsedIdentifiersExO := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersExA');
         {$else}
-          @LlGetUsedIdentifiersEx := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersExA');
+          @LlGetUsedIdentifiersEx := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetUsedIdentifiersEx := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersExW');
+          @LlGetUsedIdentifiersEx := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersExW');
         {$else}
-          @LlGetUsedIdentifiersExO := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersExW');
+          @LlGetUsedIdentifiersExO := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersExW');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetTempFileNameO := GetProcAddress(hDLLLL24,'LlGetTempFileNameA');
+          @LlGetTempFileNameO := GetProcAddress(hDLLLL25,'LlGetTempFileNameA');
         {$else}
-          @LlGetTempFileName := GetProcAddress(hDLLLL24,'LlGetTempFileNameA');
+          @LlGetTempFileName := GetProcAddress(hDLLLL25,'LlGetTempFileNameA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetTempFileName := GetProcAddress(hDLLLL24,'LlGetTempFileNameW');
+          @LlGetTempFileName := GetProcAddress(hDLLLL25,'LlGetTempFileNameW');
         {$else}
-          @LlGetTempFileNameO := GetProcAddress(hDLLLL24,'LlGetTempFileNameW');
+          @LlGetTempFileNameO := GetProcAddress(hDLLLL25,'LlGetTempFileNameW');
       {$endif}
-      @LlGetDebug           := GetProcAddress(hDLLLL24,'LlGetDebug');
-      @LlRTFEditorGetRTFControlHandle := GetProcAddress(hDLLLL24,'LlRTFEditorGetRTFControlHandle');
+      @LlGetDebug           := GetProcAddress(hDLLLL25,'LlGetDebug');
+      @LlRTFEditorGetRTFControlHandle := GetProcAddress(hDLLLL25,'LlRTFEditorGetRTFControlHandle');
       {$ifdef UNICODE}
-          @LlGetDefaultPrinterO := GetProcAddress(hDLLLL24,'LlGetDefaultPrinterA');
+          @LlGetDefaultPrinterO := GetProcAddress(hDLLLL25,'LlGetDefaultPrinterA');
         {$else}
-          @LlGetDefaultPrinter := GetProcAddress(hDLLLL24,'LlGetDefaultPrinterA');
+          @LlGetDefaultPrinter := GetProcAddress(hDLLLL25,'LlGetDefaultPrinterA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetDefaultPrinter := GetProcAddress(hDLLLL24,'LlGetDefaultPrinterW');
+          @LlGetDefaultPrinter := GetProcAddress(hDLLLL25,'LlGetDefaultPrinterW');
         {$else}
-          @LlGetDefaultPrinterO := GetProcAddress(hDLLLL24,'LlGetDefaultPrinterW');
+          @LlGetDefaultPrinterO := GetProcAddress(hDLLLL25,'LlGetDefaultPrinterW');
       {$endif}
       {$ifdef UNICODE}
-          @LlLocAddDictionaryEntryO := GetProcAddress(hDLLLL24,'LlLocAddDictionaryEntryA');
+          @LlLocAddDictionaryEntryO := GetProcAddress(hDLLLL25,'LlLocAddDictionaryEntryA');
         {$else}
-          @LlLocAddDictionaryEntry := GetProcAddress(hDLLLL24,'LlLocAddDictionaryEntryA');
+          @LlLocAddDictionaryEntry := GetProcAddress(hDLLLL25,'LlLocAddDictionaryEntryA');
       {$endif}
       {$ifdef UNICODE}
-          @LlLocAddDictionaryEntry := GetProcAddress(hDLLLL24,'LlLocAddDictionaryEntryW');
+          @LlLocAddDictionaryEntry := GetProcAddress(hDLLLL25,'LlLocAddDictionaryEntryW');
         {$else}
-          @LlLocAddDictionaryEntryO := GetProcAddress(hDLLLL24,'LlLocAddDictionaryEntryW');
+          @LlLocAddDictionaryEntryO := GetProcAddress(hDLLLL25,'LlLocAddDictionaryEntryW');
       {$endif}
-      @LlLocAddDesignLCID   := GetProcAddress(hDLLLL24,'LlLocAddDesignLCID');
-      @LlIsUILanguageAvailable := GetProcAddress(hDLLLL24,'LlIsUILanguageAvailable');
-      @LlIsUILanguageAvailableLCID := GetProcAddress(hDLLLL24,'LlIsUILanguageAvailableLCID');
+      @LlLocAddDesignLCID   := GetProcAddress(hDLLLL25,'LlLocAddDesignLCID');
+      @LlIsUILanguageAvailable := GetProcAddress(hDLLLL25,'LlIsUILanguageAvailable');
+      @LlIsUILanguageAvailableLCID := GetProcAddress(hDLLLL25,'LlIsUILanguageAvailableLCID');
       {$ifdef UNICODE}
-          @LlDbAddTableExO := GetProcAddress(hDLLLL24,'LlDbAddTableExA');
+          @LlDbAddTableExO := GetProcAddress(hDLLLL25,'LlDbAddTableExA');
         {$else}
-          @LlDbAddTableEx := GetProcAddress(hDLLLL24,'LlDbAddTableExA');
+          @LlDbAddTableEx := GetProcAddress(hDLLLL25,'LlDbAddTableExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlDbAddTableEx := GetProcAddress(hDLLLL24,'LlDbAddTableExW');
+          @LlDbAddTableEx := GetProcAddress(hDLLLL25,'LlDbAddTableExW');
         {$else}
-          @LlDbAddTableExO := GetProcAddress(hDLLLL24,'LlDbAddTableExW');
+          @LlDbAddTableExO := GetProcAddress(hDLLLL25,'LlDbAddTableExW');
       {$endif}
       {$ifdef UNICODE}
-          @LlRTFSetTextExO := GetProcAddress(hDLLLL24,'LlRTFSetTextExA');
+          @LlRTFSetTextExO := GetProcAddress(hDLLLL25,'LlRTFSetTextExA');
         {$else}
-          @LlRTFSetTextEx := GetProcAddress(hDLLLL24,'LlRTFSetTextExA');
+          @LlRTFSetTextEx := GetProcAddress(hDLLLL25,'LlRTFSetTextExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlRTFSetTextEx := GetProcAddress(hDLLLL24,'LlRTFSetTextExW');
+          @LlRTFSetTextEx := GetProcAddress(hDLLLL25,'LlRTFSetTextExW');
         {$else}
-          @LlRTFSetTextExO := GetProcAddress(hDLLLL24,'LlRTFSetTextExW');
+          @LlRTFSetTextExO := GetProcAddress(hDLLLL25,'LlRTFSetTextExW');
       {$endif}
-      @LlInplaceDesignerInteraction := GetProcAddress(hDLLLL24,'LlInplaceDesignerInteraction');
+      @LlInplaceDesignerInteraction := GetProcAddress(hDLLLL25,'LlInplaceDesignerInteraction');
       {$ifdef UNICODE}
-          @LlGetProjectDescriptionO := GetProcAddress(hDLLLL24,'LlGetProjectDescriptionA');
+          @LlGetProjectDescriptionO := GetProcAddress(hDLLLL25,'LlGetProjectDescriptionA');
         {$else}
-          @LlGetProjectDescription := GetProcAddress(hDLLLL24,'LlGetProjectDescriptionA');
+          @LlGetProjectDescription := GetProcAddress(hDLLLL25,'LlGetProjectDescriptionA');
       {$endif}
       {$ifdef UNICODE}
-          @LlGetProjectDescription := GetProcAddress(hDLLLL24,'LlGetProjectDescriptionW');
+          @LlGetProjectDescription := GetProcAddress(hDLLLL25,'LlGetProjectDescriptionW');
         {$else}
-          @LlGetProjectDescriptionO := GetProcAddress(hDLLLL24,'LlGetProjectDescriptionW');
+          @LlGetProjectDescriptionO := GetProcAddress(hDLLLL25,'LlGetProjectDescriptionW');
       {$endif}
-      @LlPrintDbGetCurrentTableFilter := GetProcAddress(hDLLLL24,'LlPrintDbGetCurrentTableFilter');
+      @LlPrintDbGetCurrentTableFilter := GetProcAddress(hDLLLL25,'LlPrintDbGetCurrentTableFilter');
       {$ifdef UNICODE}
-          @LlExprTranslateToHostExpressionO := GetProcAddress(hDLLLL24,'LlExprTranslateToHostExpressionA');
+          @LlExprTranslateToHostExpressionO := GetProcAddress(hDLLLL25,'LlExprTranslateToHostExpressionA');
         {$else}
-          @LlExprTranslateToHostExpression := GetProcAddress(hDLLLL24,'LlExprTranslateToHostExpressionA');
+          @LlExprTranslateToHostExpression := GetProcAddress(hDLLLL25,'LlExprTranslateToHostExpressionA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprTranslateToHostExpression := GetProcAddress(hDLLLL24,'LlExprTranslateToHostExpressionW');
+          @LlExprTranslateToHostExpression := GetProcAddress(hDLLLL25,'LlExprTranslateToHostExpressionW');
         {$else}
-          @LlExprTranslateToHostExpressionO := GetProcAddress(hDLLLL24,'LlExprTranslateToHostExpressionW');
+          @LlExprTranslateToHostExpressionO := GetProcAddress(hDLLLL25,'LlExprTranslateToHostExpressionW');
       {$endif}
-      @LlStgTestJobCreate   := GetProcAddress(hDLLLL24,'LlStgTestJobCreate');
-      @LlStgTestJobCmpPage  := GetProcAddress(hDLLLL24,'LlStgTestJobCmpPage');
-      @LlStgTestJobDestroy  := GetProcAddress(hDLLLL24,'LlStgTestJobDestroy');
-      @LlStgTestStgCmp      := GetProcAddress(hDLLLL24,'LlStgTestStgCmp');
-      @LlStgTestStgCmpRUNDLL32 := GetProcAddress(hDLLLL24,'LlStgTestStgCmpRUNDLL32');
-      @LlStgTestStgCmp2     := GetProcAddress(hDLLLL24,'LlStgTestStgCmp2');
-      @LlStgTestJobCmpEmbeddedStorages := GetProcAddress(hDLLLL24,'LlStgTestJobCmpEmbeddedStorages');
-      @LlSRTriggerExport    := GetProcAddress(hDLLLL24,'LlSRTriggerExport');
-      @LlUtilsGetVariantFromProfContentsInternal := GetProcAddress(hDLLLL24,'LlUtilsGetVariantFromProfContentsInternal');
-      @LlUtilsGetProfContentsFromVariantInternal := GetProcAddress(hDLLLL24,'LlUtilsGetProfContentsFromVariantInternal');
+      @LlStgTestJobCreate   := GetProcAddress(hDLLLL25,'LlStgTestJobCreate');
+      @LlStgTestJobCmpPage  := GetProcAddress(hDLLLL25,'LlStgTestJobCmpPage');
+      @LlStgTestJobDestroy  := GetProcAddress(hDLLLL25,'LlStgTestJobDestroy');
+      @LlStgTestStgCmp      := GetProcAddress(hDLLLL25,'LlStgTestStgCmp');
+      @LlStgTestStgCmpRUNDLL32 := GetProcAddress(hDLLLL25,'LlStgTestStgCmpRUNDLL32');
+      @LlStgTestStgCmp2     := GetProcAddress(hDLLLL25,'LlStgTestStgCmp2');
+      @LlStgTestJobCmpEmbeddedStorages := GetProcAddress(hDLLLL25,'LlStgTestJobCmpEmbeddedStorages');
+      @LlSRTriggerExport    := GetProcAddress(hDLLLL25,'LlSRTriggerExport');
+      @LlUtilsGetVariantFromProfContentsInternal := GetProcAddress(hDLLLL25,'LlUtilsGetVariantFromProfContentsInternal');
+      @LlUtilsGetProfContentsFromVariantInternal := GetProcAddress(hDLLLL25,'LlUtilsGetProfContentsFromVariantInternal');
       {$ifdef UNICODE}
-          @LlExprGetUsedFunctionsO := GetProcAddress(hDLLLL24,'LlExprGetUsedFunctionsA');
+          @LlExprGetUsedFunctionsO := GetProcAddress(hDLLLL25,'LlExprGetUsedFunctionsA');
         {$else}
-          @LlExprGetUsedFunctions := GetProcAddress(hDLLLL24,'LlExprGetUsedFunctionsA');
+          @LlExprGetUsedFunctions := GetProcAddress(hDLLLL25,'LlExprGetUsedFunctionsA');
       {$endif}
       {$ifdef UNICODE}
-          @LlExprGetUsedFunctions := GetProcAddress(hDLLLL24,'LlExprGetUsedFunctionsW');
+          @LlExprGetUsedFunctions := GetProcAddress(hDLLLL25,'LlExprGetUsedFunctionsW');
         {$else}
-          @LlExprGetUsedFunctionsO := GetProcAddress(hDLLLL24,'LlExprGetUsedFunctionsW');
+          @LlExprGetUsedFunctionsO := GetProcAddress(hDLLLL25,'LlExprGetUsedFunctionsW');
       {$endif}
-      @LlDesignerTriggerJobInUIThread := GetProcAddress(hDLLLL24,'LlDesignerTriggerJobInUIThread');
-      @LlUtilsComparePrinterInformation := GetProcAddress(hDLLLL24,'LlUtilsComparePrinterInformation');
-      @LlGetUsedIdentifiersExV := GetProcAddress(hDLLLL24,'LlGetUsedIdentifiersExV');
-      @LlDomGetPropertyV    := GetProcAddress(hDLLLL24,'LlDomGetPropertyV');
-      @LlExprGetUsedFunctionsV := GetProcAddress(hDLLLL24,'LlExprGetUsedFunctionsV');
-      @LlExprGetUsedVarsExV := GetProcAddress(hDLLLL24,'LlExprGetUsedVarsExV');
-      @LlGetTableRelationToActiveTable := GetProcAddress(hDLLLL24,'LlGetTableRelationToActiveTable');
-      @LlJobOpenCopyEx      := GetProcAddress(hDLLLL24,'LlJobOpenCopyEx');
-      @LlAddDebugSinkForThread := GetProcAddress(hDLLLL24,'LlAddDebugSinkForThread');
-      @LlRemoveDebugSinkFromThread := GetProcAddress(hDLLLL24,'LlRemoveDebugSinkFromThread');
-      @LlGetDebugSinkProxyModule := GetProcAddress(hDLLLL24,'LlGetDebugSinkProxyModule');
-      @LlGetDebugSinkProxyCategory := GetProcAddress(hDLLLL24,'LlGetDebugSinkProxyCategory');
-      @LlDlgSelectFileOpen  := GetProcAddress(hDLLLL24,'LlDlgSelectFileOpen');
-      @LlUtilsLcidFromLocaleName := GetProcAddress(hDLLLL24,'LlUtilsLcidFromLocaleName');
-      @LlDesignerShowMessage := GetProcAddress(hDLLLL24,'LlDesignerShowMessage');
-      @LlExprConvertGlobalToLocal := GetProcAddress(hDLLLL24,'LlExprConvertGlobalToLocal');
-      @LlExprConvertLocalToGlobal := GetProcAddress(hDLLLL24,'LlExprConvertLocalToGlobal');
-      @LlUtilsGetProjectType := GetProcAddress(hDLLLL24,'LlUtilsGetProjectType');
-      @LlGetLastErrorText   := GetProcAddress(hDLLLL24,'LlGetLastErrorText');
-      @LlDomGetCurrentObject := GetProcAddress(hDLLLL24,'LlDomGetCurrentObject');
-      @LlUtilsIDFromOrgID   := GetProcAddress(hDLLLL24,'LlUtilsIDFromOrgID');
-      @LlProjectFindAndReplace := GetProcAddress(hDLLLL24,'LlProjectFindAndReplace');
-      @LlExprParseQueryDelayedDefine := GetProcAddress(hDLLLL24,'LlExprParseQueryDelayedDefine');
-      @LlExprTypeMask       := GetProcAddress(hDLLLL24,'LlExprTypeMask');
+      @LlDesignerTriggerJobInUIThread := GetProcAddress(hDLLLL25,'LlDesignerTriggerJobInUIThread');
+      @LlUtilsComparePrinterInformation := GetProcAddress(hDLLLL25,'LlUtilsComparePrinterInformation');
+      @LlGetUsedIdentifiersExV := GetProcAddress(hDLLLL25,'LlGetUsedIdentifiersExV');
+      @LlDomGetPropertyV    := GetProcAddress(hDLLLL25,'LlDomGetPropertyV');
+      @LlExprGetUsedFunctionsV := GetProcAddress(hDLLLL25,'LlExprGetUsedFunctionsV');
+      @LlExprGetUsedVarsExV := GetProcAddress(hDLLLL25,'LlExprGetUsedVarsExV');
+      @LlGetTableRelationToActiveTable := GetProcAddress(hDLLLL25,'LlGetTableRelationToActiveTable');
+      @LlJobOpenCopyEx      := GetProcAddress(hDLLLL25,'LlJobOpenCopyEx');
+      @LlAddDebugSinkForThread := GetProcAddress(hDLLLL25,'LlAddDebugSinkForThread');
+      @LlRemoveDebugSinkFromThread := GetProcAddress(hDLLLL25,'LlRemoveDebugSinkFromThread');
+      @LlGetDebugSinkProxyModule := GetProcAddress(hDLLLL25,'LlGetDebugSinkProxyModule');
+      @LlGetDebugSinkProxyCategory := GetProcAddress(hDLLLL25,'LlGetDebugSinkProxyCategory');
+      @LlDlgSelectFileOpen  := GetProcAddress(hDLLLL25,'LlDlgSelectFileOpen');
+      @LlUtilsLcidFromLocaleName := GetProcAddress(hDLLLL25,'LlUtilsLcidFromLocaleName');
+      @LlDesignerShowMessage := GetProcAddress(hDLLLL25,'LlDesignerShowMessage');
+      @LlExprConvertGlobalToLocal := GetProcAddress(hDLLLL25,'LlExprConvertGlobalToLocal');
+      @LlExprConvertLocalToGlobal := GetProcAddress(hDLLLL25,'LlExprConvertLocalToGlobal');
+      @LlUtilsGetProjectType := GetProcAddress(hDLLLL25,'LlUtilsGetProjectType');
+      @LlGetLastErrorText   := GetProcAddress(hDLLLL25,'LlGetLastErrorText');
+      @LlDomGetCurrentObject := GetProcAddress(hDLLLL25,'LlDomGetCurrentObject');
+      @LlUtilsIDFromOrgID   := GetProcAddress(hDLLLL25,'LlUtilsIDFromOrgID');
+      @LlProjectFindAndReplace := GetProcAddress(hDLLLL25,'LlProjectFindAndReplace');
+      @LlExprParseQueryDelayedDefine := GetProcAddress(hDLLLL25,'LlExprParseQueryDelayedDefine');
+      @LlExprTypeMask       := GetProcAddress(hDLLLL25,'LlExprTypeMask');
       end;
     end;
 end;
 
-procedure LL24xUnload;
+procedure LL25xUnload;
 begin
-  dec(nDLLLL24Usage);
-  if (nDLLLL24Usage = 0) then
+  dec(nDLLLL25Usage);
+  if (nDLLLL25Usage = 0) then
     begin
-    if hDLLLL24 <> 0 then
+    if hDLLLL25 <> 0 then
       begin
-      FreeLibrary(hDLLLL24);
-      hDLLLL24 := 0;
+      FreeLibrary(hDLLLL25);
+      hDLLLL25 := 0;
       LlJobOpen := NIL;
       LlJobOpenLCID := NIL;
       LlJobClose := NIL;

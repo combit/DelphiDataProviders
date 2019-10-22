@@ -1,4 +1,4 @@
-package ListLabel24Components;
+package ListLabel25Components;
 
 {$R *.res}
 {$R *.dres}
@@ -26,7 +26,7 @@ package ListLabel24Components;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'combit List & Label 24 Components'}
+{$DESCRIPTION 'combit List & Label 25 Components'}
 {$IMPLICITBUILD ON}
 
 requires
@@ -45,14 +45,13 @@ contains
   LLDataProvider in 'Sources\LLDataProvider.pas',
   LLObjectEditor in 'Sources\LLObjectEditor.pas',
   ObjTree in 'Sources\ObjTree.pas',
-  LLPrintPreviewThread in 'Sources\LLPrintPreviewThread.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  LLReport_Reg in 'Sources\LLReport_Reg.pas',
+  LL25Report_Reg in 'Sources\LL25Report_Reg.pas',
   LLReport_Types in 'Sources\LLReport_Types.pas',
-  ListLabel24 in 'Sources\ListLabel24.pas',
-  l24CommonInterfaces in 'Sources\l24CommonInterfaces.pas',
-  cmbtLL24x in 'Sources\cmbtLL24x.pas',
-  cmbtLS24x in 'Sources\cmbtLS24x.pas';
+  ListLabel25 in 'Sources\ListLabel25.pas',
+  l25CommonInterfaces in 'Sources\l25CommonInterfaces.pas',
+  cmbtLL25x in 'Sources\cmbtLL25x.pas',
+  cmbtLS25x in 'Sources\cmbtLS25x.pas';
 
 end.
 

@@ -1,27 +1,27 @@
-{=================================================================================
+﻿{=================================================================================
 
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
  File   : LLThreads.pas
- Module : List & Label 24
- Descr. : Implementation file for the List & Label 24 VCL-Component
- Version: 24.000
+ Module : List & Label 25
+ Descr. : Implementation file for the List & Label 25 VCL-Component
+ Version: 25.000
 ==================================================================================
 }
 
 unit LLThreads;
 
 interface
-
+{$WEAKPACKAGEUNIT ON}
 uses
-  Classes, SysUtils, Windows, ListLabel24;
+  Classes, SysUtils, Windows, ListLabel25;
 
 type
 
   TPrintPreviewThread = class(TThread)
   private
-    FPrintInstance      : TListLabel24;
+    FPrintInstance      : TListLabel25;
     FProjectFile        : string;
     FOriginalProjectFile: string;
     FExportFormat       : String;
@@ -39,7 +39,7 @@ type
     procedure FinalizePrinting();
     procedure Abort();
 
-    property PrintInstance: TListLabel24 read FPrintInstance write FPrintInstance;
+    property PrintInstance: TListLabel25 read FPrintInstance write FPrintInstance;
     Property ProjectFile  : string read FProjectFile write FProjectFile;
     Property OriginalProjectFile: string read FOriginalProjectFile write FOriginalProjectFile;
     Property ExportFormat: String read FExportFormat write FExportFormat;
@@ -60,7 +60,7 @@ type
     FParentKey      : String;
     FParentTableName: String;
     FAttachInfo     : THandle;
-    FPrintInstance  : TListLabel24;
+    FPrintInstance  : TListLabel25;
     FTerminated     : boolean;
     FKeyValue       : String;
     FJobID          : longint;
@@ -74,7 +74,7 @@ type
     procedure Execute; override;
   public
     property Terminated: boolean read FTerminated write FTerminated;
-    property PrintInstance: TListLabel24 read FPrintInstance write FPrintInstance;
+    property PrintInstance: TListLabel25 read FPrintInstance write FPrintInstance;
     property UserParam: integer read FUserParam write FUserParam;
     property ParentTableName: String read FParentTableName write FParentTableName;
     property RelationName: String read FRelationName write FRelationName;
@@ -93,7 +93,7 @@ type
   end;
 
 implementation
-uses cmbtLS24x, LLDataSetDataProvider;
+uses cmbtLS25x, LLDataSetDataProvider;
 procedure TPrintPreviewThread.Abort;
 begin
   PrintInstance.AbortPrinting;
@@ -108,7 +108,10 @@ begin
   Try
      IsPrinting:=True;
      PostMessage(controlHandle, LS_VIEWERCONTROL_UPDATE_TOOLBAR, 0, 0);
-     printInstance.DoPreviewAndDrilldown(ControlHandle, False, ProjectFile, OriginalProjectFile, PageCount,'',nil,0);
+     if (not DoExport) then
+       printInstance.DoPreviewAndDrilldown(ControlHandle, False, ProjectFile, OriginalProjectFile, PageCount,'',nil,0)
+     else
+       printInstance.DoExport(FControlHandle, ProjectFile, OriginalProjectFile, PageCount, ExportFormat);
   Finally
      Terminated := true;
      IsPrinting := False;
@@ -120,7 +123,7 @@ end;
 procedure TPrintPreviewThread.Execute;
 begin
   IsPrinting := false;
-  Synchronize( DesignerPrintPreview );
+  Synchronize(DesignerPrintPreview);
 end;
 
 procedure TPrintPreviewThread.FinalizePrinting();
