@@ -199,10 +199,17 @@ type
                                      AFilter     : PFilterDescription;
                                      AttachInfo  : THandle);
     Procedure DoExport(              Wnd        : HWND;
-                                     ProjectFile: String;
-                                     OriginalProjectFile: String;
+                                     const ProjectFile: String;
+                                     const OriginalProjectFile: String;
                                      MaxPages   : Integer;
-                                     ExportFormat: String);
+                                     const ExportFormat: String); overload;
+    Procedure DoExport(              Wnd        : HWND;
+                                     const ProjectFile: String;
+                                     const OriginalProjectFile: String;
+                                     MaxPages   : Integer;
+                                     const ExportFormat, ExportPath, ExportFile: String;
+                                     const ExportQuiet, ExportShow: Boolean); overload;
+
 
     Procedure AbortPrinting();
 
@@ -260,20 +267,34 @@ type
   end;
 
   //Core class
-   LlCore = class (TObject)
-   private
+  LlCore = class (TObject)
+  private
     fParentObject: TListLabel25;
-   public
-   Constructor Create(ParentObject: TListLabel25);
-   function LlGetOptionString(OptionIndex: integer; var Value: TString): integer;
-   function LlDefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
-   function LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
-   function LlDefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
-   function LlDefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
-   function LlSetOption(OptionIndex: integer; Value: lParam): integer;
-   function LlGetOption(OptionIndex: integer): integer;
-   function LlSetOptionString(OptionIndex: integer; Value: TString): integer;
-
+  public
+    Constructor Create(ParentObject: TListLabel25);
+    function LlGetOptionString(OptionIndex: integer; var Value: TString): integer;
+    function LlDefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
+    function LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
+    function LlDefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
+    function LlDefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
+    function LlSetOption(OptionIndex: integer; Value: lParam): integer;
+    function LlGetOption(OptionIndex: integer): integer;
+    function LlSetOptionString(OptionIndex: integer; Value: TString): integer;
+    function LlLocAddDesingLcId(Language: TLlLanguage): Integer;
+    function LlLocAddDictionaryEntry(Language: TLlLanguage; Key: TString; Value: TString; DictionaryType: TllDictionaryType): Integer;
+    function LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
+    function LlSetPrinterToDefault(ProjectType: integer; ProjectName: TString): integer;
+    function LlSetPrinterDefaultsDir(Directory: TString): integer;
+    {$ifdef UNICODE}
+    function LlSetPrinterInPrinterFile(ProjectType: cardinal; const ProjectName: TString; PrinterIndex: integer; const PrinterName: TString; const DevModePointer: _PCDEVMODEW): integer;
+    {$else}
+    function LlSetPrinterInPrinterFile(ProjectType: cardinal; const ProjectName: TString; PrinterIndex: integer; const PrinterName: TString; const DevModePointer: _PCDEVMODEA): integer;
+    {$endif}
+    {$ifdef UNICODE}
+    function LlGetPrinterFromPrinterFile(ProjectType: Cardinal; ProjectName: TString; PrinterIndex: integer; var Printer: TString; var DevMode: _PDEVMODEW): Integer;
+    {$else}
+    function LlGetPrinterFromPrinterFile(ProjectType: Cardinal; ProjectName: TString; PrinterIndex: integer; var Printer: TString; var DevMode: _PDEVMODEA): Integer;
+    {$endif}
   end;
 
 function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt; export; stdcall;
@@ -1283,6 +1304,30 @@ begin
   Result := cmbtLL25x.LlSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
 end;
 
+function LlCore.LlSetPrinterDefaultsDir(Directory: TString): integer;
+begin
+  Result := cmbtLL25x.LlSetPrinterDefaultsDir(fParentObject.CurrentJobHandle, PTChar(Directory));
+end;
+
+{$ifdef UNICODE}
+function LlCore.LlSetPrinterInPrinterFile(ProjectType: cardinal;
+  const ProjectName: TString; PrinterIndex: integer; const PrinterName: TString;
+  const DevModePointer: _PCDEVMODEW): Integer;
+{$else}
+function LlCore.LlSetPrinterInPrinterFile(ProjectType: cardinal;
+  const ProjectName: TString; PrinterIndex: integer; const PrinterName: TString;
+  const DevModePointer: _PCDEVMODEA): integer;
+{$endif}
+begin
+  Result := cmbtLL25x.LlSetPrinterInPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
+    PrinterIndex, PTChar(PrinterName), DevModePointer);
+end;
+
+function LlCore.LlSetPrinterToDefault(ProjectType: integer; ProjectName: TString): integer;
+begin
+  Result := cmbtLL25x.LlSetPrinterToDefault(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName));
+end;
+
 function LlCore.LlGetOption(OptionIndex: integer
   ): integer;
 begin
@@ -1892,16 +1937,17 @@ begin
   End;
 End;
 
-procedure TListLabel25.DoExport(Wnd: HWND; ProjectFile, OriginalProjectFile: String;
-  MaxPages: Integer; ExportFormat: String);
+procedure TListLabel25.DoExport(Wnd: HWND; const ProjectFile,
+  OriginalProjectFile: String; MaxPages: Integer; const ExportFormat,
+  ExportPath, ExportFile: String; const ExportQuiet, ExportShow: Boolean);
 Var
   DataProvider    : TDataSetDataProvider;
   DataProviderIntf: TDataProviderInterfaceProxyRoot;
   JobHandle       : HJob;
   OldJobHandle    : HJob;
-  ProjectPath     : STring;
+  ProjectPath     : String;
   ok : Boolean;
-
+  char1, optionStrPath, optionStrFile, optionStrQuiet, optionStrShow: String;
 begin
   DataProvider:=nil;
   JobHandle:=-1;
@@ -1954,6 +2000,32 @@ begin
           ok := CheckError(LLPrintOptionsDialog(CurrentJobHandle, Wnd, PChar(FAutoDialogTitle))) = CE_OK;
         end;
 
+        if ExportFile.Length > 0 then
+        begin
+          char1 := '1';
+          optionStrPath := 'Export.Path';
+          optionStrFile := 'Export.File';
+          optionStrQuiet := 'Export.Quiet';
+          optionStrShow := 'Export.ShowResult';
+          if SameText(ExportFormat, 'PDF') then
+          begin
+            LlPrintSetOptionString(JobHandle, LL_OPTION_ENHANCED_SKIPRETURNATENDOFRTF, PChar(char1));
+          end;
+          if ExportPath.Length > 0 then
+          begin
+            LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrPath), PChar(ExportPath));
+          end;
+          LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrFile), PChar(ExportFile));
+          if ExportQuiet then
+          begin
+            LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrQuiet), PChar(char1));
+          end;
+          if ExportShow then
+          begin
+            LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrShow), PChar(char1));
+          end;
+        end;
+
         if not(ok) then
           begin
             CheckError(LLPrintEnd(CurrentJobHandle, 0));
@@ -1980,6 +2052,13 @@ begin
     FreeAndNil(FUsedIdentifiers);
   end;
 End;
+
+procedure TListLabel25.DoExport(Wnd: HWND; const ProjectFile, OriginalProjectFile: String;
+  MaxPages: Integer; const ExportFormat: String);
+begin
+  DoExport(Wnd, ProjectFile, OriginalProjectFile, MaxPages, ExportFormat,
+  '', '', False, False);
+end;
 
 Procedure TListLabel25.DoPreviewAndDrilldown( Wnd               : HWND;
                                            DrillDown          : Boolean;
@@ -2142,6 +2221,71 @@ begin
   end;
 end;
 
+
+{$ifdef UNICODE}
+function LlCore.LlGetPrinterFromPrinterFile(ProjectType: Cardinal;
+  ProjectName: TString; PrinterIndex: integer; var Printer: TString;
+  var DevMode: _PDEVMODEW): Integer;
+
+{$else}
+function LlCore.LlGetPrinterFromPrinterFile(ProjectType: Cardinal; ProjectName: TString;
+  PrinterIndex: integer; var Printer: TString;
+  var DevMode: _PDEVMODEA): integer;
+{$endif}
+var
+ BufPrinter: PTChar;
+ {$ifdef UNICODE}
+ BufDevMode: _PDEVMODEW;
+ {$else}
+ BufDevMode: _PDEVMODEA;
+ {$endif}
+ PrnSize, DevModeSize: cardinal;
+ nRet: integer;
+begin
+  nRet := cmbTLl25x.LlGetPrinterFromPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
+                                                PrinterIndex, nil, @PrnSize, nil, @DevModeSize);
+  if nRet >= 0 then
+  begin
+   GetMem(BufPrinter, PrnSize*Sizeof(TChar));
+   GetMem(BufDevMode, DevModeSize*Sizeof(TChar));
+   BufPrinter^ := #0;
+   nRet := cmbTLl25x.LlGetPrinterFromPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
+                                                PrinterIndex, PTChar(BufPrinter), @PrnSize, BufDevMode, @DevModeSize);
+   Printer := TString(BufPrinter);
+   DevMode := BufDevMode;
+   FreeMem(PTChar(BufPrinter));
+  end;
+  Result := nRet;
+end;
+
+function LlCore.LlLocAddDesingLcId(Language: TLlLanguage): Integer;
+begin
+  Result := cmbTLl25x.LlLocAddDesignLCID(fParentObject.CurrentJobHandle, TEnumTranslator.TranslateLanguage(Language));
+end;
+
+function LlCore.LlLocAddDictionaryEntry(Language: TLlLanguage; Key, Value: TString;
+  DictionaryType: TllDictionaryType): Integer;
+begin
+  Result := cmbTLl25x.LlLocAddDictionaryEntry(fParentObject.CurrentJobHandle,
+    TEnumTranslator.TranslateLanguage(Language), PTChar(Key), PTChar(Value),
+    TEnumTranslator.TranslateDictionryType(DictionaryType));
+end;
+
+function LlCore.LlPrintGetPrinterInfo(var PrinterName,
+  PrinterPort: TString): Integer;
+var
+  BufPrinter, BufPort: PTChar;
+begin
+  GetMem(BufPrinter, 128 * sizeof(TChar));
+  GetMem(BufPort, 40 * sizeof(TChar));
+  BufPrinter^ := #0;
+  BufPort^ := #0;
+  Result := cmbTLl25x.LlPrintGetPrinterInfo(fParentObject.CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
+  PrinterName := TString(BufPrinter);
+  PrinterPort := TString(BufPort);
+  FreeMem(BufPrinter);
+  FreeMem(BufPort);
+end;
 
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 
