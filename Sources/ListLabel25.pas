@@ -280,8 +280,6 @@ type
     function LlSetOption(OptionIndex: integer; Value: lParam): integer;
     function LlGetOption(OptionIndex: integer): integer;
     function LlSetOptionString(OptionIndex: integer; Value: TString): integer;
-    function LlLocAddDesingLcId(Language: TLlLanguage): Integer;
-    function LlLocAddDictionaryEntry(Language: TLlLanguage; Key: TString; Value: TString; DictionaryType: TllDictionaryType): Integer;
     function LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
     function LlSetPrinterToDefault(ProjectType: integer; ProjectName: TString): integer;
     function LlSetPrinterDefaultsDir(Directory: TString): integer;
@@ -2003,25 +2001,21 @@ begin
         if ExportFile.Length > 0 then
         begin
           char1 := '1';
-          optionStrPath := 'Export.Path';
-          optionStrFile := 'Export.File';
-          optionStrQuiet := 'Export.Quiet';
-          optionStrShow := 'Export.ShowResult';
-          if SameText(ExportFormat, 'PDF') then
-          begin
-            LlPrintSetOptionString(JobHandle, LL_OPTION_ENHANCED_SKIPRETURNATENDOFRTF, PChar(char1));
-          end;
           if ExportPath.Length > 0 then
           begin
+            optionStrPath := 'Export.Path';
             LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrPath), PChar(ExportPath));
           end;
+          optionStrFile := 'Export.File';
           LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrFile), PChar(ExportFile));
           if ExportQuiet then
           begin
+            optionStrQuiet := 'Export.Quiet';
             LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrQuiet), PChar(char1));
           end;
           if ExportShow then
           begin
+            optionStrShow := 'Export.ShowResult';
             LlXSetExportParameter(JobHandle, PChar(ExportFormat), PChar(optionStrShow), PChar(char1));
           end;
         end;
@@ -2256,19 +2250,6 @@ begin
    FreeMem(PTChar(BufPrinter));
   end;
   Result := nRet;
-end;
-
-function LlCore.LlLocAddDesingLcId(Language: TLlLanguage): Integer;
-begin
-  Result := cmbTLl25x.LlLocAddDesignLCID(fParentObject.CurrentJobHandle, TEnumTranslator.TranslateLanguage(Language));
-end;
-
-function LlCore.LlLocAddDictionaryEntry(Language: TLlLanguage; Key, Value: TString;
-  DictionaryType: TllDictionaryType): Integer;
-begin
-  Result := cmbTLl25x.LlLocAddDictionaryEntry(fParentObject.CurrentJobHandle,
-    TEnumTranslator.TranslateLanguage(Language), PTChar(Key), PTChar(Value),
-    TEnumTranslator.TranslateDictionryType(DictionaryType));
 end;
 
 function LlCore.LlPrintGetPrinterInfo(var PrinterName,

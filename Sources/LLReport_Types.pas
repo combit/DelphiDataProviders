@@ -119,8 +119,6 @@ Type
                  //lChineseTraditional
                  );
 
- TllDictionaryType = (dtStatic, dtIdentifier, dtTable, dtRelation, dtSortorder);
-
  TLlAutoMasterMode = (mmNone,
                       mmAsFields,
                       mmAsVariables);
@@ -141,7 +139,6 @@ Type
       class function TranslateDebugFlags(DebugFlags: TLlDebugFlags): Integer; static;
       class function TranslateTableColoring(TableColoring: TLlTableColoring): Integer;
       class function TranslateLanguage(Language: TLlLanguage): Integer;
-      class function TranslateDictionryType(DictionaryType: TllDictionaryType): Integer; static;
   End;
 
   TDataSetScrolledEvent      = procedure (Sender: TObject; Distance: Integer) of object;
@@ -404,22 +401,6 @@ begin
 
     Result := Result + 512;
 
-  end;
-
-end;
-
-class function TEnumTranslator.TranslateDictionryType(
-  DictionaryType: TllDictionaryType): Integer;
-begin
-  //pre-define with default value in LL
-  Result := LL_DICTIONARY_TYPE_STATIC;
-
-  case DictionaryType of
-    TllDictionaryType.dtStatic: Result := LL_DICTIONARY_TYPE_STATIC;
-    TllDictionaryType.dtIdentifier: Result := LL_DICTIONARY_TYPE_IDENTIFIER;
-    TllDictionaryType.dtTable: Result := LL_DICTIONARY_TYPE_TABLE;
-    TllDictionaryType.dtRelation: Result := LL_DICTIONARY_TYPE_RELATION;
-    TllDictionaryType.dtSortorder: Result := LL_DICTIONARY_TYPE_SORTORDER;
   end;
 
 end;
