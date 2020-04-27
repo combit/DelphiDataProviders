@@ -866,8 +866,15 @@ begin
 end;
 
 procedure TListLabel25.SetLicensingInfo(const Value: String);
+var
+  tmp: PChar;
 begin
+
   FLicensingInfo := Value;
+  tmp := StrNew(PChar(FLicensingInfo));
+  CheckError(LlSetOptionString(CurrentJobHandle, LL_OPTIONSTR_LICENSINGINFO, tmp));
+  StrDispose(tmp);
+
 end;
 
 procedure TListLabel25.SetAutoBoxType(const Value: TLlAutoBoxType);
