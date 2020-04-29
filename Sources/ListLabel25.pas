@@ -6,7 +6,7 @@
  File   : ListLabel25.pas
  Module : List & Label 25
  Descr. : Implementation file for the List & Label 25 VCL-Component
- Version: 25.000
+ Version: 25.001
 ==================================================================================
 }
 
@@ -1143,13 +1143,8 @@ begin
 
     If FShowErrors then
     begin
-
-      Case MessageDlg(ErrorText, mtError, [mbCancel, mbOK], 0) of
-        mrCancel:
-          Result := CE_Abort;
-        mrOK:
-          Result := ErrorCode;
-      end
+      if Result <> CE_Abort then
+         MessageDlg(ErrorText, mtError, [mbOK], 0)
     end
     else
     begin
@@ -1206,23 +1201,8 @@ Begin
 
    if handled then exit(0);
 
-   case FieldType of
-      LL_DATE_DELPHI:
-         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
-      LL_TEXT:
-         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
-      LL_Numeric:
-         result:= cmbtLL25x.LlDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
-      LL_NUMERIC_INTEGER:
-         result:= cmbtLL25x.LlDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
-      LL_BOOLEAN:
-        result:= cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
-      LL_RTF:
-         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
-      else Begin
-         result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
-      End;
-   end;
+   result := cmbtLL25x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), FieldType, '');
+
 End;
 
 function  LlCore.LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): Integer;
@@ -1231,11 +1211,11 @@ Begin
    result:=0;
    case FieldType of
       LL_DRAWING_HMETA:
-         result := cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, nil);
+         result := cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, '');
       LL_DRAWING_HBITMAP:
-         result := cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, nil);
+         result := cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, '');
       LL_DRAWING_HICON:
-         result:= cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, nil);
+         result:= cmbtLL25x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
    end;
 End;
 
@@ -1265,23 +1245,8 @@ Begin
 
    if handled then exit(0);
 
-   case FieldType of
-      LL_DATE_DELPHI:
-         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_DATE_Delphi, '');
-      LL_TEXT:
-         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
-      LL_Numeric:
-         result:= cmbtLL25x.LlDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_Numeric,'');
-      LL_NUMERIC_INTEGER:
-         result:= cmbtLL25x.LlDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_NUMERIC_INTEGER,'');
-      LL_BOOLEAN:
-        result:= cmbtLL25x.LlDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_BOOLEAN,'');
-      LL_RTF:
-         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_RTF, nil);
-      else Begin
-         result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), LL_TEXT, '');
-      End;
-   end;
+   result := cmbtLL25x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), FieldType, '');
+
 End;
 
 function  LlCore.LlDefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): Integer;
@@ -1290,11 +1255,11 @@ Begin
    result:=0;
    case FieldType of
       LL_DRAWING_HMETA:
-         result := cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, nil);
+         result := cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, '');
       LL_DRAWING_HBITMAP:
-         result := cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, nil);
+         result := cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, '');
       LL_DRAWING_HICON:
-         result:= cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, nil);
+         result:= cmbtLL25x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
    end;
 End;
 

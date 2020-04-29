@@ -6,7 +6,7 @@
  File   : LLDataSetDataProvider.pas
  Module : List & Label 25
  Descr. : Implementation file for the List & Label 25 VCL-Component
- Version: 25.000
+ Version: 25.001
 ==================================================================================
 }
 
@@ -697,11 +697,12 @@ Var BufferStream : TMemoryStream;
     PictureStream : TStream;
     PicContainer  : TPicture;
     wic           : TWICImage;
+    const DigitBool: array[Boolean] of string = ('0', '1');
 
-const DigitBool: array[Boolean] of string = ('0', '1');
 begin
     BufferStream:=nil;
     BlobStream:=nil;
+    wic := nil;
     FProvider:= AProvider;
     FFieldName    := Field.FieldName;
     FFieldContent := '(NULL)';
