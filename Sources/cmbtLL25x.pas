@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL25.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2019-10-08 00:10:34] *)
+(*  [build of 2020-08-04 13:08:03] *)
 
 unit cmbtLL25x;
 
@@ -57,6 +57,7 @@ type
   _LPINT                         = ^integer;
   _LPUINT                        = ^cardinal;
   _LCID                          = cardinal;
+  _PBOOL                         = ^longbool;
   PHGLOBAL                       = ^tHandle;
   LLPUINT                        = ^cardinal;
   PVARIANT                       = ^VARIANT;
@@ -944,6 +945,9 @@ const
                     (* internal *)
   LL_PRNOPT_HAS_TOTALPAGES       = 25;
                     (* internal *)
+  LL_PRNOPT_COUNT_OF_ITEMS       = 26;
+                    (* labels/cards *)
+  LL_PRNOPT_IS_PREPROCESSING     = 27;
   LL_PRNOPTSTR_PRINTDST_FILENAME = 0;
                     (* print to file: default filename (LlGet/SetPrintOptionString) *)
   LL_PRNOPTSTR_EXPORTDESCR       = 1;
@@ -1752,7 +1756,7 @@ const
   LL_OPTION_RETRIES_FOR_STARTDOC = 335;
                     (* INT, default: 1 *)
   LL_OPTION_PRN_FORCE_PROJECTSIZE_AS_PAPERSIZE = 336;
-                    (* default: false (true: if "ForcePaperFormat"=TRUE, do not iterate available paper formats and look up a matching one, just put the selected size in the DEVMODE structure and hope for the printer to accept it) *)
+                    (* default: 0 (1: if "ForcePaperFormat"=TRUE, do not iterate available paper formats and look up a matching one, just put the selected size in the DEVMODE structure and hope for the printer to accept it. 3: ) *)
   LL_OPTION_IS_PRINTING          = 337;
                     (* r/o, returns if there's an active print job for the current job *)
   LL_OPTION_IDLEITERATIONCHECK_MAX_ITERATIONS = 338;
@@ -1791,6 +1795,14 @@ const
                     (* default: false *)
   LL_OPTION_PROJECTVAR_IGNOREEMPTY = 355;
                     (* default: false *)
+  LL_OPTION_SUPPRESS_FUNCTION_POPUP = 356;
+                    (* default: false *)
+  LL_OPTION_SUPPRESS_SYMBOLFONTMAPPING = 357;
+                    (* default: false - attn: global option! *)
+  LL_OPTION_COMPAT_ENABLE_FORCEWRAP_ON_EXPORT = 358;
+                    (* default: true - attn: changed to false with LL26 *)
+  LL_OPTION_SORTINDEX_LCMAP_INITFLAGVALUE = 359;
+                    (* default: 0x1400 *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -4028,7 +4040,8 @@ type
 	 _pwszStg2Title:   pWCHAR;
 	 _nFlags:          cardinal;
 	 _pvErrors:        PVARIANT;
-	 _pvStorage:       PVARIANT
+	 _pvStorage:       PVARIANT;
+	 _p:               _PBOOL
 	): HLLTESTJOB; stdcall;
   pfnLlStgTestJobCmpPage = function  
 	(_hJob:            HLLTESTJOB;

@@ -6,7 +6,7 @@
   File   : l25dom.pas
   Module : List & Label 25 DOM
   Descr. : Implementation file for the List & Label 25 DOM
-  Version: 25.000
+  Version: 25.001
   ==================================================================================
 }
 
@@ -150,6 +150,7 @@ type
   TLlDOMPropertyManualLegendItem = class;
   TLlDOMPropertyManualLegendsList = class;
   TLlDOMPropertyShapeAxisArray = class;
+  TLlDOMPropertyValueAxisArrayLine = class;
   TLlDOMPropertyShapeYAxis = class;
   TLlDOMPropertyShapeXAxis = class;
   TLlDOMForegroundShapesList = class;
@@ -3437,7 +3438,9 @@ type
   private
     fMax: TLlDOMPropertyRange;
     fMin: TLlDOMPropertyRange;
+    fSignalRanges: TLlDOMPropertySignalRanges;
     fVisual: TLlDOMPropertyVisual;
+    function GetSignalRanges: TLlDOMPropertySignalRanges;
     function GetAggregateType: TString;
     procedure SetAggregateType(const value: TString);
     function GetAxisScale: TString;
@@ -3447,7 +3450,11 @@ type
     procedure SetWidth(const value: TString);
     function GetMax: TLlDOMPropertyRange;
     function GetMin: TLlDOMPropertyRange;
+    function GetVisualSym: TString;
+    procedure SetVisualSym(const value: TString);
   public
+  property SignalRanges: TLlDOMPropertySignalRanges read GetSignalRanges;
+    property VisualSym: TString read GetVisualSym write SetVisualSym;
     property AxisScale: TString read GetAxisScale write SetAxisScale;
     property AggregateType: TString read GetAggregateType
       write SetAggregateType;
@@ -3510,6 +3517,18 @@ type
     property Max: TLlDOMPropertyRange read GetMax;
     property Min: TLlDOMPropertyRange read GetMin;
     property AxisScale: TString read GetAxisScale write SetAxisScale;
+  end;
+
+  TLlDOMPropertyValueAxisArrayLine = class(TLlDOMItem)
+  private
+  fValueAxis: array [0 .. 1] of TLlDOMPropertyValueAxis;
+    function GetValueAxis(index: integer): TLlDOMPropertyValueAxis;
+  public
+    property ValueAxis[index: integer]: TLlDOMPropertyValueAxis
+      read GetValueAxis; default;
+
+    destructor Destroy; override;
+
   end;
 
   TLlDOMPropertyValueAxisArray = class(TLlDOMItem)
@@ -4745,12 +4764,12 @@ type
     fSecondaryValueAxis: TLlDOMPropertyChartSecondaryValueAxis;
     fXaxis: TLlDOMPropertyCategoryAxis;
     fYAxis: TLlDOMPropertyCategoryAxis;
-    fZAxes: TLlDOMPropertyValueAxisArray;
+    fZAxes: TLlDOMPropertyValueAxisArrayLine;
     function GetFilling: TLlDOMPropertyTextFilling;
     function GetSecondaryValueAxis: TLlDOMPropertyChartSecondaryValueAxis;
     function GetXAxis: TLlDOMPropertyCategoryAxis;
     function GetYAxis: TLlDOMPropertyCategoryAxis;
-    function GetZAxes: TLlDOMPropertyValueAxisArray;
+    function GetZAxes: TLlDOMPropertyValueAxisArrayLine;
     function GetLinearAxis: TString;
     procedure SetLinearAxis(const value: TString);
     function GetUseLightEffect: TString;
@@ -4764,7 +4783,7 @@ type
       write SetUseLightEffect;
     property XAxis: TLlDOMPropertyCategoryAxis read GetXAxis;
     property YAxis: TLlDOMPropertyCategoryAxis read GetYAxis;
-    property ZAxes: TLlDOMPropertyValueAxisArray read GetZAxes;
+    property ZAxes: TLlDOMPropertyValueAxisArrayLine read GetZAxes;
 
     destructor Destroy; override;
   end;
@@ -6118,7 +6137,10 @@ private
     procedure SetRepeatAsHeader(const value: TString);
     function GetExpandable: TString;
     procedure SetExpandable(const value: TString);
+    function GetKeepGroupTogether: TString;
+    procedure SetKeepGroupTogether(const value: TString);
   public
+    property KeepGroupTogether: TString read GetKeepGroupTogether write SetKeepGroupTogether;
     property BreakBefore: TLlDOMPropertyPageBreakOptions read GetBreakBefore;
     property GroupBy: TString read GetGroupBy write SetGroupBy;
     property GroupSums: TString read GetGroupSums write SetGroupSums;
@@ -18385,6 +18407,17 @@ begin
   SetProperty('Distance', value);
 end;
 
+
+function TLlDOMTableLineGroupHeader.GetKeepGroupTogether: TString;
+begin
+  result:=  GetProperty('KeepTogether.Group');
+end;
+
+procedure TLlDOMTableLineGroupHeader.SetKeepGroupTogether(const value: TString);
+begin
+  SetProperty('KeepTogether.Group', value);
+end;
+
 function TLlDOMTableLineGroupHeader.GetBreakBefore: TLlDOMPropertyPageBreakOptions;
 var
   baseObj: TLlDOMItem;
@@ -25462,6 +25495,40 @@ end;
 
 { TLlDOMPropertyValueAxisArray }
 
+function TLlDOMPropertyValueAxisArrayLine.GetValueAxis(index: integer)
+  : TLlDOMPropertyValueAxis;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fValueAxis[index] <> nil then
+  begin
+    result := fValueAxis[index]
+  end
+  else
+  begin
+    baseObj := GetSubObject(index);
+    if baseObj <> nil then
+    begin
+      fValueAxis[index] := TLlDOMPropertyValueAxis.Create(baseObj);
+      baseObj.Free;
+      result := fValueAxis[index];
+    end
+    else
+      result := nil;
+  end;
+end;
+
+
+destructor TLlDOMPropertyValueAxisArrayLine.Destroy;
+var
+  i: integer;
+begin
+  for i := 0 to 1 do
+    if Assigned(fValueAxis[i]) then
+      fValueAxis[i].Free;
+  inherited;
+end;
+
 destructor TLlDOMPropertyValueAxisArray.Destroy;
 var
   i: integer;
@@ -25566,6 +25633,33 @@ begin
     baseObj.Free;
     result := fVisual;
   end;
+end;
+
+function TLlDOMPropertyValueAxis.GetSignalRanges : TLlDOMPropertySignalRanges;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fSignalRanges <> nil then
+  begin
+    result := fSignalRanges
+  end
+  else
+  begin
+    baseObj := GetObject('SignalRanges');
+    fSignalRanges := TLlDOMPropertySignalRanges.Create(baseObj);
+    baseObj.Free;
+    result := fSignalRanges;
+  end;
+end;
+
+function TLlDOMPropertyValueAxis.GetVisualSym: TString;
+begin
+  result := GetProperty('VisualSym');
+end;
+
+procedure TLlDOMPropertyValueAxis.SetVisualSym(const value: TString);
+begin
+  SetProperty('VisualSym', value);
 end;
 
 function TLlDOMPropertyValueAxis.GetWidth: TString;
@@ -27135,7 +27229,7 @@ begin
 end;
 
 function TLlDOMPropertyChartEngineLineMultiRow.GetZAxes
-  : TLlDOMPropertyValueAxisArray;
+  : TLlDOMPropertyValueAxisArrayLine;
 var
   baseObj: TLlDOMItem;
 begin
@@ -27146,7 +27240,7 @@ begin
   else
   begin
     baseObj := GetObject('ZAxes');
-    fZAxes := TLlDOMPropertyValueAxisArray.Create(baseObj);
+    fZAxes := TLlDOMPropertyValueAxisArrayLine.Create(baseObj);
     baseObj.Free;
     result := fZAxes;
   end;

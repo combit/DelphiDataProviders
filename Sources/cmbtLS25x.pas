@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS25.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2019-10-04 11:10:28] *)
+(*  [build of 2020-08-04 13:08:35] *)
 
 unit cmbtLS25x;
 
@@ -337,6 +337,7 @@ const
   LS_OPTION_MOUSEMODE_MOVE       = 1;
   LS_OPTION_MOUSEMODE_ZOOM       = 2;
   LS_OPTION_MOUSEMODE_SELECT     = 3;
+  LS_OPTION_MOUSEMODE_WAIT       = 4;
   LS_OPTION_ALLOW_RBUTTONUSAGE   = 27;
                     (* default: true *)
   LS_OPTION_TOOLBGCOLOR          = 28;
