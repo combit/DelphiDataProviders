@@ -3,14 +3,14 @@
   Copyright © combit GmbH, Konstanz
 
   ----------------------------------------------------------------------------------
-  File   : l25dom.pas
-  Module : List & Label 25 DOM
-  Descr. : Implementation file for the List & Label 25 DOM
-  Version: 25.001
+  File   : l26dom.pas
+  Module : List & Label 26 DOM
+  Descr. : Implementation file for the List & Label 26 DOM
+  Version: 26.000
   ==================================================================================
 }
 
-unit l25dom;
+unit l26dom;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
@@ -26,7 +26,7 @@ unit l25dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l25CommonInterfaces,cmbtll25
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l26CommonInterfaces,cmbtll26
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -64,8 +64,8 @@ type
   {$ifend}
 
   cmbtHWND = DWORD_PTR; // needed for C++Builder compatibility
-
   TLlDOMPropertyVisual = class;
+  TLlDOMPropertyLineSmoothing = class;
   TLlDOMPropertyInputButtonActionPdfSig = class;
   TLlDOMPropertyInputButtonActionSendTo = class;
   TLlDOMPropertyInputButtonActionSaveAs = class;
@@ -162,7 +162,9 @@ type
   TLlDOMUserVariableList = class;
   TLlDOMObjectList = class;
   TLlDOMParagraphList = class;
-  TLlDOMSubItemBaseList = class;
+  TLLDOMSubItemCore = class;
+  TLlDOMSubItemSubReport = class;
+  TLlDOMSubItemCoreList = class;
   TLlDOMTableLineBaseList = class;
   TLlDOMTableLineDataList = class;
   TLlDOMTableLineFooterList = class;
@@ -720,8 +722,23 @@ type
     function NewItem(index: integer): TLlDOMItem;
   end;
 
-  TLlDOMPropertyVisual = class(TLlDOMItem)
+    TLlDOMPropertyLineSmoothing = class(TLlDOMItem)
     private
+      function GetSmoothingType: TString;
+      procedure SetSmoothingType(const value: TString);
+      function GetMaximumSupportPoints: TString;
+      procedure SetMaximumSupportPoints(const value: TString);
+    public
+      property SmoothingType:TString read GetSmoothingType write SetSmoothingType;
+      property MaximumSupportPoints:TString read GetMaximumSupportPoints write SetMaximumSupportPoints;
+
+  end;
+
+
+    TLlDOMPropertyVisual = class(TLlDOMItem)
+    private
+      fLineSmoothing: TLlDOMPropertyLineSmoothing;
+      function GetLineSmoothing: TLlDOMPropertyLineSmoothing;
       function GetContents: TString;
       procedure SetContents(const value: TString);
       function GetLineTypeOverride: TString;
@@ -730,6 +747,8 @@ type
     public
       property Contents:TString read GetContents write SetContents;
       property LineTypeOverride: TString read GetLineTypeOverride write SetLineTypeOverride;
+      property LineSmoothing: TLlDOMPropertyLineSmoothing read GetLineSmoothing;
+      destructor Destroy; override;
   end;
 
 
@@ -6502,15 +6521,9 @@ private
   end;
 
 
-  TLlDOMSubItemBase = class(TLlDOMItem)
-  private
-
-    fColumns: TLlDOMPropertyColumns;
-    fBreakBefore: TLlDOMPropertyPageBreakOptions;
-    fAnimation: TLlDomPropertyAnimation;
-    fXhtmlAnimation: TLlDomPropertyXhtmlAnimation;
-
-    function GetColumns: TLlDOMPropertyColumns;
+  TLlDOMSubItemCore = class(TLlDOMItem)
+  private    
+    fBreakBefore: TLlDOMPropertyPageBreakOptions;    
     function GetFilter: TString;
     procedure SetFilter(const value: TString);
     function GetDistanceBottom: TString;
@@ -6523,27 +6536,71 @@ private
     procedure SetName(const value: TString);
     function GetObjectType: TString;
     function GetBreakBefore: TLlDOMPropertyPageBreakOptions;
-    function GetAnimation: TLlDOMPropertyAnimation;
-    function GetXhtmlAnimation: TLlDOMPropertyXhtmlAnimation;
 
   public
-    property DistanceBottom: TString read GetDistanceBottom write SetDistanceBottom;
-    property Columns: TLlDOMPropertyColumns read GetColumns;
+    property DistanceBottom: TString read GetDistanceBottom write SetDistanceBottom;    
     property Filter: TString read GetFilter write SetFilter;
     property Condition: TString read GetCondition write SetCondition;
     property DistanceTop: TString read GetDistanceTop write SetDistanceTop;
     property Name: TString read GetName write SetName;
     property ObjectType: TString read GetObjectType;
     property BreakBefore: TLlDOMPropertyPageBreakOptions read GetBreakBefore;
-    property Animation: TLlDOMPropertyAnimation read GetAnimation;
-    property XhtmlAnimation: TLlDOMPropertyXhtmlAnimation read GetXhtmlAnimation;
-
-    constructor Create(list: TLlDOMSubItemBaseList; objType: TString;
+    
+    constructor Create(list: TLlDOMSubItemCoreList; objType: TString;
       index: integer); overload;
     destructor Destroy; override;
 
   end;
 
+
+  TLlDOMSubItemBase = class(TLlDOMSubItemCore)
+  private
+	fColumns: TLlDOMPropertyColumns;
+	fAnimation: TLlDomPropertyAnimation;
+  fXhtmlAnimation: TLlDomPropertyXhtmlAnimation;
+	function GetTableID: TString;
+  procedure SetTableID(const value: TString);
+	function GetColumns: TLlDOMPropertyColumns;
+  function GetXhtmlAnimation: TLlDOMPropertyXhtmlAnimation;
+	function GetAnimation: TLlDOMPropertyAnimation;
+
+  public
+  property TableId: TString read GetTableId write SetTableID;
+	property Columns: TLlDOMPropertyColumns read GetColumns;
+	property Animation: TLlDOMPropertyAnimation read GetAnimation;
+  property XhtmlAnimation: TLlDOMPropertyXhtmlAnimation read GetXhtmlAnimation;
+      constructor Create(list: TLlDOMSubItemCoreList; objType: TString;
+      index: integer); overload;
+    destructor Destroy; override;
+  end;
+  
+  TLlDOMSubItemSubReport = class(TLLDOMSubItemCore)
+  private
+    function GetScaling: TString;
+    procedure SetScaling(const value: TString);
+	function GetLinked: TString;
+    procedure SetLinked(const value: TString);
+	function GetLinkUUID: TString;
+    procedure SetLinkUUID(const value: TString);
+	function GetRelation: TString;
+    procedure SetRelation(const value: TString);
+	function GetSource: TString;
+    procedure SetSource(const value: TString);	
+    function GetExpandable: TString;
+    procedure SetExpandable(const value: TString);
+	
+	
+  public
+	property Scaling : TString read GetScaling write SetScaling;
+	property Linked: TString read GetLinked write SetLinked;
+	property LinkUUID: TString read GetLinkUUID write SetLinkUUID;
+	property Relation: TString read GetRelation write SetRelation;
+	property Source: TString read GetSource write SetSource;
+    property Expandable: TString read GetExpandable write SetExpandable;	
+    constructor Create(list: TLlDOMSubItemCoreList); overload;
+
+  end;
+  
   TLlDOMSubItemCrosstab = class(TLlDOMSubItemBase)
   private
     fDefinition: TLlDOMPropertyCrosstabDefinition;
@@ -6559,7 +6616,7 @@ private
       write SetSourceTablePath;
 
     destructor Destroy; override;
-    constructor Create(list: TLlDOMSubItemBaseList); overload;
+    constructor Create(list: TLlDOMSubItemCoreList); overload;
   end;
 
   TLlDOMSubItemTableBase = class(TLlDOMSubItemBase)
@@ -6598,7 +6655,7 @@ private
     property TableId: TString read GetTableId write SetTableId;
     property SortOrderId: TString read GetSortOrderId write SetSortOrderId;
     property Expandable: TString read GetExpandable write SetExpandable;
-    constructor Create(list: TLlDOMSubItemBaseList); overload;
+    constructor Create(list: TLlDOMSubItemCoreList); overload;
     destructor Destroy; override;
 
   end;
@@ -6617,7 +6674,7 @@ private
     property LineOptions: TLlDOMPropertyStaticTableLines read GetLineOptions;
     property Lines: TLlDOMTableLinesStaticTable read GetLines;
 
-    constructor Create(list: TLlDOMSubItemBaseList); overload;
+    constructor Create(list: TLlDOMSubItemCoreList); overload;
     destructor Destroy; override;
 
   end;
@@ -6627,9 +6684,9 @@ private
 
     fLineOptions: TLlDOMPropertyTableLines;
     fLines: TLlDOMTableLines;
-    fSubItems: TLlDOMSubItemBaseList;
+    fSubItems: TLlDOMSubItemCoreList;
 
-    function GetSubItems: TLlDOMSubItemBaseList;
+    function GetSubItems: TLlDOMSubItemCoreList;
 
     function GetLineOptions: TLlDOMPropertyTableLines;
 
@@ -6640,12 +6697,12 @@ private
 
   public
 
-    property SubItems: TLlDOMSubItemBaseList read GetSubItems;
+    property SubItems: TLlDOMSubItemCoreList read GetSubItems;
     property Lines: TLlDOMTableLines read GetLines;
     property LineOptions: TLlDOMPropertyTableLines read GetLineOptions;
     property RelationID: TString read GetRelationID write SetRelationID;
 
-    constructor Create(list: TLlDOMSubItemBaseList); overload;
+    constructor Create(list: TLlDOMSubItemCoreList); overload;
     destructor Destroy; override;
 
   end;
@@ -6676,7 +6733,7 @@ private
 
     destructor Destroy; override;
     constructor Create(ChartType: TLlDOMChartType;
-      list: TLlDOMSubItemBaseList); overload;
+      list: TLlDOMSubItemCoreList); overload;
   end;
 
   TLlDOMSubItemGanttChart = class(TLlDOMSubItemBase)
@@ -6694,7 +6751,7 @@ private
     function GetIndexBookmark: TLlDOMPropertyBookmark;
     function GetDefinition: TLlDomPropertyGanttChartDefinition;
   public
-    constructor Create(list: TLlDOMSubItemBaseList); overload;
+    constructor Create(list: TLlDOMSubItemCoreList); overload;
     destructor Destroy; override;
 
     property Definition: TLlDomPropertyGanttChartDefinition read GetDefinition;
@@ -7116,16 +7173,16 @@ TLlDOMPropertyMatchDevicePixel = class(TLlDOMItem)
     fDefaultColumns: TLlDOMPropertyDefaultColumns;
     fDefaultFont: TLlDOMPropertyDefaultFont;
     fFilling: TLlDOMPropertyFilling;
-    fSubItemList: TLlDOMSubItemBaseList;
+    fSubItemList: TLlDOMSubItemCoreList;
     function GetFrame: TLlDOMPropertyFrame;
     function GetDefaultFont: TLlDOMPropertyDefaultFont;
     function GetFilling: TLlDOMPropertyFilling;
-    function GetSubItemList: TLlDOMSubItemBaseList;
+    function GetSubItemList: TLlDOMSubItemCoreList;
     function GetDefaultColumns: TLlDOMPropertyDefaultColumns;
   public
     property DefaultColumns: TLlDOMPropertyDefaultColumns
       read GetDefaultColumns;
-    property SubItems: TLlDOMSubItemBaseList read GetSubItemList;
+    property SubItems: TLlDOMSubItemCoreList read GetSubItemList;
     property DefaultFont: TLlDOMPropertyDefaultFont read GetDefaultFont;
     property Filling: TLlDOMPropertyFilling read GetFilling;
     property Frame: TLlDOMPropertyFrame read GetFrame;
@@ -7378,14 +7435,14 @@ TLlDOMPropertyMatchDevicePixel = class(TLlDOMItem)
     destructor Destroy; override;
   end;
 
-  TLlDOMSubItemBaseList = class(TLlDOMList)
+  TLlDOMSubItemCoreList = class(TLlDOMList)
   private
-    function GetItems(index: integer): TLlDOMSubItemBase;
-    procedure SetItems(index: integer; const value: TLlDOMSubItemBase);
-    function Add(domObj: TLlDOMSubItemBase): integer;
+    function GetItems(index: integer): TLlDOMSubItemCore;
+    procedure SetItems(index: integer; const value: TLlDOMSubItemCore);
+    function Add(domObj: TLlDOMSubItemCore): integer;
     procedure Initialize; override;
   public
-    property Items[index: integer]: TLlDOMSubItemBase read GetItems
+    property Items[index: integer]: TLlDOMSubItemCore read GetItems
       write SetItems; default;
 
     constructor Create(hDomObj: TLlDOMItem);
@@ -12518,11 +12575,11 @@ begin
   end;
 end;
 
-function TLlDOMObjectReportContainer.GetSubItemList: TLlDOMSubItemBaseList;
+function TLlDOMObjectReportContainer.GetSubItemList: TLlDOMSubItemCoreList;
 begin
   if fSubItemList = nil then
   begin
-    fSubItemList := TLlDOMSubItemBaseList.Create(GetObject('SubItems'));
+    fSubItemList := TLlDOMSubItemCoreList.Create(GetObject('SubItems'));
   end;
   result := fSubItemList;
 end;
@@ -13094,16 +13151,16 @@ end;
 
 { TLlDOMSubItemList }
 
-function TLlDOMSubItemBaseList.GetItems(index: integer): TLlDOMSubItemBase;
+function TLlDOMSubItemCoreList.GetItems(index: integer): TLlDOMSubItemCore;
 begin
-  result := TLlDOMSubItemBase(inherited Items[index]);
+  result := TLlDOMSubItemCore(inherited Items[index]);
 end;
 
-procedure TLlDOMSubItemBaseList.Initialize;
+procedure TLlDOMSubItemCoreList.Initialize;
 var
   nObjCount: integer;
   baseObj: TLlDOMItem;
-  newDomObj: TLlDOMSubItemBase;
+  newDomObj: TLlDOMSubItemCore;
   i: integer;
   tempTable: TLlDOMSubItemTableBase;
 begin
@@ -13112,7 +13169,7 @@ begin
   begin
     baseObj := fDOMObj.GetSubObject(i);
 
-    if TLlDOMSubItemBase(baseObj).ObjectType = 'Table' then
+    if TLlDOMSubItemCore(baseObj).ObjectType = 'Table' then
     begin
       tempTable := TLlDOMSubItemTableBase.Create(baseObj);
       if (tempTable.TableId = 'LLStaticTable') then
@@ -13124,32 +13181,34 @@ begin
         newDomObj := TLlDOMSubItemTable.Create(baseObj);
       end;
     end
-    else if TLlDOMSubItemBase(baseObj).ObjectType = 'Crosstab' then
+    else if TLlDOMSubItemCore(baseObj).ObjectType = 'Crosstab' then
       newDomObj := TLlDOMSubItemCrosstab.Create(baseObj)
-    else if TLlDOMSubItemBase(baseObj).ObjectType = 'Chart' then
+    else if TLlDOMSubItemCore(baseObj).ObjectType = 'Chart' then
       newDomObj := TLlDOMSubItemChart.Create(baseObj)
-    else if TLlDOMSubItemBase(baseObj).ObjectType = 'Gantt' then
+    else if TLlDOMSubItemCore(baseObj).ObjectType = 'Gantt' then
       newDomObj := TLlDOMSubItemGanttChart.Create(baseObj)
+    else if TLlDOMSubItemCore(baseObj).ObjectType = 'SubReport' then
+      newDomObj := TLlDOMSubItemSubReport.Create(baseObj)
     else
-      newDomObj := TLlDOMSubItemBase.Create(baseObj);
+      newDomObj := TLlDOMSubItemCore.Create(baseObj);
 
     baseObj.Free;
     Add(newDomObj);
   end;
 end;
 
-procedure TLlDOMSubItemBaseList.SetItems(index: integer;
-  const value: TLlDOMSubItemBase);
+procedure TLlDOMSubItemCoreList.SetItems(index: integer;
+  const value: TLlDOMSubItemCore);
 begin
   inherited Items[index] := value;
 end;
 
-function TLlDOMSubItemBaseList.Add(domObj: TLlDOMSubItemBase): integer;
+function TLlDOMSubItemCoreList.Add(domObj: TLlDOMSubItemCore): integer;
 begin
   result := inherited Add(domObj);
 end;
 
-constructor TLlDOMSubItemBaseList.Create(hDomObj: TLlDOMItem);
+constructor TLlDOMSubItemCoreList.Create(hDomObj: TLlDOMItem);
 begin
   inherited Create();
   fDOMObj := hDomObj;
@@ -13157,7 +13216,7 @@ begin
   Initialize();
 end;
 
-destructor TLlDOMSubItemBaseList.Destroy;
+destructor TLlDOMSubItemCoreList.Destroy;
 var
   i: integer;
 begin
@@ -13169,19 +13228,19 @@ begin
   inherited;
 end;
 
-function TLlDOMSubItemBaseList.NewItem(index: integer; ObjectType: TString)
+function TLlDOMSubItemCoreList.NewItem(index: integer; ObjectType: TString)
   : TLlDOMItem;
 var
-  newDomObj: TLlDOMSubItemBase;
+  newDomObj: TLlDOMSubItemCore;
 begin
-  newDomObj := TLlDOMSubItemBase.Create(fDOMObj.CreateSubObject(index,
+  newDomObj := TLlDOMSubItemCore.Create(fDOMObj.CreateSubObject(index,
     ObjectType));
   result := newDomObj;
 end;
 
 { TLlDOMSubItemTableBase }
 
-constructor TLlDOMSubItemTableBase.Create(list: TLlDOMSubItemBaseList);
+constructor TLlDOMSubItemTableBase.Create(list: TLlDOMSubItemCoreList);
 begin
   inherited Create(list, 'Table', list.Count);
 end;
@@ -13283,7 +13342,7 @@ end;
 
 { TLlDOMSubItemTable }
 
-constructor TLlDOMSubItemTable.Create(list: TLlDOMSubItemBaseList);
+constructor TLlDOMSubItemTable.Create(list: TLlDOMSubItemCoreList);
 begin
   inherited Create(list, 'Table', list.Count);
 end;
@@ -13342,7 +13401,7 @@ begin
   SetProperty('RelationID', value);
 end;
 
-function TLlDOMSubItemTable.GetSubItems: TLlDOMSubItemBaseList;
+function TLlDOMSubItemTable.GetSubItems: TLlDOMSubItemCoreList;
 begin
   if (fSubItems <> nil) then
   begin
@@ -13350,14 +13409,14 @@ begin
   end
   else
   begin
-    fSubItems := TLlDOMSubItemBaseList.Create(GetObject('SubItems'));
+    fSubItems := TLlDOMSubItemCoreList.Create(GetObject('SubItems'));
     result := fSubItems;
   end;
 end;
 
 { TLlDOMSubItemStaticTable }
 
-constructor TLlDOMSubItemStaticTable.Create(list: TLlDOMSubItemBaseList);
+constructor TLlDOMSubItemStaticTable.Create(list: TLlDOMSubItemCoreList);
 begin
 
   inherited Create(list, 'Table', list.Count);
@@ -15856,9 +15915,9 @@ begin
   result := newDomObj;
 end;
 
-{ TLlDOMSubItemBase }
+{ TLlDOMSubItemCore }
 
-constructor TLlDOMSubItemBase.Create(list: TLlDOMSubItemBaseList;
+constructor TLlDOMSubItemCore.Create(list: TLlDOMSubItemCoreList;
   objType: TString; index: integer);
 var
   newDomObj: TLlDOMItem;
@@ -15870,13 +15929,97 @@ begin
   newDomObj.Free;
 end;
 
+destructor TLlDOMSubItemCore.Destroy;
+begin
+  fBreakBefore.Free;
+  inherited;
+end;
+
+
+function TLlDOMSubItemCore.GetFilter: TString;
+begin
+  result := GetProperty('Filter');
+end;
+
+procedure TLlDOMSubItemCore.SetFilter(const value: TString);
+begin
+  SetProperty('Filter', value);
+end;
+
+function TLlDOMSubItemCore.GetCondition: TString;
+begin
+  result := GetProperty('Condition');
+end;
+
+procedure TLlDOMSubItemCore.SetCondition(const value: TString);
+begin
+  SetProperty('Condition', value);
+end;
+
+function TLlDOMSubItemCore.GetDistanceTop: TString;
+begin
+  result := GetProperty('DistanceTop');
+end;
+
+procedure TLlDOMSubItemCore.SetDistanceTop(const value: TString);
+begin
+  SetProperty('DistanceTop', value);
+end;
+
+function TLlDOMSubItemCore.GetDistanceBottom: TString;
+begin
+  result := GetProperty('DistanceBottom');
+end;
+
+procedure TLlDOMSubItemCore.SetDistanceBottom(const value: TString);
+begin
+  SetProperty('DistanceBottom', value);
+end;
+
+function TLlDOMSubItemCore.GetName: TString;
+begin
+  result := GetProperty('Name');
+end;
+
+procedure TLlDOMSubItemCore.SetName(const value: TString);
+begin
+  SetProperty('Name', value);
+end;
+
+function TLlDOMSubItemCore.GetObjectType: TString;
+begin
+  result := GetProperty('ObjectType');
+end;
+
+function TLlDOMSubItemCore.GetBreakBefore: TLlDOMPropertyPageBreakOptions;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fBreakBefore <> nil) then
+  begin
+    result := fBreakBefore;
+  end
+  else
+  begin
+    baseObj := GetObject('PageBreakOptions');
+    fBreakBefore := TLlDOMPropertyPageBreakOptions.Create(baseObj);
+    baseObj.Free;
+    result := fBreakBefore;
+  end;
+end;
+
+{/SubItemCore}
+{SubItemBase}
+constructor TLlDOMSubItemBase.Create(list: TLlDOMSubItemCoreList; objType: string; index: Integer);
+begin
+  inherited Create(list, objType, index);
+end;
+
 destructor TLlDOMSubItemBase.Destroy;
 begin
   fColumns.Free;
-  fBreakBefore.Free;
   fAnimation.Free;
   fXhtmlAnimation.Free;
-  inherited;
 end;
 
 function TLlDOMSubItemBase.GetColumns: TLlDOMPropertyColumns;
@@ -15894,61 +16037,6 @@ begin
     baseObj.Free;
     result := fColumns;
   end;
-end;
-
-function TLlDOMSubItemBase.GetFilter: TString;
-begin
-  result := GetProperty('Filter');
-end;
-
-procedure TLlDOMSubItemBase.SetFilter(const value: TString);
-begin
-  SetProperty('Filter', value);
-end;
-
-function TLlDOMSubItemBase.GetCondition: TString;
-begin
-  result := GetProperty('Condition');
-end;
-
-procedure TLlDOMSubItemBase.SetCondition(const value: TString);
-begin
-  SetProperty('Condition', value);
-end;
-
-function TLlDOMSubItemBase.GetDistanceTop: TString;
-begin
-  result := GetProperty('DistanceTop');
-end;
-
-procedure TLlDOMSubItemBase.SetDistanceTop(const value: TString);
-begin
-  SetProperty('DistanceTop', value);
-end;
-
-function TLlDOMSubItemBase.GetDistanceBottom: TString;
-begin
-  result := GetProperty('DistanceBottom');
-end;
-
-procedure TLlDOMSubItemBase.SetDistanceBottom(const value: TString);
-begin
-  SetProperty('DistanceBottom', value);
-end;
-
-function TLlDOMSubItemBase.GetName: TString;
-begin
-  result := GetProperty('Name');
-end;
-
-procedure TLlDOMSubItemBase.SetName(const value: TString);
-begin
-  SetProperty('Name', value);
-end;
-
-function TLlDOMSubItemBase.GetObjectType: TString;
-begin
-  result := GetProperty('ObjectType');
 end;
 
 function TLlDOMSubItemBase.GetAnimation: TLlDOMPropertyAnimation;
@@ -15972,6 +16060,7 @@ function TLlDOMSubItemBase.GetXhtmlAnimation: TLlDOMPropertyXhtmlAnimation;
 var
   baseObj: TLlDOMItem;
 begin
+
   if (fXhtmlAnimation <> nil) then
   begin
     result := fXhtmlAnimation
@@ -15985,24 +16074,83 @@ begin
   end;
 end;
 
-function TLlDOMSubItemBase.GetBreakBefore: TLlDOMPropertyPageBreakOptions;
-var
-  baseObj: TLlDOMItem;
+function TLlDOMSubItemBase.GetTableID: Tstring;
 begin
-  if (fBreakBefore <> nil) then
-  begin
-    result := fBreakBefore;
-  end
-  else
-  begin
-    baseObj := GetObject('PageBreakOptions');
-    fBreakBefore := TLlDOMPropertyPageBreakOptions.Create(baseObj);
-    baseObj.Free;
-    result := fBreakBefore;
-  end;
+  result := GetProperty('TableID');
 end;
 
-{/SubItemBase}
+procedure TLLDOMSubItemBase.SetTableId(const value: TString);
+begin
+	SetProperty('TableID', value);
+end;
+
+{/TLlDOMSubItemBase}
+
+{TLlDOMSubItemSubReport}
+
+constructor TLlDOMSubItemSubReport.Create(list: TLlDOMSubItemCoreList);
+begin
+  inherited Create(list, 'SubReport', list.Count);
+end;
+
+function TLlDOMSubItemSubReport.GetScaling: TString;
+begin
+	result := GetProperty('Subreport.Scaling');
+end;
+function TLlDOMSubItemSubReport.GetLinked: TString;
+begin
+	result := GetProperty('Subreport.Linked');
+end;
+function TLlDOMSubItemSubReport.GetLinkUUID: TString;
+begin
+	result := GetProperty('Subreport.LinkUUID');
+end;
+function TLlDOMSubItemSubReport.GetRelation: TString;
+begin
+	result := GetProperty('Subreport.Relation');
+end;
+function TLlDOMSubItemSubReport.GetSource: TString;
+begin
+	result := GetProperty('Subreport.Source');
+end;
+
+procedure TLlDOMSubItemSubReport.SetScaling(const value: TString);
+begin
+	SetProperty('Subreport.Scaling', value);
+end;
+
+procedure TLlDOMSubItemSubReport.SetLinked(const value: TString);
+begin
+	SetProperty('Subreport.Linked', value);
+end;
+
+procedure TLlDOMSubItemSubReport.SetLinkUUID(const value: TString);
+begin
+	SetProperty('Subreport.LinkUUID', value);
+end;
+
+procedure TLlDOMSubItemSubReport.SetRelation(const value: TString);
+begin
+	SetProperty('Subreport.Relation', value);
+end;
+
+procedure TLlDOMSubItemSubReport.SetSource(const value: TString);
+begin
+	SetProperty('Subreport.Source', value);
+end;
+
+function TLlDOMSubItemSubReport.GetExpandable: TString;
+begin
+  result := GetProperty('Expandable');
+end;
+
+procedure TLlDOMSubItemSubReport.SetExpandable(const value: TString);
+begin
+  SetProperty('Expandable', value);
+end;
+
+
+{/TLlDOMSubItemSubReport}
 
 {TLlDOMPropertyPageBreakOptions}
 
@@ -16027,7 +16175,7 @@ begin
 end;
 { TLlDOMTableItemCrosstab }
 
-constructor TLlDOMSubItemCrosstab.Create(list: TLlDOMSubItemBaseList);
+constructor TLlDOMSubItemCrosstab.Create(list: TLlDOMSubItemCoreList);
 begin
   inherited Create(list, 'Crosstab', list.Count);
 end;
@@ -19382,7 +19530,7 @@ begin
   end;
 end;
 
-function TLlDOMPropertyGaugeDefinition.GetSignalRanges;
+function TLlDOMPropertyGaugeDefinition.GetSignalRanges: TLlDOMPropertySignalRanges;
 var
   baseObj: TLlDOMItem;
 begin
@@ -23561,7 +23709,7 @@ end;
 { TLlDOMSubItemChart }
 
 constructor TLlDOMSubItemChart.Create(ChartType: TLlDOMChartType;
-  list: TLlDOMSubItemBaseList);
+  list: TLlDOMSubItemCoreList);
 begin
   inherited Create(list, 'Chart', list.Count);
 
@@ -23815,7 +23963,7 @@ begin
 end;
 
 { TLlDOMSubItemGanttChart }
-constructor TLlDOMSubItemGanttChart.Create(list: TLlDOMSubItemBaseList);
+constructor TLlDOMSubItemGanttChart.Create(list: TLlDOMSubItemCoreList);
 begin
   inherited Create(list, 'Gantt', list.Count);
 end;
@@ -27609,6 +27757,48 @@ begin
   SetProperty('Line', value);
 end;
 
+function TLlDOMPropertyLineSmoothing.GetSmoothingType:TString;
+begin
+  result := GetProperty('SmoothingType');
+end;
+
+procedure TLlDOMPropertyLineSmoothing.SetSmoothingType(const value: TString);
+begin
+  SetProperty('SmoothingType', value);
+end;
+
+function TLlDOMPropertyLineSmoothing.GetMaximumSupportPoints: TString;
+begin
+  result:= GetProperty('MaximumSupportPoints');
+end;
+
+procedure  TLlDOMPropertyLineSmoothing.SetMaximumSupportPoints(const value: TString);
+begin
+  SetProperty('MaximumSupportPoints', value);
+end;
+
+destructor TLlDOMPropertyVisual.Destroy;
+begin
+  fLineSmoothing.Free;
+  Inherited;
+end;
+function TLlDOMPropertyVisual.GetLineSmoothing: TLlDOMPropertyLineSmoothing;
+var  baseObj: TLlDOMItem;
+begin
+    if fLineSmoothing <> nil then
+  begin
+    result := fLineSmoothing
+  end
+  else
+  begin
+    baseObj := GetObject('LineSmoothing');
+    fLineSmoothing := TLlDOMPropertyLineSmoothing.
+      Create(baseObj);
+    baseObj.Free;
+    result := fLineSmoothing;
+  end;
+
+end;
 
 Function TLlDOMPropertyVisual.GetContents: TString;
 begin
@@ -30444,7 +30634,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl25.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl26.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -30460,10 +30650,12 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl25.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl26.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;
 
 
 end.
+
+

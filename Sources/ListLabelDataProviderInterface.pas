@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : ListLabelDataProviderInterface.pas
- Module : List & Label 25
- Descr. : Implementation file for the List & Label 25 VCL-Component
- Version: 25.000
+ Module : List & Label 26
+ Descr. : Implementation file for the List & Label 26 VCL-Component
+ Version: 26.000
 ==================================================================================
 }
 

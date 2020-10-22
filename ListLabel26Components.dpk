@@ -1,4 +1,4 @@
-package ListLabel25Components;
+package ListLabel26Components;
 
 {$R *.res}
 {$R *.dres}
@@ -26,7 +26,7 @@ package ListLabel25Components;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'combit List & Label 25 Components'}
+{$DESCRIPTION 'combit List & Label 26 Components'}
 {$IMPLICITBUILD ON}
 
 requires
@@ -46,12 +46,12 @@ contains
   LLObjectEditor in 'Sources\LLObjectEditor.pas',
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  LL25Report_Reg in 'Sources\LL25Report_Reg.pas',
+  LL26Report_Reg in 'Sources\LL26Report_Reg.pas',
   LLReport_Types in 'Sources\LLReport_Types.pas',
-  ListLabel25 in 'Sources\ListLabel25.pas',
-  l25CommonInterfaces in 'Sources\l25CommonInterfaces.pas',
-  cmbtLL25x in 'Sources\cmbtLL25x.pas',
-  cmbtLS25x in 'Sources\cmbtLS25x.pas';
+  ListLabel26 in 'Sources\ListLabel26.pas',
+  l26CommonInterfaces in 'Sources\l26CommonInterfaces.pas',
+  cmbtLL26x in 'Sources\cmbtLL26x.pas',
+  cmbtLS26x in 'Sources\cmbtLS26x.pas';
 
 end.
 

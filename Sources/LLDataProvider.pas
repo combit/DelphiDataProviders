@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : LLDataProvider.pas
- Module : List & Label 25
- Descr. : Implementation file for the List & Label 25 VCL-Component
- Version: 25.000
+ Module : List & Label 26
+ Descr. : Implementation file for the List & Label 26 VCL-Component
+ Version: 26.000
 ==================================================================================
 }
 
@@ -130,7 +130,7 @@ type
   end;
 
 implementation
-  uses  sysutils, ListLabel25;
+  uses  sysutils, ListLabel26;
 { TDataProviderRoot }
 
 constructor TDataProviderInterfaceProxyRoot.Create(ListLabel: TComponent; AProvider: TListLabelDataProvider);
@@ -352,23 +352,23 @@ var Column: TListLabelTableColumn;
 begin
   ColumnList := Row.Columns;
   ColumnList.OwnsObjects := True;
-  AsVariables:= (TListLabel25(Parent).DataController.DataMember = Row.TableName) and (TListLabel25(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
+  AsVariables:= (TListLabel26(Parent).DataController.DataMember = Row.TableName) and (TListLabel26(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
 
   for Column in ColumnList do
   begin
      if Column.ImgHandle > 0 Then
      begin
       if AsVariables then
-          TListLabel25(Parent).Core.LlDefineVariableExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+          TListLabel26(Parent).Core.LlDefineVariableExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
         else
-          TListLabel25(Parent).Core.LlDefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+          TListLabel26(Parent).Core.LlDefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
      end
      else
      begin
       if AsVariables then
-        TListLabel25(Parent).Core.LlDefineVariableExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType)
+        TListLabel26(Parent).Core.LlDefineVariableExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType)
       else
-        TListLabel25(Parent).Core.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
+        TListLabel26(Parent).Core.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
      end;
    end;
   ColumnList.Clear;
