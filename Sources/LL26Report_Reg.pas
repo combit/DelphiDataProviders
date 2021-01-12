@@ -44,13 +44,13 @@ type
   procedure Register;
 
 implementation
-uses StrEdit, ListLabel26, LLReport_Types, LLObjectEditor, Typinfo, DB;
+uses StrEdit, ListLabel26, LLReport_Types, LLObjectEditor, Typinfo, DB, LLPreview26;
 
 procedure Register;
 begin
 
   RegisterComponentEditor(TListLabel26, TListLabel26Loader);
-  RegisterComponents('combit', [TListLabel26]);
+  RegisterComponents('combit', [TListLabel26, TLlPreviewControl26]);
   RegisterPropertyEditor(TypeInfo(TDetailSourceList),TListLabel26, 'DetailSources',        TDetailsSourcesPropertyEditor);
   RegisterPropertyEditor(TypeInfo(TDetailSourceList),TLLDataController, 'DetailSources',TDetailsSourcesPropertyEditor);
 
