@@ -51,7 +51,8 @@ contains
   ListLabel25 in 'Sources\ListLabel25.pas',
   l25CommonInterfaces in 'Sources\l25CommonInterfaces.pas',
   cmbtLL25x in 'Sources\cmbtLL25x.pas',
-  cmbtLS25x in 'Sources\cmbtLS25x.pas';
+  cmbtLS25x in 'Sources\cmbtLS25x.pas',
+  LLPreview25 in 'Sources\LLPreview25.pas';
 
 end.
 
