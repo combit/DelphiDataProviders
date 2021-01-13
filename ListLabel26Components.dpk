@@ -31,7 +31,9 @@ package ListLabel26Components;
 
 requires
   vcl,
+  {$ifdef win32}
   DesignIde,
+  {$endif}
   dbrtl,
   vclimg,
   rtl,
@@ -43,16 +45,20 @@ contains
   ListLabelDataProviderInterface in 'Sources\ListLabelDataProviderInterface.pas',
   LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
   LLDataProvider in 'Sources\LLDataProvider.pas',
+  {$ifdef win32}
   LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  {$endif}
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
+  {$ifdef win32}
   LL26Report_Reg in 'Sources\LL26Report_Reg.pas',
+  {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel26 in 'Sources\ListLabel26.pas',
   l26CommonInterfaces in 'Sources\l26CommonInterfaces.pas',
+  LLPreview26 in 'Sources\LLPreview26.pas',
   cmbtLL26x in 'Sources\cmbtLL26x.pas',
-  cmbtLS26x in 'Sources\cmbtLS26x.pas',
-  LLPreview26 in 'Sources\LLPreview26.pas';
+  cmbtLS26x in 'Sources\cmbtLS26x.pas';
 
 end.
 

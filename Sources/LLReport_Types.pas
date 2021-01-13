@@ -6,7 +6,7 @@
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.000
+ Version: 26.001
 ==================================================================================
 }
 
@@ -15,7 +15,7 @@ unit LLReport_Types;
 interface
 {$WEAKPACKAGEUNIT ON}
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll26x;
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll26x, Dialogs, System.UITypes;
 
 Type
 
@@ -130,6 +130,7 @@ Type
 
   TLLCDefineMode   = (dmVariable, dmFields);
 
+
   TEnumTranslator = class
     public
       class function TranslateAutoBoxType(AutoBoxType: TLlAutoBoxType): Integer; static;
@@ -176,29 +177,33 @@ Type
     FMasterKeyField : String;
     FDetailKeyField : String;
     FSortDescription: String;
+    FParentName: String;
 
     procedure SetName(const Value: string);
     function  GetDataSource: TDataSource;
     procedure SetDataSource(Value: TDataSource);
     function  GetMasterSource: TDataSource;
-    Procedure SetParentName(Avlue: String);
-    Function  GetParentName : String;
     procedure LoadCompProperty(Reader: TReader);
     procedure StoreCompProperty(Writer: TWriter);
   protected
-    function GetOwnerComponent: TComponent; virtual;
+    function GetOwner: TComponent; reintroduce;
     function GenerateName: string; virtual;
     function GetDisplayName: string; override;
-    Procedure MakeNodeToChild(ANode:TObjTreeNode); override;
+    function GetItem(Index: Integer): TDetailSourceItem;
+    procedure SetItem(Index: Integer; Value: TDetailSourceItem);
+    procedure AssignTo(Dest: TPersistent); Override;
 
     procedure DefineProperties(Filer: TFiler); Override;
   Public
-    property    Owner: TComponent read GetOwnerComponent;
+    property Owner: TComponent read GetOwner;
     property    OnSetName: TNotifyEvent read FOnSetName write FOnSetName;
     constructor Create(Collection: TCollection); override;
     Destructor  Destroy; Override;
-    Function    AddChildNode: TObjTreeNode; Override;
-    Property    ParentName:  String read GetParentName write SetParentName Stored True;
+    function Add: TDetailSourceItem; reintroduce;
+    function FindItemByName(Const AName: String): TDetailSourceItem;
+    property Items[Index: Integer]: TDetailSourceItem read GetItem write SetItem; default;
+
+    Property ParentName: String read FParentName write FParentName; //deprecated
   published
     Property Tag;
     property Name: string read FName write SetName;
@@ -207,24 +212,26 @@ Type
     Property DetailKeyField: string read FDetailKeyField write FDetailKeyField;
     Property MasterSource: TDataSource read GetMasterSource;
     Property SortDescription: STring read FSortDescription write FSortDescription;
-
     Property MasterKeyField: string read FMasterKeyField write FMasterKeyField;
+    
   End;
 
   TDetailSourceItemClass = class of TDetailSourceItem;
 
   TDetailSourceList = Class(TObjTree)
   private
-    FOwner: TComponent;
     function GetItem(Index: Integer): TDetailSourceItem;
     procedure SetItem(Index: Integer; Value: TDetailSourceItem);
   protected
-    property OwnerComponent: TComponent read FOwner;
+    function GetOwner: TComponent; reintroduce;
+    Procedure ReorderOldParentName;
+    property OwnerComponent: TComponent read GetOwner;
   public
     constructor Create(AOwner: TComponent; ADetailSourceItemClass: TDetailSourceItemClass);
     Destructor Destroy ; override;
     function Add: TDetailSourceItem;
-    function ItemByName(AName: String): TDetailSourceItem;
+    function ItemByName(Const AName: String): TDetailSourceItem;
+    function FindItemByName(Const AName: String): TDetailSourceItem;
     property Items[Index: Integer]: TDetailSourceItem read GetItem write SetItem; default;
   End;
 
@@ -266,6 +273,15 @@ Type
   end;
 
 //--------------------------------------------------------------------------------------------------------------------
+
+
+Resourcestring
+  rsInternesDesignerRegisterNil = 'Internes DesignerRegister ist NIL';
+  rsInternesReportRegisterNil = 'Internes ReportRegister ist NIL';
+  rsInternesControllerRegisterNil = 'Internes ControllerRegister ist NIL';
+  rsObjectNil = 'Übergebenes Objekt ist NIL';
+  rsNotRegistered = 'Objekt nicht registriert';
+  rsDetailSourceAlreadyExists = 'Eine Detail-Source mit dem Namen %s existiert bereits.';
 
 implementation
 uses TypInfo, SysUtils;
@@ -524,10 +540,9 @@ Begin
 End;
 
 destructor TLLDataController.Destroy;
-var
-  I: Integer;
+
 Begin
-  for I := FDetailSources.Count-1 downto 0 do FDetailSources[i].Free;
+  FDetailSources.Clear;
 
   FDetailSources.Free;
   inherited Destroy;
@@ -548,8 +563,9 @@ end;
 // =====================================================================
 constructor TDetailSourceItem.Create(Collection: TCollection);
 Begin
-  Collection.BeginUpdate;
   inherited Create(Collection);
+
+  Collection.BeginUpdate;
   FName := GenerateName;
 
   OnSetName := UpdateEditorDisplay;
@@ -561,17 +577,43 @@ End;
 
 destructor TDetailSourceItem.Destroy;
 Begin
+  FOnSetName := Nil;
+
+  if Assigned(FDataLink) then
   FDataLink.Free;
   FDataLink := nil;
   inherited Destroy;
 End;
 
-Function  TDetailSourceItem.AddChildNode: TObjTreeNode;
-Var node:TObjTreeNode;
+function TDetailSourceItem.Add: TDetailSourceItem;
+begin
+  Result := inherited Add as TDetailSourceItem;
+end;
+
+function TDetailSourceItem.FindItemByName(Const AName: String): TDetailSourceItem;
+var
+  I: Integer;
+  Temp: TDetailSourceItem;
 Begin
-  node:=TObjTreeNode(Collection.Add);
-  MakeNodeToChild(node);
-  result:=node;
+  //Item within the entire tree
+  Temp := Nil;
+  for I := 0 to Count - 1 do
+  Begin
+    if AnsiCompareText(Self.Items[I].Name, AName) = 0 then
+    Begin
+      Temp := Self.Items[I];
+      Break;
+    End
+    else begin
+      Temp := Self.Items[I].FindItemByName(AName);
+      if Temp <> Nil then
+      begin
+        Break;
+      end;
+    end;
+  End;
+
+  Result := Temp;
 end;
 
 function TDetailSourceItem.GetDisplayName: string;
@@ -589,31 +631,55 @@ begin
     Result := inherited GetDisplayName;
 end;
 
-Procedure TDetailSourceItem.MakeNodeToChild(ANode:TObjTreeNode);
+function TDetailSourceItem.GetItem(Index: Integer): TDetailSourceItem;
 Begin
-  inherited MakeNodeToChild(ANode);
+  Result := inherited GetItem(Index) as TDetailSourceItem;
 End;
 
+procedure TDetailSourceItem.SetItem(Index: Integer; Value: TDetailSourceItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+procedure TDetailSourceItem.AssignTo(Dest: TPersistent);
+begin
+  if Dest <> nil then
+  begin
+    if Dest is TDetailSourceItem then
+    begin
+      TDetailSourceItem(Dest).PrimaryKeyField := Self.PrimaryKeyField;
+      TDetailSourceItem(Dest).MasterKeyField := Self.MasterKeyField;
+      TDetailSourceItem(Dest).DetailKeyField := Self.DetailKeyField;
+      TDetailSourceItem(Dest).SortDescription := Self.SortDescription;
+      TDetailSourceItem(Dest).Name := Self.Name;
+      TDetailSourceItem(Dest).DataSource := Self.DataSource;
+    end;
+  end;
+end;
+
 procedure TDetailSourceItem.LoadCompProperty(Reader: TReader);
-Var s : STring;
+Var
+  s: String;
+begin
+  if FParentName = '' then
 begin
    s:=Reader.ReadString;
-   if s<>'' then ParentName := s;
+    if s <> '' then
+      FParentName := s;
+  end;
 end;
 
 procedure TDetailSourceItem.StoreCompProperty(Writer: TWriter);
 begin
-   if ParentName<>'' then Writer.WriteString(ParentName);
+  if FParentName <> '' then
+    Writer.WriteString(FParentName);
 end;
 
 procedure TDetailSourceItem.DefineProperties(Filer: TFiler);
-   function DoWrite: Boolean;
-   begin
-      Result := self.ParentNode <> nil;
-   end;
 begin
    inherited; { allow base classes to define properties }
-   Filer.DefineProperty('ParentName', LoadCompProperty, StoreCompProperty, DoWrite);
+  // deprecated, only available for compatibility reasons
+  Filer.DefineProperty('ParentName', LoadCompProperty, StoreCompProperty, (Self.FParentName <> ''));
 end;
 
 function TDetailSourceItem.GenerateName: string;
@@ -627,10 +693,14 @@ begin
   until TDetailSourceList(Collection).ItemByName(Result) = nil;
 end;
 
-function TDetailSourceItem.GetOwnerComponent: TComponent;
+function TDetailSourceItem.GetOwner: TComponent;
 begin
+  result := nil;
   try
-    Result := TDetailSourceList(Collection).OwnerComponent;
+    if Collection is TDetailSourceList then
+      Result := TDetailSourceList(Collection).OwnerComponent
+    else if (Self.GetRootTree is TDetailSourceList) then
+      Result := TDetailSourceList(Self.GetRootTree).OwnerComponent;
   except
     Result := nil;
   end;
@@ -641,7 +711,7 @@ Begin
   if FName <> Value then
   begin
     if (TDetailSourceList(Collection).ItemByName(Value) <> nil) then
-      raise EInvalidOperation.CreateFmt('Eine Detail-Source mit dem Namen %s existiert bereits.', [Value]);
+      raise EInvalidOperation.CreateFmt(rsDetailSourceAlreadyExists, [Value]);
     FName := Value;
     Changed(False);
     if Assigned(FOnSetName) then
@@ -651,19 +721,28 @@ end;
 
 Function TDetailSourceItem.GetDataSource: TDataSource;
 begin
+  result := Nil;
+  if Assigned(FDataLink.DataSource) then
   Result := FDataLink.Datasource;
 end;
 
 Procedure TDetailSourceItem.SetDataSource(Value: TDataSource);
+var
+  IsLoading: Boolean;
 Begin
-  if not((csLoading in Owner.ComponentState) and FDataLink.DataSourceFixed) then
+  IsLoading := False;
+
+  if Self.RootTree <> Nil then
   Begin
-    if (Value<>nil) and (FDataLink.DataSource<>Value) then
+    IsLoading := (csLoading in TDetailSourceList(Self.RootTree).OwnerComponent.ComponentState);
+  End;
+
+  if not(IsLoading and FDataLink.DataSourceFixed) and (FDataLink.DataSource <> Value) then
     Begin
        FDataLink.Datasource := Value;
-       Value.FreeNotification(Owner);
-    End;
-    if Assigned(FOnSetName) then FOnSetName(self);
+
+    if Assigned(FOnSetName) then
+      FOnSetName(Self);
   End;
 end;
 
@@ -675,29 +754,13 @@ Begin
       result:=nil;
 End;
 
-Procedure TDetailSourceItem.SetParentName(Avlue: String);
-Var node : TDetailSourceItem;
-Begin
-   node:= TDetailSourceList(Collection).ItemByName(Avlue);
-   if node<>nil then node.MakeNodeToChild(self);
-End;
-
-Function  TDetailSourceItem.GetParentName : String;
-Begin
-   if ParentNode<>nil then
-      result:=TDetailSourceItem(ParentNode).Name
-   else
-      result:='';
-End;
-
 // =====================================================================
-// TDetailSourcesList
+// TDetailSourcesList = TObjTree
 // =====================================================================
 
 constructor TDetailSourceList.Create(AOwner: TComponent; ADetailSourceItemClass: TDetailSourceItemClass);
 Begin
   inherited Create(AOwner, ADetailSourceItemClass);
-  FOwner := AOwner;
 end;
 
 Destructor TDetailSourceList.Destroy;
@@ -715,25 +778,103 @@ begin
   inherited SetItem(Index, Value);
 end;
 
+function TDetailSourceList.GetOwner: TComponent;
+begin
+  result := inherited GetOwner as TComponent;
+end;
+
+Procedure TDetailSourceList.ReorderOldParentName;
+var
+  i: Integer;
+  PName, MyName: String;
+  Element: TDetailSourceItem;
+begin
+  // Converts the old flat structure to the new tree structure at runtime and in design mode.
+  // Only applied to the first level nodes and only if the old property "ParentName" is still present in the DFM.
+  for I := (Self.Count - 1) downto 0 do
+  begin
+    Try
+      if (Self.Items[i].ParentName <> '')  then
+      begin
+        //old entry, must be moved, but only if it has no subentries
+        PName := Self.Items[i].ParentName;
+        Element := Self.FindItemByName(PName);
+        MyName := Self.Items[i].Name;
+        if Element <> Nil then
+        begin
+          if (Element.OwnCollection <> Nil) then
+          begin
+            Self.Items[i].ParentName := '';
+            Self.Items[i].Collection := Element.OwnCollection;
+          end;
+        end;
+      end;
+    Except
+      on E:exception do
+      begin
+        if Self.OwnerComponent is TComponent then
+        begin
+          if MessageDlg('Reorder: ' +MyName + ' on ' +Self.OwnerComponent.ClassName+'.'+TComponent(Self.OwnerComponent).Name+ ': '+E.Message, mtError, mbOKCancel, 0) = mrCancel then
+          begin
+            Break;
+          end;
+        end
+        else begin
+          if MessageDlg('Reorder: ' +MyName + ' on ' +Self.OwnerComponent.ClassName+ ': '+E.Message, mtError, mbOKCancel, 0) = mrCancel then
+          begin
+            Break;
+          end;
+        end;
+      end;
+    End;
+  end;
+end;
+
 function TDetailSourceList.Add: TDetailSourceItem;
 begin
   Result := TDetailSourceItem(inherited Add);
 end;
 
-function TDetailSourceList.ItemByName(AName: String): TDetailSourceItem;
+function TDetailSourceList.ItemByName(Const AName: String): TDetailSourceItem;
 var
   i: Integer;
 begin
+  //Item within your own collection
+  result := nil;
+  for I := 0 to Count - 1 do
+  Begin
+    if AnsiCompareText(Items[I].Name, AName) = 0 then
+    Begin
+      result := Items[I];
+      Break;
+    End;
+  End;
+end;
 
-  Result := nil;
+function TDetailSourceList.FindItemByName(Const AName: String): TDetailSourceItem;
+var
+  I: Integer;
+  Temp: TDetailSourceItem;
+begin
+  //Item within the entire tree
+  Temp := Nil;
   for i := 0 to Count - 1 do
   Begin
     if AnsiCompareText(Items[i].Name, AName) = 0 then
     Begin
-      Result := Items[i];
+      Temp := Items[I];
+      Break;
+    End
+    else begin
+      Temp := Items[I].FindItemByName(AName);
+      if Temp <> Nil then
+      begin
       Break;
     End;
   End;
+end;
+
+  Result := Temp;
 end;
 
 // =====================================================================

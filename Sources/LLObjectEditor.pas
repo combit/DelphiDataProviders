@@ -1,4 +1,4 @@
-{=================================================================================
+﻿{=================================================================================
 
  Copyright © combit GmbH, Konstanz
 
@@ -6,7 +6,7 @@
  File   : LLObjectEditor.pas
  Module : List & Label 26
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.000
+ Version: 26.001
 ==================================================================================
 }
 
@@ -25,7 +25,7 @@ const
 
 type
   TDetailSourcesEditor = class(TForm)
-    ObjectTree: TTreeView;
+    DisplayTree: TTreeView;
     ToolBar: TToolBar;
     ToolButton1: TToolButton;
     ToolButton2: TToolButton;
@@ -37,8 +37,7 @@ type
     AC_New_Root: TAction;
     ToolButton4: TToolButton;
     ToolButton5: TToolButton;
-    procedure ObjectTreeMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure DeleteButtonClick(Sender: TObject);
+    procedure DisplayTreeMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);    
     procedure AC_New_RootExecute(Sender: TObject);
     procedure AC_DeleteExecute(Sender: TObject);
     procedure AC_New_ChildExecute(Sender: TObject);
@@ -49,14 +48,14 @@ type
     OldSelection : IDesignerSelections;
   protected
     IgnoreChange: Boolean;
-    function  GetSelectedComponent(ASelectedNode: TTreeNode): TObjTreeNode;
+    function GetSelectedObject(ASelectedNode: TTreeNode): TObjTreeNode;
     function  GetItemText(Item:  TObjTreeNode): string;
     procedure ItemSelectionChanged(Item:  TObjTreeNode);
     procedure ItemRefreshDesign(Sender: TObject);
     procedure ResetForm;
   public
     { Public-Deklarationen }
-    Collection: TObjTree;
+    RootNodes: TObjTree;
     Designer  : IDesigner;
     PropertyName: string;  // Name of property being edited
     Component: TComponent; // Handle to component being edited
@@ -66,11 +65,7 @@ type
     destructor Destroy; override;
   end;
 
-
-  procedure ExecuteDetailSourcesEditor(
-            ACaption     : string;
-            ADesigner    : IDesigner;
-            APropertyName: string;
+procedure ExecuteDetailSourcesEditor(ACaption: string; ADesigner: IDesigner; APropertyName: string;
             ACollection  : TObjTree);
 
 
@@ -80,13 +75,11 @@ var
 implementation
 {$R *.dfm}
 
- procedure ExecuteDetailSourcesEditor(
-            ACaption     : string;
-            ADesigner    : IDesigner;
-            APropertyName: string;
+procedure ExecuteDetailSourcesEditor(ACaption: string; ADesigner: IDesigner; APropertyName: string;
             ACollection  : TObjTree);
 Begin
-  if ACollection = nil then raise EInvalidOperation.Create(Format(sInvalidParameter, ['ACollection', 'fcExecuteCollectionEditor', 'nil']));
+  if ACollection = nil then
+    raise EInvalidOperation.Create(Format(sInvalidParameter, ['ACollection', 'fcExecuteCollectionEditor', 'nil']));
 
   if DetailSourcesEditor = nil then
      DetailSourcesEditor := TDetailSourcesEditor.Create(Application)
@@ -101,9 +94,10 @@ Begin
     ACollection.Designer := DetailSourcesEditor;
     Designer := ADesigner;
 
-    if (ACollection<>Collection) and (Collection<>nil) then  Collection.Designer:= nil; { Detach previous collection }
+    if (ACollection <> RootNodes) and (RootNodes <> nil) then
+      RootNodes.Designer := nil; { Detach previous collection }
 
-    Collection := ACollection;
+    RootNodes := ACollection;
     Reload;
     Caption := ACaption;
     Show;
@@ -114,14 +108,16 @@ End;
 //   TDetailSourcesEditor
 // ===============================================================================================================
 
-function TDetailSourcesEditor.GetSelectedComponent(ASelectedNode: TTreeNode): TObjTreeNode;
+function TDetailSourcesEditor.GetSelectedObject(ASelectedNode: TTreeNode): TObjTreeNode;
 begin
   result := TObjTreeNode(ASelectedNode.Data);
-  if result = nil then raise EInvalidOperation.Create('GetSelectedComponent lieferte Nil-Pointer');
+  if result = nil then
+    raise EInvalidOperation.Create('GetSelectedComponent lieferte Nil-Pointer');
 end;
 
 function TDetailSourcesEditor.GetItemText(Item: TObjTreeNode): string;
-var DisplayName: string;
+var
+  DisplayName: string;
 begin
   DisplayName := Item.DisplayName;
   if (DisplayName = '') and (Item.GetInstance(PropertyName) is TComponent) then
@@ -130,78 +126,83 @@ begin
 end;
 
 procedure TDetailSourcesEditor.ItemSelectionChanged(Item: TObjTreeNode);
-Var i : Integer;
+Var
+  i: Integer;
 begin
    i:=0;
-   while i<ObjectTree.Items.Count do
+  while i < DisplayTree.Items.Count do
    Begin
-      if ObjectTree.Items[i].Data = item then
+    if DisplayTree.Items[i].Data = Item then
       Begin
-         ObjectTree.Selected:=ObjectTree.Items[i];
+      DisplayTree.Selected := DisplayTree.Items[i];
       end;
       inc(i);
    End;
 end;
 
-procedure TDetailSourcesEditor.ObjectTreeMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X,
-  Y: Integer);
-Var Selections: IDesignerSelections;
+procedure TDetailSourcesEditor.DisplayTreeMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+Var
+  Selections: IDesignerSelections;
     i         : Integer;
 begin
-  if (csDestroying in ComponentState) then Exit;
+  if (csDestroying in ComponentState) then
+    Exit;
 
-  AC_Delete.Enabled := ObjectTree.Selected <> nil;
+  AC_Delete.Enabled := DisplayTree.Selected <> nil;
 
-
-  if (Designer = nil) or IgnoreChange then Exit;
+  if (Designer = nil) or IgnoreChange then
+    Exit;
 
   Selections := CreateSelectionList;
 
-  for i:= 0 to ObjectTree.Items.Count - 1 do
-    if ObjectTree.Items[i].Selected then
-          Selections.Add(GetSelectedComponent(ObjectTree.Items[i]).GetInstance(PropertyName));
+  for i := 0 to DisplayTree.Items.Count - 1 do
+    if DisplayTree.Items[i].Selected then
+      Selections.Add(GetSelectedObject(DisplayTree.Items[i]).GetInstance(PropertyName));
   if Selections.Count > 0 then
     Designer.SetSelections(Selections);
+
+  { if ObjectTree.SelectionCount = 1 then
+    GetSelectedComponent(ObjectTree.Selected).GotSelected; }
 end;
 
 
 procedure TDetailSourcesEditor.Reload;
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Procedure LoadSubtree(ParentNode:TTreeNode; AChildList:TObjTreeNodeList);
-    Var i    : Integer;
+  Procedure LoadSubtree(ParentNode: TTreeNode; AChildList: TObjTreeNode);
+  Var
+    i: Integer;
         node : TTreeNode;
     Begin
        for i:= 0 to AChildList.Count - 1 do
        begin
-          node:=ObjectTree.Items.AddChildObject(ParentNode,GetItemText(AChildList.Nodes[i]),AChildList.Nodes[i]);
-          AChildList.Nodes[i].OnItemSelected  := ItemSelectionChanged;
-          if AChildList.Nodes[i].ChildNodes.Count>0 then LoadSubtree(node,AChildList.Nodes[i].ChildNodes);
+      node := DisplayTree.Items.AddChildObject(ParentNode, GetItemText(AChildList[i]), AChildList[i]);
+      AChildList[i].OnItemSelected := ItemSelectionChanged;
+      if AChildList[i].Count > 0 then
+        LoadSubtree(node, AChildList[i]);
        end
     end;
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Var i  : Integer;
+Var
+  i: Integer;
     tn : TTreeNode;
 begin
-  ObjectTree.Items.BeginUpdate;
-  ObjectTree.Items.Clear;
-  for I := 0 to Collection.Count-1 do
+  DisplayTree.Items.BeginUpdate;
+  DisplayTree.Items.Clear;
+  for i := 0 to RootNodes.Count - 1 do
   Begin
-     if Collection.Items[i].ParentNode = Nil then
-     Begin
-       tn:=ObjectTree.Items.AddObject(nil,GetItemText(Collection.Items[i]),Collection.Items[i]);
-       if Collection.Items[i].ChildNodes.Count>0 then LoadSubtree(tn,Collection.Items[i].ChildNodes);
-     end
+      tn := DisplayTree.Items.AddObject(nil, GetItemText(RootNodes.Items[i]), RootNodes.Items[i]);
+      if RootNodes.Items[i].Count > 0 then
+        LoadSubtree(tn, RootNodes.Items[i]);
   End;
-  ObjectTree.FullExpand;
-  if True then
-
-  ObjectTree.Items.EndUpdate;
+  DisplayTree.FullExpand;
+  DisplayTree.Items.EndUpdate;
 end;
 
 procedure TDetailSourcesEditor.ResetForm;
 begin
   IgnoreChange := True;
-  ObjectTree.Items.Clear;
+  DisplayTree.Items.Clear;
   IgnoreChange := False;
 end;
 
@@ -211,13 +212,15 @@ begin
 end;
 
 procedure TDetailSourcesEditor.SetSelection(Instance: TPersistent; Selected: Boolean);
-var i: Integer;
+var
+  i: Integer;
 begin
   IgnoreChange := True;
-  for i := 0 to ObjectTree.Items.Count - 1 do
-    if ObjectTree.Items[i].Data = Instance then
+  for i := 0 to DisplayTree.Items.Count - 1 do
+    if DisplayTree.Items[i].Data = Instance then
     Begin
-       if Selected then ObjectTree.Selected:=ObjectTree.Items[i];
+      if Selected then
+        DisplayTree.Selected := DisplayTree.Items[i];
        Break;
     end;
   IgnoreChange := False;
@@ -230,92 +233,72 @@ begin
 end;
 
 procedure TDetailSourcesEditor.AC_DeleteExecute(Sender: TObject);
-var i: integer;
-    Selections, NoSel: IDesignerSelections;
+var
+  OldItemIndex: Integer;
+  node: TObjTreeNode;
 begin
   // Prevent OnChange event from firing.
   IgnoreChange := True;
 
-  if ObjectTree.Selected = nil then Exit;
+  if DisplayTree.Selected = nil then
+    Exit;
 
-  Selections := CreateSelectionList;
+  node := GetSelectedObject(DisplayTree.Selected);
 
-  if Designer <> nil then
-  begin
-    Designer.GetSelections(Selections);
-    NoSel := CreateSelectionList;
-    Designer.SetSelections(NoSel);
-  end;
+  OldItemIndex := Node.Index;
 
-  for i := 0 to Selections.Count - 1 do Selections[i].Free;
+  if node.ParentNode <> Nil then
+    node.ParentNode.Delete(OldItemIndex)
+  Else
+    Node.RootTree.Delete(OldItemIndex);
 
-  Reload;
+
+  Self.Reload;
 
   // Allow OnChange event to fire.
   IgnoreChange := False;
 
   // Set the currently selected ListView item to be selected
-  ObjectTreeMouseUp(ObjectTree, mbLeft, [], 0, 0);
+  DisplayTreeMouseUp(DisplayTree, mbLeft, [], 0, 0);
 
-  if Designer <> nil then Designer.Modified;
+  if Designer <> nil then
+    Designer.Modified;
 end;
 
 procedure TDetailSourcesEditor.AC_New_ChildExecute(Sender: TObject);
-Var Node: TObjTreeNode;
+Var
+  node: TObjTreeNode;
 begin
   // Prevent OnChange event from firing.
 
   IgnoreChange := True;
 
-  if ObjectTree.Selected = nil then Exit;
+  if DisplayTree.Selected = nil then
+    Exit;
 
-  node:= GetSelectedComponent(ObjectTree.Selected);
+  node := GetSelectedObject(DisplayTree.Selected);
 
   node.AddChildNode;
   IgnoreChange := False;
   Reload;
-  if Designer <> nil then Designer.Modified;
+
+  if Designer <> nil then
+    Designer.Modified;
 end;
 
 procedure TDetailSourcesEditor.AC_New_RootExecute(Sender: TObject);
 begin
-  Collection.AddItem;
+  RootNodes.Add;
+
   Reload;
-  if Designer <> nil then Designer.Modified;
-end;
-
-procedure TDetailSourcesEditor.DeleteButtonClick(Sender: TObject);
-var i: integer;
-    Selections, NoSel: IDesignerSelections;
-begin
-  // Prevent OnChange event from firing.
-  IgnoreChange := True;
-
-  if ObjectTree.Selected = nil then Exit;
 
   if Designer <> nil then
-  begin
-    Selections := CreateSelectionList;
-    Designer.GetSelections(Selections);
-    NoSel := CreateSelectionList;
-    Designer.SetSelections(NoSel);
-    for i := 0 to Selections.Count - 1 do Selections[i].Free;
-  end;
-  Reload;
-
-  // Allow OnChange event to fire.
-  IgnoreChange := False;
-
-  // Set the currently selected ListView item to be selected
-  ObjectTreeMouseUp(ObjectTree, mbLeft, [], 0, 0);
-
-  if Designer <> nil then Designer.Modified;
-
+    Designer.Modified;
 end;
 
 destructor TDetailSourcesEditor.Destroy;
 begin
-  Collection.Designer := nil;
+  RootNodes.Designer := nil;
   DetailSourcesEditor := nil;
   inherited Destroy;
 end;

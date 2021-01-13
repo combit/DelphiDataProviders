@@ -17,7 +17,7 @@ object DetailSourcesEditor: TDetailSourcesEditor
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object ObjectTree: TTreeView
+  object DisplayTree: TTreeView
     Left = 0
     Top = 28
     Width = 385
@@ -25,7 +25,7 @@ object DetailSourcesEditor: TDetailSourcesEditor
     Align = alClient
     Indent = 19
     TabOrder = 0
-    OnMouseUp = ObjectTreeMouseUp
+    OnMouseUp = DisplayTreeMouseUp
     Items.NodeData = {
       0301000000260000000000000000000000FFFFFFFFFFFFFFFF00000000000000
       000000000001045400650073007400}
@@ -59,18 +59,18 @@ object DetailSourcesEditor: TDetailSourcesEditor
       Top = 0
       Action = AC_New_Child
     end
-    object ToolButton5: TToolButton
+    object ToolButton3: TToolButton
       Left = 54
+      Top = 0
+      Action = AC_Delete
+    end
+    object ToolButton5: TToolButton
+      Left = 77
       Top = 0
       Width = 8
       Caption = 'ToolButton5'
       ImageIndex = 2
       Style = tbsSeparator
-    end
-    object ToolButton3: TToolButton
-      Left = 62
-      Top = 0
-      Action = AC_Delete
     end
   end
   object Actions: TActionList
@@ -99,7 +99,7 @@ object DetailSourcesEditor: TDetailSourcesEditor
     Left = 344
     Top = 16
     Bitmap = {
-      494C0101030005000C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010103000500040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

@@ -6,7 +6,7 @@
  File   : ListLabel26.pas
  Module : List & Label 26
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.000
+ Version: 26.001
 ==================================================================================
 }
 
@@ -1392,61 +1392,67 @@ Var
     parent        : TDetailSourceItem;
     DataProvider  : TDataSetDataProvider;
     Filter        : String;
+    DetailsCollection: TCollection;
 Begin
 
    DataProvider := TDataSetDataProvider.Create;
 
-   // Create and prepare DataProvider
-   for I := 0 to Datacontroller.DetailSources.Count-1 do with DataController do
-   Begin
-      Filter:='';
+  //Create and prepare DataProvider
+  DetailsCollection := TCollection.Create(TDetailSourceItem);
+  DataController.DetailSources.AsPlainList(DetailsCollection);
+
+    Try    
+    for i := 0 to DetailsCollection.Count - 1 do
+    begin
       if Assigned(DrillDownFilter) then
       Begin
-        if (DetailSources[i].Name = DrillDownFilter.ParentTable) then
+        if (TDetailSourceItem(DetailsCollection.Items[i]).Name = DrillDownFilter.ParentTable) then
         Begin
-           Filter:='['+DrillDownFilter.ParentKeyField + ']=' + QuotedStr(DrillDownFilter.KeyValue);
-        End else
-        if (DetailSources[i].Name = DrillDownFilter.ChildTable) then
+          Filter := DrillDownFilter.ParentKeyField + '=' + DrillDownFilter.KeyValue;
+        End
+        else if (TDetailSourceItem(DetailsCollection.Items[i]).Name = DrillDownFilter.ChildTable) then
         Begin
-           Filter:='['+DrillDownFilter.ChildKeyField+ ']=' + QuotedStr(DrillDownFilter.KeyValue);
+          Filter := DrillDownFilter.ChildKeyField + '=' + DrillDownFilter.KeyValue;
         End;
-      End;
+      End
+      else
+		Filter := '';
 
-      DataProvider.AddDataSet(DetailSources[i].Name,
-                               DetailSources[i].Datasource.DataSet,
-                               DetailSources[i].PrimaryKeyField,
-                               DetailSources[i].SortDescription,
-                               Filter);
+		DataProvider.AddDataSet(TDetailSourceItem(DetailsCollection.Items[i]).Name,
+													TDetailSourceItem(DetailsCollection.Items[i]).DataSource.DataSet,
+													TDetailSourceItem(DetailsCollection.Items[i]).PrimaryKeyField,
+													TDetailSourceItem(DetailsCollection.Items[i]).SortDescription,
+													Filter);
 
-      if DetailSources[i].ParentNode<>nil then
+     if TDetailSourceItem(DetailsCollection.Items[i]).ParentNode <> nil then
       Begin
-         parent:=TDetailSourceItem(DetailSources[i].ParentNode);
-         DataProvider.AddRelation(parent.Name + '2' + DetailSources[i].Name,
-                                   parent.Name,
-                                   DetailSources[i].Name,
-                                   DetailSources[i].MasterKeyField,
-                                   DetailSources[i].DetailKeyField);
+        Parent := TDetailSourceItem(TDetailSourceItem(DetailsCollection.Items[i]).ParentNode);
+        DataProvider.AddRelation(Parent.Name + '2' + TDetailSourceItem(DetailsCollection.Items[i]).Name,Parent.Name,
+									TDetailSourceItem(DetailsCollection.Items[i]).Name,
+									TDetailSourceItem(DetailsCollection.Items[i]).MasterKeyField,
+									TDetailSourceItem(DetailsCollection.Items[i]).DetailKeyField);
       End;
+    end;
+  Finally
+    DetailsCollection.Free;
+  End;
 
-   End;
-
-   // Reset DataSource in LL
+   //Reset DataSource in LL
    CleanUpDataStructure;
    CheckError(LlDbAddTable(JobHandle, 'LLStaticTable', ''));
 
-   // Pass tables from DataProvider to LL
+   //Pass tables from DataProvider to LL
    Tables := DataProvider.Tables;
 
    if DataController.DataMember <> '' then
    begin
       table := DataProvider.GetTable(DataController.DataMember);
 
-      CheckError(LlDbAddTableEx(JobHandle, Pchar(table.TableName), Pchar(table.TableName),1)); // enable advanced sorting
+      CheckError(LlDbAddTableEx(JobHandle, Pchar(table.TableName), Pchar(table.TableName),1)); //enable advanced sorting
       PassedTables.Add(table.TableName);
 
       if DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables then
         CheckError(LlDbSetMasterTable(JobHandle, PChar(table.TableName)));
-
 
       DefineData(DataProvider, table);
       DefineSortOrders(table);
@@ -1454,7 +1460,7 @@ Begin
       FillRootTables(DataProvider, table.TableName);
       DefineRelatedTables(DataProvider, table.TableName);
 
-       // label projects
+       //label projects
       if FAutoProjectType <> ptList then
       begin
         LlDbSetMasterTable(JobHandle, PChar(Table.TableName));
@@ -1907,7 +1913,6 @@ Var
   DataProviderIntf: TDataProviderInterfaceProxyRoot;
   JobHandle       : HJob;
   OldJobHandle    : HJob;
-  ProjectPath     : String;
   ok : Boolean;
   char1, optionStrPath, optionStrFile, optionStrQuiet, optionStrShow: String;
 begin
