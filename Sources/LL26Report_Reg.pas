@@ -44,7 +44,7 @@ type
   procedure Register;
 
 implementation
-uses StrEdit, ListLabel26, LLReport_Types, LLObjectEditor, Typinfo, DB, LLPreview26;
+uses StrEdit, ListLabel26, LLReport_Types, LLObjectEditor, Typinfo, DB, LLPreview;
 
 procedure Register;
 begin

@@ -56,7 +56,7 @@ contains
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel26 in 'Sources\ListLabel26.pas',
   l26CommonInterfaces in 'Sources\l26CommonInterfaces.pas',
-  LLPreview26 in 'Sources\LLPreview26.pas',
+  LLPreview in 'Sources\LLPreview.pas',
   cmbtLL26x in 'Sources\cmbtLL26x.pas',
   cmbtLS26x in 'Sources\cmbtLS26x.pas';
 

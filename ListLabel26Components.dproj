@@ -109,7 +109,7 @@
         <DCCReference Include="Sources\LL26Report_Reg.pas"/>
         <DCCReference Include="Sources\LLReport_Types.pas"/>
         <DCCReference Include="Sources\ListLabel26.pas"/>
-        <DCCReference Include="Sources\LLPreview26.pas"/>
+        <DCCReference Include="Sources\LLPreview.pas"/>
 		<DCCReference Include="Sources\l26CommonInterfaces.pas"/>
         <DCCReference Include="Sources\cmbtLL26x.pas"/>
         <DCCReference Include="Sources\cmbtLS26x.pas"/>
