@@ -6,7 +6,7 @@
  File   : LLPreview.pas
  Module : LLPreview.pas
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.000
+ Version: 26.001
 ==================================================================================
 }
 

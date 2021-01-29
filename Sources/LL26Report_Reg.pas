@@ -3,10 +3,10 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : LLReport_Reg.pas
+ File   : LL26Report_Reg.pas
  Module : List & Label 26
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.000
+ Version: 26.001
 ==================================================================================
 }
 

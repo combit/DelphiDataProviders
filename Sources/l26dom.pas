@@ -6,7 +6,7 @@
   File   : l26dom.pas
   Module : List & Label 26 DOM
   Descr. : Implementation file for the List & Label 26 DOM
-  Version: 26.000
+  Version: 26.001
   ==================================================================================
 }
 
@@ -362,6 +362,7 @@ type
     procedure ResetInformation;
     destructor Destroy; override;
     procedure Save(projectFile: TString);
+	procedure SaveCopyAs(projectFile: TString);
     function Open(projectFile: TString; fileMode: TLlDOMFileMode;
       readOnly: TLlDomAccessMode; LlDomSettings: longint): integer; overload;
     function Open(projectFile: TString; fileMode: TLlDOMFileMode;
@@ -7859,6 +7860,15 @@ begin
   end;
 end;
 
+procedure TLlDOMProjectBase.SaveCopyAs(projectFile: TString);
+begin
+  if projectLoaded then
+  begin
+    LlProjectSaveCopyAs(fhParentComponent.GetJobHandle, PTChar(projectFile));
+  end;
+end;
+
+
 procedure TLlDOMProjectBase.SetDesignerRedraw(const value: TString);
 begin
   SetProperty('DesignerRedraw', value);
@@ -13165,6 +13175,7 @@ var
   tempTable: TLlDOMSubItemTableBase;
 begin
   nObjCount := fDOMObj.GetSubObjectCount();
+  tempTable := nil;
   for i := 0 to nObjCount - 1 do
   begin
     baseObj := fDOMObj.GetSubObject(i);
@@ -13193,6 +13204,11 @@ begin
       newDomObj := TLlDOMSubItemCore.Create(baseObj);
 
     baseObj.Free;
+	 if Assigned(tempTable) then
+    begin
+      tempTable.free;
+	  tempTable := nil;
+    end;
     Add(newDomObj);
   end;
 end;

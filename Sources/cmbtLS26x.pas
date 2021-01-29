@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2020-10-06 09:10:26] *)
+(*  [build of 2020-11-27 00:11:44] *)
 
 unit cmbtLS26x;
 
@@ -10,15 +10,47 @@ unit cmbtLS26x;
 - define CMLS26_LINK_INDEXED to use the indexed import (faster)
 *)
 
-{$if CompilerVersion > 12}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
 {$define ADOAVAILABLE}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
-{$if CompilerVersion > 19}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
+{$ifndef VER125}
+{$ifndef VER130}
+{$ifndef VER135}
+{$ifndef VER140}
+{$ifndef VER150}
+{$ifndef VER160}
+{$ifndef VER170}
+{$ifndef VER180}
+{$ifndef VER185}
+{$ifndef VER190}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
 {$ifdef WIN64}
 {$A16}

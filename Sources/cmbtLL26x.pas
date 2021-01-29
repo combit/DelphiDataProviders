@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2020-10-13 13:10:42] *)
+(*  [build of 2020-11-26 07:11:50] *)
 
 unit cmbtLL26x;
 
@@ -1827,6 +1827,12 @@ const
   LL_INTERNALRELOADOPERATION_LOAD = 1;
   LL_INTERNALRELOADOPERATION_ERRORLIST = 2;
   LL_OPTION_COMPAT_BODYLINE_CELL_MAY_WRAP_EMPTY_ON_FIRST_PRINT = 365;
+                    (* default: false *)
+  LL_OPTION_RTFEDITOR_SUPPRESS_KEYBOARDAUTOSWITCH = 366;
+                    (* default: false *)
+  LL_OPTION_BUILDTREERECURSEOPTIONS = 367;
+                    (* default: 32 threshold for active stacksize based formula evaluation recursion detection *)
+  LL_OPTION_GROUPFOOTERS_ARE_IMMUTABLE = 368;
                     (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
@@ -3727,6 +3733,14 @@ type
 	(_hLlJob:          HLLJOB;
 	 _pszObjName:      pWCHAR
 	): integer; stdcall;
+  pfnLlProjectSaveCopyAsA= function  
+	(_hLlJob:          HLLJOB;
+	 _pszObjName:      pCHAR
+	): integer; stdcall;
+  pfnLlProjectSaveCopyAsW= function  
+	(_hLlJob:          HLLJOB;
+	 _pszObjName:      pWCHAR
+	): integer; stdcall;
   pfnLlProjectClose      = function  
 	(_hLlJob:          HLLJOB
 	): integer; stdcall;
@@ -5319,6 +5333,16 @@ const
      {$else}
       LlProjectSaveO: pfnLlProjectSaveW = NIL;
   {$endif}
+  {$ifdef UNICODE}
+      LlProjectSaveCopyAsO: pfnLlProjectSaveCopyAsA = NIL;
+     {$else}
+      LlProjectSaveCopyAs: pfnLlProjectSaveCopyAsA = NIL;
+  {$endif}
+  {$ifdef UNICODE}
+      LlProjectSaveCopyAs: pfnLlProjectSaveCopyAsW = NIL;
+     {$else}
+      LlProjectSaveCopyAsO: pfnLlProjectSaveCopyAsW = NIL;
+  {$endif}
    LlProjectClose: pfnLlProjectClose = NIL;
    LlAssociatePreviewControl: pfnLlAssociatePreviewControl = NIL;
   {$ifdef UNICODE}
@@ -6702,6 +6726,16 @@ begin
         {$else}
           @LlProjectSaveO := GetProcAddress(hDLLLL26,'LlProjectSaveW');
       {$endif}
+      {$ifdef UNICODE}
+          @LlProjectSaveCopyAsO := GetProcAddress(hDLLLL26,'LlProjectSaveCopyAsA');
+        {$else}
+          @LlProjectSaveCopyAs := GetProcAddress(hDLLLL26,'LlProjectSaveCopyAsA');
+      {$endif}
+      {$ifdef UNICODE}
+          @LlProjectSaveCopyAs := GetProcAddress(hDLLLL26,'LlProjectSaveCopyAsW');
+        {$else}
+          @LlProjectSaveCopyAsO := GetProcAddress(hDLLLL26,'LlProjectSaveCopyAsW');
+      {$endif}
       @LlProjectClose       := GetProcAddress(hDLLLL26,'LlProjectClose');
       @LlAssociatePreviewControl := GetProcAddress(hDLLLL26,'LlAssociatePreviewControl');
       {$ifdef UNICODE}
@@ -7467,6 +7501,10 @@ begin
       LlProjectSaveO := NIL;
       LlProjectSave := NIL;
       LlProjectSaveO := NIL;
+      LlProjectSaveCopyAs := NIL;
+      LlProjectSaveCopyAsO := NIL;
+      LlProjectSaveCopyAs := NIL;
+      LlProjectSaveCopyAsO := NIL;
       LlProjectClose := NIL;
       LlAssociatePreviewControl := NIL;
       LlGetErrortext := NIL;
