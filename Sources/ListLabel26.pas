@@ -6,7 +6,7 @@
  File   : ListLabel26.pas
  Module : List & Label 26
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.001
+ Version: 26.002
 ==================================================================================
 }
 
@@ -270,11 +270,14 @@ type
     fParentObject: TListLabel26;
    public
    Constructor Create(ParentObject: TListLabel26);
+
    function LlGetOptionString(OptionIndex: integer; var Value: TString): integer;
    function LlDefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
    function LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
    function LlDefineFieldExt(FieldName: String; Contents: String; FieldType: integer): integer;
    function LlDefineFieldExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
+   function LlPrintGetOption(PrintOptionIndex: integer): integer;
+   function LlPrintSetOption(PrintOptionIndex: integer; Value: lParam): integer;
    function LlSetOption(OptionIndex: integer; Value: lParam): integer;
    function LlGetOption(OptionIndex: integer): integer;
    function LlSetOptionString(OptionIndex: integer; Value: TString): integer;
@@ -1261,6 +1264,12 @@ begin
   Result := cmbtLL26x.LlSetOption(fParentObject.CurrentJobHandle, OptionIndex, Value);
 end;
 
+function LlCore.LlPrintSetOption(PrintOptionIndex: Integer; Value: NativeInt): Integer;
+begin
+  Result := cmbtLL26x.LlPrintSetOption(fParentObject.CurrentJobHandle, PrintOptionIndex, Value);
+end;
+
+
 function LlCore.LlSetOptionString(OptionIndex: integer; Value: TString): integer;
 begin
   Result := cmbtLL26x.LlSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
@@ -1295,6 +1304,13 @@ function LlCore.LlGetOption(OptionIndex: integer
 begin
   Result := cmbtLL26x.LlGetOption(fParentObject.CurrentJobHandle, OptionIndex);
 end;
+
+function LlCore.LlPrintGetOption(PrintOptionIndex: integer
+  ): integer;
+begin
+  Result := cmbtLL26x.LlPrintGetOption(fParentObject.CurrentJobHandle, PrintOptionIndex);
+end;
+
 
 Procedure TListLabel26.Design;
 Var
