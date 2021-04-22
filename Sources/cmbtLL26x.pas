@@ -1,18 +1,50 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2020-11-26 07:11:50] *)
+(*  [build of 2021-03-18 01:03:23] *)
 
 unit cmbtLL26x;
 
-{$if CompilerVersion > 12}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
 {$define ADOAVAILABLE}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
-{$if CompilerVersion > 19}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
+{$ifndef VER125}
+{$ifndef VER130}
+{$ifndef VER135}
+{$ifndef VER140}
+{$ifndef VER150}
+{$ifndef VER160}
+{$ifndef VER170}
+{$ifndef VER180}
+{$ifndef VER185}
+{$ifndef VER190}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
 {$ifdef WIN64}
 {$A16}
@@ -1834,6 +1866,12 @@ const
                     (* default: 32 threshold for active stacksize based formula evaluation recursion detection *)
   LL_OPTION_GROUPFOOTERS_ARE_IMMUTABLE = 368;
                     (* default: false *)
+  LL_OPTION_DOM_MULTITHREADED_ACCESS = 369;
+                    (* default: false *)
+  LL_OPTION_CHART_LL27_FEATURES  = 370;
+                    (* default: 0 *)
+  LL_OPTION_SET_PREVIEW_ID_IN_ASSOC_FOR_SINGLETHREADED_PRINT = 371;
+                    (* w/o, internal. Important for single-threaded preview *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -1959,6 +1997,8 @@ const
                     (* internal *)
   LL_OPTIONSTR_LEGACY_EXPORTERS_ALLOWED = 86;
                     (* ';' separated list of legacy exporters (JQM, HTML) to be allowed. Default is empty. *)
+  LL_OPTIONSTR_CHART_AXISLABEL_SPACINGDELTA = 87;
+                    (* ';' seperated list of spacing deltas (coord-x;coord-y;coord-z;label-x;label-y;label-z). Default is empty, hence all zero. *)
   LL_SYSCOMMAND_MINIMIZE         = -1;
   LL_SYSCOMMAND_MAXIMIZE         = -2;
   LL_PHFG_AGGREGATE              = $01;
