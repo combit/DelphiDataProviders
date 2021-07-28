@@ -6,7 +6,7 @@
  File   : ListLabel26.pas
  Module : List & Label 26
  Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.002
+ Version: 26.003
 ==================================================================================
 }
 
@@ -40,7 +40,7 @@ type
       IsPreDraw: boolean; var Canvas: TCanvas; Rect: TRect) of object;
     TAutoNotifyProgress = procedure(Sender: TObject; Progress: integer) of object;
     LlCore = class;
-
+    TListLabelExportOptions = class;
 
   // ==============================================================================================
   // TListLabel26
@@ -101,6 +101,7 @@ type
     FPassedRelations: TObjectList<TListLabelTableRelation>;
     FDelayedRelations: TObjectList<TListLabelTableRelation>;
     FUsedIdentifiers: TStringList;
+    FExportOptions: TListLabelExportOptions;
   protected
 
     Meta: TMetafile;
@@ -182,7 +183,6 @@ type
     procedure SetUnits(const Value: TLlUnits);
     procedure SetVarCaseSensitive(const Value: Boolean);
     procedure SetNoPrintJobSupervision(const Value: Boolean);
-
   public
 
     Constructor Create(AOwner: TComponent); Override;
@@ -248,6 +248,7 @@ type
     Property Language: TLlLanguage read FLanguage write SetLanguage Default TLlLanguage.lDefault;
     Property DataController: TLLDataController read FDataController Write FDataController;
     Property Core: LlCore read GetCore;
+    Property ExportOptions: TListLabelExportOptions read FExportOptions ;
 
     // Events
     property OnDefinePrintOptions: TDefinePrintOptionsEvent read FOnDefinePrintOptionsEvent write FOnDefinePrintOptionsEvent;
@@ -266,11 +267,14 @@ type
 
   //Core class
    LlCore = class (TObject)
+
    private
     fParentObject: TListLabel26;
    public
    Constructor Create(ParentObject: TListLabel26);
 
+   function LlXSetParameter(extensionType: TLlExtensionType; extensionName: TString; name: TString; value: TString ): integer;
+   function LlXGetParameter(extensionType: TLlExtensionType; ExtensionName: TString; Key: TString; var Value: TString): integer;
    function LlGetOptionString(OptionIndex: integer; var Value: TString): integer;
    function LlDefineVariableExt(FieldName: String; Contents: String; FieldType: integer): integer;
    function LlDefineVariableExtHandle(FieldName: String; Handle : Cardinal; FieldType: integer): integer;
@@ -281,6 +285,8 @@ type
    function LlSetOption(OptionIndex: integer; Value: lParam): integer;
    function LlGetOption(OptionIndex: integer): integer;
    function LlSetOptionString(OptionIndex: integer; Value: TString): integer;
+   function LlPrintSetOptionString(OptionIndex: integer; Value: TString): integer;
+   function LlPrintGetOptionString(OptionIndex: integer; var Value: TString): integer;
    function LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
    function LlSetPrinterToDefault(ProjectType: integer; ProjectName: TString): integer;
    function LlSetPrinterDefaultsDir(Directory: TString): integer;
@@ -295,6 +301,31 @@ type
    function LlGetPrinterFromPrinterFile(ProjectType: Cardinal; ProjectName: TString; PrinterIndex: integer; var Printer: TString; var DevMode: _PDEVMODEA): Integer;
    {$endif}
 end;
+
+
+TListLabelExportOptions = class(TObject)
+private
+  fInternalOptionList: TDictionary<TString, TString>;
+  fParent: TListLabel26;
+  function GetExportOptionString(exportOption: TLlExportOption): TString;
+  procedure SetExportOptions;
+public
+  procedure Clear();
+  procedure Add(option: TString; value: TString);overload;
+  procedure Add(option: TLlExportOption; value: TString);overload;
+  function GetString(exportTarget: TLlExportTarget): TString;
+  function GetExtensionFromExportTarget(exportTarget: TLlExportTarget): TString;
+  function GetTargetFromString(target: TString): TLlExportTarget;
+  function Keys(): TCollection;
+  function Count(): integer;
+  function Contains(option: TString): bool; overload;
+  function Contains(option: TLlExportOption): bool; overload;
+  constructor Create(parent: TListLabel26);
+  destructor Destroy; Override;
+
+end;
+
+
 
 function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt; export; stdcall;
 
@@ -382,6 +413,7 @@ begin
   LL26xLoad();
   lpfnNtfyProc := nil;
   FDataController := TLLDataController.Create(self);
+  FExportOptions := TListLabelExportOptions.Create(self);
 
   FPreviewCritSect := TCriticalSection.Create;
   FDrillCritSect   := TCriticalSection.Create;
@@ -437,6 +469,7 @@ begin
   FreeAndNil(FPassedRelations);
   LL26xUnload();
   FCore.Free;
+  FExportOptions.Free;
   inherited Destroy;
 end;
 
@@ -858,6 +891,21 @@ begin
 
 end;
 
+procedure TListLabelExportOptions.SetExportOptions;
+var
+target: TString;
+Item: TPair<TString, TString>;
+begin
+  if fInternalOptionList.ContainsKey('Export.Target') then
+  begin
+    target:= fInternalOptionList['Export.Target'];
+  end;
+
+  for Item in fInternalOptionList do
+       fParent.Core.LlXSetParameter(TLlExtensionType.Export, target, Item.Key,
+       Item.Value);
+end;
+
 procedure TListLabel26.SetNoPrintJobSupervision(const Value: Boolean);
 begin
 
@@ -1257,7 +1305,33 @@ Begin
          result:= cmbtLL26x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
    end;
 End;
+function LlCore.LlXSetParameter(extensionType: TLlExtensionType; extensionName: TString; name: TString; value: TString ): integer;
+begin
+  Result := cmbtll26x.LlXSetParameter(fParentObject.CurrentJobHandle, Integer(extensionType), PChar(extensionName),PChar(name),PChar(value));
+end;
 
+function LlCore.LlXGetParameter(extensionType: TLlExtensionType; ExtensionName: TString; Key: TString; var Value: TString ): integer;
+var
+  Buffer: PTChar;
+  length: integer;
+begin
+  length := cmbtll26x.LlXGetParameter(fParentObject.CurrentJobHandle, integer(extensionType), PTChar(ExtensionName),
+    PTChar(Key), nil, 0);
+  if length >0 then
+  begin
+  GetMem(Buffer, length * sizeof(TChar));
+  Buffer^ := #0;
+  Result := cmbtll26x.LlXGetParameter(fParentObject.CurrentJobHandle, integer(extensionType), PTChar(ExtensionName),
+    PTChar(Key), Buffer, length);
+  Value := TString(Buffer);
+  FreeMem(Buffer);
+end
+  else
+  begin
+    Result :=length;
+    Value  :='';
+  end;
+end;
 
 function LlCore.LlSetOption(OptionIndex: Integer; Value: NativeInt): Integer;
 begin
@@ -1274,6 +1348,36 @@ function LlCore.LlSetOptionString(OptionIndex: integer; Value: TString): integer
 begin
   Result := cmbtLL26x.LlSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
 end;
+
+function LlCore.LlPrintSetOptionString(OptionIndex: integer;
+  Value: TString): integer;
+begin
+  Result := cmbtLL26x.LlPrintSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
+end;
+
+function LlCore.LlPrintGetOptionString(OptionIndex: integer; var Value: TString): integer;
+var
+  Buffer: PTChar;
+  length: integer;
+begin
+  length := cmbtLL26x.LlPrintGetOptionString(fParentObject.CurrentJobHandle, OptionIndex,
+    nil, 0);
+  if length>0 then
+  begin
+    GetMem(Buffer, length * sizeof(TChar));
+    Buffer^ := #0;
+    Result := cmbtLL26x.LlPrintGetOptionString(fParentObject.CurrentJobHandle, OptionIndex,
+      Buffer, length);
+    Value := TString(Buffer);
+    FreeMem(Buffer);
+  end
+  else
+  begin
+    result:=length;
+    Value:='';
+  end;
+end;
+
 
 function LlCore.LlSetPrinterDefaultsDir(Directory: TString): integer;
 begin
@@ -1328,6 +1432,11 @@ begin
   err:=0;
   DataProvider:=nil;
   LlProjectType := TEnumTranslator.TranslateProjectType(FAutoProjectType);
+
+  if FExportOptions <> nil then
+  begin
+    FExportOptions.SetExportOptions;
+  end;
 
   if (DataController.DataSource = Nil) then
   begin
@@ -1391,6 +1500,7 @@ begin
 
     if (err <> CE_Abort) then
       CheckError(LLDefineLayout(CurrentJobHandle, WindowHandle, PChar(FAutoDialogTitle), LlProjectType, PChar(ProjectFilename)));
+
 
   Finally
     DataController.DataSource.DataSet.Active := OldMaster;
@@ -1711,7 +1821,6 @@ begin
     end;
 end;
 
-
 function TListLabel26.GetJobHandle: Integer;
 begin
   result:=CurrentJobHandle;
@@ -1788,6 +1897,10 @@ begin
 
   DataProvider:=Nil;
   OldMaster := false;
+  if FExportOptions <> nil then
+  begin
+        FExportOptions.SetExportOptions;
+  end;
 
   Try
     if (DataController.DataSource = Nil) then
@@ -1936,6 +2049,11 @@ begin
   JobHandle:=-1;
   OldJobHandle:=CurrentJobHandle;
   ok:=true;
+  if FExportOptions <> nil then
+  begin
+    FExportOptions.SetExportOptions;
+  end;
+
   Try
     with DataController.DataSource.DataSet do
     begin
@@ -2067,6 +2185,11 @@ begin
   DataProvider:=nil;
   JobHandle:=-1;
   OldJobHandle:=CurrentJobHandle;
+  if FExportOptions <> nil then
+  begin
+    FExportOptions.SetExportOptions;
+  end;
+
   Try
     with DataController.DataSource.DataSet do
     begin
@@ -2249,6 +2372,614 @@ end;
 
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 
+
+
+//==============================================================================
+//  TListLabelExportOptions
+//==============================================================================
+
+  constructor TListLabelExportOptions.Create(parent: TListLabel26);
+  begin
+    inherited Create;
+    fParent:= parent;
+    fInternalOptionList:= TDictionary<TString, TString>.Create;
+  end;
+
+  destructor TListLabelExportOptions.Destroy;
+  begin
+    fInternalOptionList.Free;
+      inherited Destroy;
+  end;
+
+  procedure TListLabelExportOptions.Clear();
+  begin
+  // clear data in LL job
+    if fParent <> nil then
+    begin
+      fParent.Core.LlXSetParameter(TLlExtensionType.Export, '', '', '');
+    end;
+
+    // clear internal data
+    fInternalOptionList.Clear();
+
+  end;
+
+  procedure TListLabelExportOptions.Add(option: TString; value: TString);
+  begin
+  // redmine ticket #4312
+    if Contains(option) then
+    begin
+      fInternalOptionList.Remove(option);
+    end;
+
+    fInternalOptionList.Add(option, value);
+
+  end;
+
+  procedure TListLabelExportOptions.Add(option: TLlExportOption; value: TString);
+  begin
+    Add(GetExportOptionString(option), value);
+  end;
+
+  function TListLabelExportOptions.Keys(): TCollection;
+  begin
+    result:= TCollection(fInternalOptionList.Keys);
+  end;
+
+  function TListLabelExportOptions.Count(): integer;
+  begin
+    result:= fInternalOptionList.Count;
+  end;
+
+  function TListLabelExportOptions.Contains(option: TString): bool;
+    begin
+      result:= fInternalOptionList.ContainsKey(option);
+    end;
+
+  function TListLabelExportOptions.Contains(option: TLlExportOption): bool;
+    begin
+      result:= Contains(GetExportOptionString(option));
+    end;
+
+  //ExportEnumHelper
+  function TListLabelExportOptions.GetExtensionFromExportTarget(exportTarget: TLlExportTarget): TString;
+  begin
+    case (exportTarget) of
+      Pdf:
+            result:= 'pdf';
+      Html:
+            result:= 'htm';
+      Xhtml:
+            result:= 'htm';
+      Jqm:
+            result:= 'htm';
+      Rtf:
+            result:= ('rtf');
+      Bitmap:
+            result:= 'bmp';
+      MetaFile:
+            result:= 'emf';
+      Tiff:
+            result:= 'tif';
+      MultiTiff:
+            result:= 'tif';
+      Jpeg:
+            result:= 'jpg';
+      Png:
+            result:= 'png';
+      Xls:
+            result:= 'xls';
+      Xlsx:
+            result:= 'xlsx';
+      Docx:
+            result:= 'docx';
+      Xps:
+            result:= 'xps';
+      Mhtml:
+            result:= 'mhtml';
+      Xml:
+            result:= 'xml';
+      Text:
+            result:= 'txt';
+      TextLayout:
+            result:= 'txt';
+      Tty:
+            result:= 'tty';
+      Preview:
+            result:= 'll';
+      Svg:
+            result:= 'svg';
+      Pptx:
+            result:= 'pptx';
+      Json:
+            result:= 'json';
+      else
+      result:= '';
+      end;
+  end;
+  function TListLabelExportOptions.GetTargetFromString(target: TString): TLlExportTarget;
+  var upperTarget: TString;
+  begin
+      upperTarget:= target.ToUpper;
+
+      if upperTarget =      'HTML5' then begin
+      //doesn't matter what to return
+                          result:= Html;
+      end
+      else if upperTarget = 'PDF' then  begin
+                          result:= Pdf;
+      end
+
+      else if upperTarget = 'HTML' then  begin
+                          result:= Html;
+      end
+      else if upperTarget = 'RTF' then  begin
+                          result:= Rtf;
+      end
+      else if upperTarget = 'PICTURE_BMP' then begin
+                          result:= Bitmap;
+      end
+      else if upperTarget = 'PICTURE_EMF' then begin
+                          result:= MetaFile;
+      end
+
+      else if upperTarget =  'PICTURE_TIFF' then begin
+                          result:= Tiff;
+      end
+
+      else if upperTarget =  'PICTURE_MULTITIFF' then begin
+                          result:= MultiTiff;
+      end
+
+      else if upperTarget =   'PICTURE_JPEG' then begin
+                          result:= Jpeg;
+      end
+
+      else if upperTarget =   'PICTURE_PNG' then begin
+                          result:= Png;
+      end
+
+      else if upperTarget =   'XLS' then begin
+                          result:= Xls;
+      end
+
+      else if upperTarget =    'XLSX' then begin
+                          result:= Xlsx;
+      end
+
+      else if upperTarget =    'DOCX' then begin
+                          result:= Docx;
+      end
+
+      else if upperTarget =     'XPS' then begin
+                          result:= Xps;
+      end
+
+      else if upperTarget =     'MHTML' then begin
+                          result:= Mhtml;
+      end
+
+      else if upperTarget =     'XHTML' then begin
+                          result:= Xhtml;
+      end
+
+      else if upperTarget =      'SVG' then begin
+                          result:= Svg;
+      end
+
+      else if upperTarget =      'JQM' then begin
+                          result:= Jqm;
+      end
+
+      else if upperTarget =      'XML' then begin
+                          result:= Xml;
+      end
+
+      else if upperTarget =      'TXT' then begin
+                          result:= Text;
+      end
+
+      else if upperTarget =      'TXT_LAYOUT' then begin
+                          result:= TextLayout;
+      end
+
+      else if upperTarget =      'TTY' then begin
+                          result:= Tty;
+      end
+
+      else if upperTarget =      'PRV' then begin
+                          result:= Preview;
+      end
+
+      else if upperTarget =      'PPTX' then begin
+                          result:= Pptx;
+      end
+
+      else if upperTarget =      'JSON' then begin
+                          result:= Json;
+      end
+      else begin
+       result:= unknown;
+      end;
+
+  end;
+  function TListLabelExportOptions.GetString(exportTarget: TLlExportTarget): TString;
+  begin
+      case (exportTarget) of
+      Pdf:
+          result:= 'PDF';
+      Html:
+          result:= 'HTML';
+      Rtf:
+          result:= 'RTF';
+      Bitmap:
+          result:= 'PICTURE_BMP';
+      MetaFile:
+          result:= 'PICTURE_EMF';
+      Tiff:
+          result:= 'PICTURE_TIFF';
+      MultiTiff:
+          result:= 'PICTURE_MULTITIFF';
+      Jpeg:
+          result:= 'PICTURE_JPEG';
+      Png:
+          result:= 'PICTURE_PNG';
+      Xls:
+          result:= 'XLS';
+      Xlsx:
+          result:= 'XLS';
+      Docx:
+          result:= 'DOCX';
+      Xps:
+          result:= 'XPS';
+      Mhtml:
+          result:= 'MHTML';
+      Xhtml:
+          result:= 'XHTML';
+      Jqm:
+          result:= 'JQM';
+      Xml:
+          result:= 'XML';
+      Text:
+          result:= 'TXT';
+      TextLayout:
+          result:= 'TXT_LAYOUT';
+      Tty:
+          result:= 'TTY';
+      Preview:
+          result:= 'PRV';
+      Svg:
+          result:= 'SVG';
+      Pptx:
+          result:= 'PPTX';
+      Json:
+          result:= 'JSON';
+      else
+          result:='';
+      end;
+
+  end;
+  function TListLabelExportOptions.GetExportOptionString(exportOption: TLlExportOption): TString;
+    begin
+      case TLlExportOption(exportOption) of
+        ExportFile:
+                            result:= 'Export.File';
+        ExportPath:
+                            result:= 'Export.Path';
+        ExportAllInOneFile:
+                            result:= 'Export.AllInOneFile';
+        ExportTarget:
+                            result:= 'Export.Target';
+        ExportQuiet:
+                            result:= 'Export.Quiet';
+        ExportShowResult:
+                            result:= 'Export.ShowResult';
+        ExportShowResultAvailable:
+                            result:= 'Export.ShowResultAvailable';
+        ExportSendAsMail:
+                            result:= 'Export.SendAsMail';
+        ExportSendAsMailAvailable:
+                            result:= 'Export.SendAsMailAvailable';
+        ExportMailBody:
+                            result:= 'Export.Mail.Body';
+        ExportMailHtmlBody:
+                            result:= 'Export.Mail.Body:text/html';
+        ExportMailSecureConnection:
+                            result:= 'Export.Mail.SecureConnection';
+        ExportMailAttachmentList:
+                            result:= 'Export.Mail.AttachmentList';
+        ExportMailSmtpServerTimeOut:
+                            result:= 'Export.Mail.SMTP.ServerTimeOut';
+        ExportMailSmtpServerAddress:
+                            result:= 'Export.Mail.SMTP.ServerAddress';
+        ExportMailSmtpServerPort:
+                            result:= 'Export.Mail.SMTP.ServerPort';
+        ExportMailSmtpUser:
+                            result:= 'Export.Mail.SMTP.User';
+        ExportMailSmtpPassword:
+                            result:= 'Export.Mail.SMTP.Password';
+        ExportMailSmtpProxyType:
+                            result:= 'Export.Mail.SMTP.ProxyType';
+        ExportMailSmtpProxyAddress:
+                            result:= 'Export.Mail.SMTP.ProxyAddress';
+        ExportMailSmtpProxyPort:
+                            result:= 'Export.Mail.SMTP.ProxyPort';
+        ExportMailSmtpProxyUser:
+                            result:= 'Export.Mail.SMTP.ProxyUser';
+        ExportMailSmtpProxyPassword:
+                            result:= 'Export.Mail.SMTP.ProxyPassword';
+        ExportMailSmtpSenderAddress:
+                            result:= 'Export.Mail.SMTP.SenderAddress';
+        ExportMailSmtpSenderName:
+                            result:= 'Export.Mail.SMTP.SenderName';
+        ExportMailSmtpReplyTo:
+                            result:= 'Export.Mail.SMTP.ReplyTo';
+        ExportMailSmtpFrom:
+                            result:= 'Export.Mail.SMTP.From';
+        ExportMailSmtpPopBeforeSmtp:
+                            result:= 'Export.Mail.SMTP.POPBeforeSMTP';
+        ExportMailSmtpServerUser:
+                            result:= 'Export.Mail.SMTP.ServerUser';
+        ExportMailSmtpServerPassword:
+                            result:= 'Export.Mail.SMTP.ServerPassword';
+        ExportMailTo:
+                            result:= 'Export.Mail.To';
+        ExportMailCc:
+                            result:= 'Export.Mail.CC';
+        ExportMailBcc:
+                            result:= 'Export.Mail.BCC';
+        ExportMailProvider:
+                            result:= 'Export.Mail.Provider';
+        ExportMailSubject:
+                            result:= 'Export.Mail.Subject';
+        ExportMailShowDialog:
+                            result:= 'Export.Mail.ShowDialog';
+        ExportMailSendResultAs:
+                            result:= 'Export.Mail.SendResultAs';
+        ExportSaveAsZip:
+                            result:= 'Export.SaveAsZIP';
+        ExportSaveAsZipAvailable:
+                            result:= 'Export.SaveAsZIPAvailable';
+        ExportZipFile:
+                            result:= 'Export.ZIPFile';
+        ExportZipPath:
+                            result:= 'Export.ZIPPath';
+        ExportOnlyTableData:
+                            result:= 'Export.OnlyTableData';
+        ExportInfinitePage:
+                            result:= 'Export.InfinitePage';
+        ExportSignResult:
+                            result:= 'Export.SignResult';
+        ExportSignResultAvailable:
+                            result:= 'Export.SignResultAvailable';
+        ExportSignatureProvider:
+                            result:= 'Export.SignatureProvider';
+        ExportSignatureProviderOption:
+                            result:= 'Export.SignatureProvider.Option';
+        ExportSignatureFormat:
+                            result:= 'Export.SignatureFormat';
+        PictureJpegEncoding:
+                            result:= 'Picture.JpegEncoding';
+        PictureFormat:
+                            result:= 'Picture.Format';
+        PictureJpegQuality:
+                            result:= 'Picture.JPEGQuality';
+        PictureBitsPerPixel:
+                            result:= 'Picture.BitsPerPixel';
+        PictureCropFile:
+                            result:= 'Picture.CropFile';
+        PictureCropFrameWidth:
+                            result:= 'Picture.CropFrameWidth';
+        UsePosFrame:
+                            result:= 'UsePosFrame';
+        VerbosityRectangle:
+                            result:= 'Verbosity.Rectangle';
+        VerbosityBarcode:
+                            result:= 'Verbosity.Barcode';
+        VerbosityDrawing:
+                            result:= 'Verbosity.Drawing';
+        VerbosityEllipse:
+                            result:= 'Verbosity.Ellipse';
+        VerbosityLine:
+                            result:= 'Verbosity.Line';
+        VerbosityText:
+                            result:= 'Verbosity.Text';
+        VerbosityTextFrames:
+                            result:= 'Verbosity.Text.Frames';
+        VerbosityRtf:
+                            result:= 'Verbosity.RTF';
+        VerbosityRtfFrames:
+                            result:= 'Verbosity.RTF.Frames';
+        VerbosityTable:
+                            result:= 'Verbosity.Table';
+        VerbosityTableCell:
+                            result:= 'Verbosity.Table.Cell';
+        VerbosityTableFrames:
+                            result:= 'Verbosity.Table.Frames';
+        VerbosityLLXObject:
+                            result:= 'Verbosity.LLXObject';
+        VerbosityLLXObjectHtmlObject:
+                            result:= 'Verbosity.LLXObject.HTMLObj';
+        HtmlTitle:
+                            result:= 'HTML.Title';
+        HtmlFormHeader:
+                            result:= 'HTML.FormHeader';
+        HtmlFormFooter:
+                            result:= 'HTML.FormFooter';
+        LayouterPercentaged:
+                            result:= 'Layouter.Percentaged';
+        LayouterFixedPageHeight:
+                            result:= 'Layouter.FixedPageHeight';
+        PdfTitle:
+                            result:= 'PDF.Title';
+        PdfSubject:
+                            result:= 'PDF.Subject';
+        PdfKeywords:
+                            result:= 'PDF.Keywords';
+        PdfAuthor:
+                            result:= 'PDF.Author';
+        PdfCreator:
+                            result:= 'PDF.Creator';
+        PdfEncryptionEncryptFile:
+                            result:= 'PDF.Encryption.EncryptFile';
+        PdfEncryptionEnablePrinting:
+                            result:= 'PDF.Encryption.EnablePrinting';
+        PdfEncryptionEnableChanging:
+                            result:= 'PDF.Encryption.EnableChanging';
+        PdfEncryptionEnableCopying:
+                            result:= 'PDF.Encryption.EnableCopying';
+        PdfEncryptionLevel:
+                            result:= 'PDF.Encryption.Level';
+        PdfOwnerPassword:
+                            result:= 'PDF.OwnerPassword';
+        PdfUserPassword:
+                            result:= 'PDF.UserPassword';
+        PdfFontMode:
+                            result:= 'PDF.FontMode';
+        PdfExcludedFonts:
+                            result:= 'PDF.ExcludedFonts';
+        PdfCompressStreamMethod:
+                            result:= 'PDF.CompressStreamMethod';
+        PdfPdfAMode:
+                            result:= 'PDF.PDFAMode'; 
+		PdfDontStackWorldModifications:
+                            result:= 'PDF.DontStackWorldModifications';
+        PdfFileAttachments:
+                            result:= 'PDF.FileAttachments';
+        PdfConformance:
+                            result:= 'PDF.Conformance';
+        Resolution:
+                            result:= 'Resolution';
+        TxtFrameChar:
+                            result:= 'TXT.FrameChar';
+        TxtSeparatorChar:
+                            result:= 'TXT.SeparatorChar';
+        TxtIgnoreGroupLines:
+                            result:= 'TXT.IgnoreGroupLines';
+        TxtIgnoreHeaderFooterLines:
+                            result:= 'TXT.IgnoreHeaderFooterLines';
+        TxtCharset:
+                            result:= 'TXT.Charset';
+        TtyEmulation:
+                            result:= 'TTY.Emulation';
+        TtyDestination:
+                            result:= 'TTY.Destination';
+        TtyDefaultFilename:
+                            result:= 'TTY.DefaultFilename';
+        TtyAdvanceAfterPrint:
+                            result:= 'TTY.AdvanceAfterPrint';
+        TiffCompressionType:
+                            result:= 'TIFF.CompressionType';
+        TiffCompressionQuality:
+                            result:= 'TIFF.CompressionQuality';
+        XlsFontScalingPercentage:
+                            result:= 'XLS.FontScalingPercentage';
+        XlsPrintingZoom:
+                            result:= 'XLS.PrintingZoom';
+        XlsIgnoreGroupLines:
+                            result:= 'XLS.IgnoreGroupLines';
+        XlsIgnoreHeaderFooterLines:
+                            result:= 'XLS.IgnoreHeaderFooterLines';
+        XlsIgnoreLineWrapForDataOnlyExport:
+                            result:= 'XLS.IgnoreLinewrapForDataOnlyExport';
+        XlsConvertNumeric:
+                            result:= 'XLS.ConvertNumeric';
+        XlsAllPagesOneSheet:
+                            result:= 'XLS.AllPagesOneSheet';
+        XlsWorksheetName:
+                            result:= 'XLS.WorksheetName';
+        XlsAutoFit:
+                            result:= 'XLS.AutoFit';
+        XmlTitle:
+                            result:= 'XML.Title';
+        XhtmlUseAdvancedCss:
+                            result:= 'XHTML.UseAdvancedCSS';
+        XhtmlToolbarType:
+                            result:= 'XHTML.ToolbarType';
+        XhtmlTitle:
+                            result:= 'XHTML.Title';
+        XhtmlUseSeparateCss:
+                            result:= 'XHTML.UseSeparateCSS';
+        JqmTitle:
+                            result:= 'JQM.Title';
+        JqmCDN:
+                            result:= 'JQM.CDN';
+        JqmListDataFilter:
+                            result:= 'JQM.ListDataFilter';
+        JqmUseDividerLines:
+                            result:= 'JQM.UseDividerLines';
+        JqmBaseTheme:
+                            result:= 'JQM.BaseTheme';
+        JqmHeaderTheme:
+                            result:= 'JQM.HeaderTheme';
+        JqmDividerTheme:
+                            result:= 'JQM.DividerTheme';
+        JqmColumnMode:
+                            result:= 'JQM.ColumnMode';
+        DocxFontScalingPercentage:
+                            result:= 'DOCX.FontScalingPercentage';
+        DocxAllPagesOneFile:
+                            result:= 'DOCX.AllPagesOneFile';
+        DocxCellScalingPercentageWidth:
+                            result:= 'DOCX.CellScalingPercentageWidth';
+        DocxCellScalingPercentageHeight:
+                            result:= 'DOCX.CellScalingPercentageHeight';
+        DocxFloatingTableMode:
+                            result:= 'DOCX.FloatingTableMode';
+        SvgTitle:
+                            result:= 'SVG.Title';
+        XlsFileFormat:
+                            result:= 'XLS.FileFormat';
+        PdfZUGFeRDXmlPath:
+                            result:= 'PDF.ZUGFeRDXmlPath';
+        PdfZUGFeRDConformanceLevel:
+                            result:= 'PDF.ZUGFeRDConformanceLevel';
+        PdfZUGFeRDVersion:
+                            result:= 'PDF.ZUGFeRDVersion';
+        PptxFontScalingPercentage:
+                            result:= 'PPTX.FontScalingPercentage';
+        PptxAnimation:
+                            result:= 'PPTX.Animation';
+        ExportMailPop3SocketTimeout:
+                            result:= 'Export.Mail.POP3.SocketTimeout';
+        ExportMailPop3SenderDomain:
+                            result:= 'Export.Mail.POP3.SenderDomain';
+        ExportMailPop3ServerPort:
+                            result:= 'Export.Mail.POP3.ServerPort';
+        ExportMailPop3ServerAddress:
+                            result:= 'Export.Mail.POP3.ServerAddress';
+        ExportMailPop3ServerUser:
+                            result:= 'Export.Mail.POP3.ServerUser';
+        ExportMailPop3ServerPassword:
+                            result:= 'Export.Mail.POP3.ServerPassword';
+        ExportMailPop3ProxyAddress:
+                            result:= 'Export.Mail.POP3.ProxyAddress';
+        ExportMailPop3ProxyPort:
+                            result:= 'Export.Mail.POP3.ProxyPort';
+        ExportMailPop3ProxyUser:
+                            result:= 'Export.Mail.POP3.ProxyUser';
+        ExportMailPop3ProxyPassword:
+                            result:= 'Export.Mail.POP3.ProxyPassword';
+        ExportMailXmapiServerUser:
+                            result:= 'Export.Mail.XMAPI.ServerUser';
+        ExportMailXmapiServerPassword:
+                            result:= 'Export.Mail.XMAPI.ServerPassword';
+        ExportMailXmapiSuppressLogonFailure:
+                            result:= 'Export.Mail.XMAPI.SuppressLogonFailure';
+        ExportMailXmapiDeleteAfterSend:
+                            result:= 'Export.Mail.XMAPI.DeleteAfterSend';
+        ExportMailSignatureName:
+                            result:= 'Export.Mail.SignatureName';
+        JsonIndent:
+                            result:= 'JSON.Indent';
+      else
+      result:= '';
+      end;
+
+    end;
+
+{ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
+
 Function DateToJulian(ADate: TDateTime): TJulianDate;
 begin
   if ADate = 0 then
@@ -2281,4 +3012,3 @@ procedure StrPCopyExt(var Dest: ptChar; Source: TString; MinSize: integer);
   end;
 
 end.
-

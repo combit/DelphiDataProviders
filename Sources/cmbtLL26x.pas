@@ -1,50 +1,18 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-03-18 01:03:23] *)
+(*  [build of 2021-05-18 17:05:15] *)
 
 unit cmbtLL26x;
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
+{$if CompilerVersion > 12}
 {$define ADOAVAILABLE}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
-{$ifndef VER125}
-{$ifndef VER130}
-{$ifndef VER135}
-{$ifndef VER140}
-{$ifndef VER150}
-{$ifndef VER160}
-{$ifndef VER170}
-{$ifndef VER180}
-{$ifndef VER185}
-{$ifndef VER190}
+{$if CompilerVersion > 19}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
 {$ifdef WIN64}
 {$A16}
@@ -1008,7 +976,9 @@ const
   LL_PRNOPTSTR_ISSUERANGES       = 11;
   LL_PRNOPTSTR_PREVIEWTITLE      = 12;
                     (* default: language dependent *)
-  LL_PRNOPTSTR_NEXT_INDEX        = 13;
+  LL_PRNOPTSTR_PRINTDLG_ALWAYSSHOWCOPIESFOR = 13;
+                    (* default: empty string *)
+  LL_PRNOPTSTR_NEXT_INDEX        = 14;
   LL_PRINT_V1POINTX              = $00000000;
   LL_PRINT_NORMAL                = $00000100;
   LL_PRINT_PREVIEW               = $00000200;
@@ -1872,6 +1842,10 @@ const
                     (* default: 0 *)
   LL_OPTION_SET_PREVIEW_ID_IN_ASSOC_FOR_SINGLETHREADED_PRINT = 371;
                     (* w/o, internal. Important for single-threaded preview *)
+  LL_OPTION_PROJECTPARAMETER_PRINTLANGUAGE_SHOW = 373;
+                    (* default: false *)
+  LL_OPTION_TABLENAMETRANSLATION_NOT_DISTINCT = 374;
+                    (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -1999,6 +1973,8 @@ const
                     (* ';' separated list of legacy exporters (JQM, HTML) to be allowed. Default is empty. *)
   LL_OPTIONSTR_CHART_AXISLABEL_SPACINGDELTA = 87;
                     (* ';' seperated list of spacing deltas (coord-x;coord-y;coord-z;label-x;label-y;label-z). Default is empty, hence all zero. *)
+  LL_OPTIONSTR_INTELLISENSE_CONSTANTSFILTER = 88;
+                    (* ';' seperated list e.g. "-LL.Color*;+*" (deny all entries beginning with LL.Color and allow the rest). Default is empty (hence no constants in Intellisense). *)
   LL_SYSCOMMAND_MINIMIZE         = -1;
   LL_SYSCOMMAND_MAXIMIZE         = -2;
   LL_PHFG_AGGREGATE              = $01;

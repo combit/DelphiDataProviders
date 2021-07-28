@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-01-28 10:01:52] *)
+(*  [build of 2021-05-11 00:05:49] *)
 
 unit cmbtLS26x;
 
@@ -10,15 +10,47 @@ unit cmbtLS26x;
 - define CMLS26_LINK_INDEXED to use the indexed import (faster)
 *)
 
-{$if CompilerVersion > 12}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
 {$define ADOAVAILABLE}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
-{$if CompilerVersion > 19}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
+{$ifndef VER125}
+{$ifndef VER130}
+{$ifndef VER135}
+{$ifndef VER140}
+{$ifndef VER150}
+{$ifndef VER160}
+{$ifndef VER170}
+{$ifndef VER180}
+{$ifndef VER185}
+{$ifndef VER190}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
 {$ifdef WIN64}
 {$A16}
@@ -596,6 +628,9 @@ const
   LS_CONVERT_IS_SRCCOPY          = $00000020;
   LS_CONVERT_IS_NO_JPEGCONVERSION = $00000040;
                     (* for PDF Conversion (PDF export handles these itself) *)
+  LS_CONVERT_IS_QUALITY_MASK     = $ff000000;
+                    (* 75 if not given *)
+  LS_CONVERT_IS_QUALITY_SHIFT    = 24;
   LS_STGPRINTEX_OPTION_FORCE_SIMPLEX = $00000001;
   LS_STGPRINTEX_OPTION_FORCE_DUPLEX_VERT = $00000002;
   LS_STGPRINTEX_OPTION_FORCE_DUPLEX_HORZ = $00000003;
