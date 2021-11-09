@@ -1,18 +1,50 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-05-18 17:05:15] *)
+(*  [build of 2021-09-16 00:09:55] *)
 
 unit cmbtLL26x;
 
-{$if CompilerVersion > 12}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
 {$define ADOAVAILABLE}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
-{$if CompilerVersion > 19}
+{$ifndef VER90}
+{$ifndef VER100}
+{$ifndef VER110}
+{$ifndef VER120}
+{$ifndef VER125}
+{$ifndef VER130}
+{$ifndef VER135}
+{$ifndef VER140}
+{$ifndef VER150}
+{$ifndef VER160}
+{$ifndef VER170}
+{$ifndef VER180}
+{$ifndef VER185}
+{$ifndef VER190}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$ifend}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
+{$endif}
 
 {$ifdef WIN64}
 {$A16}
@@ -1846,6 +1878,8 @@ const
                     (* default: false *)
   LL_OPTION_TABLENAMETRANSLATION_NOT_DISTINCT = 374;
                     (* default: false *)
+  LL_OPTION_SUPPRESS_EMPTY_PAGES_ON_PRINT = 378;
+                    (* default: false % nyi *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;

@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS26.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-05-11 00:05:49] *)
+(*  [build of 2021-09-27 23:09:16] *)
 
 unit cmbtLS26x;
 
@@ -189,6 +189,8 @@ const
   LS_OPTION_HASHYPERLINKS        = 213;
   LS_OPTION_USED_PRINTERCOUNT    = 214;
                     (* count of printers actually used (compares DEVMODEs etc) *)
+  LS_OPTION_JOB_GTC_COUNT        = 215;
+                    (* returns number of GTC pages, use this for each job, not with bOneJobTranslation *)
   LS_OPTION_PAGENUMBER           = 0;
                     (* page number of current page *)
   LS_OPTION_COPIES               = 1;
