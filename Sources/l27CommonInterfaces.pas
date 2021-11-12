@@ -3,13 +3,13 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : l26CommonInterfaces.pas
- Module : List & Label 26 Interface definitions
- Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.000
+ File   : l27CommonInterfaces.pas
+ Module : List & Label 27 Interface definitions
+ Descr. : Implementation file for the List & Label 27 VCL-Component
+ Version: 27.000
 ==================================================================================
 }
-unit l26CommonInterfaces;
+unit l27CommonInterfaces;
 
 interface
 {$WEAKPACKAGEUNIT ON} 

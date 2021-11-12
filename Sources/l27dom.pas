@@ -3,14 +3,14 @@
   Copyright © combit GmbH, Konstanz
 
   ----------------------------------------------------------------------------------
-  File   : l26dom.pas
-  Module : List & Label 26 DOM
-  Descr. : Implementation file for the List & Label 26 DOM
-  Version: 26.001
+  File   : l27dom.pas
+  Module : List & Label 27 DOM
+  Descr. : Implementation file for the List & Label 27 DOM
+  Version: 27.000
   ==================================================================================
 }
 
-unit l26dom;
+unit l27dom;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
@@ -26,7 +26,7 @@ unit l26dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l26CommonInterfaces,cmbtll26
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l27CommonInterfaces,cmbtll27
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -64,6 +64,9 @@ type
   {$ifend}
 
   cmbtHWND = DWORD_PTR; // needed for C++Builder compatibility
+  TLlDOMPropertyTableFieldBarCodeSource = class;
+  TLlDOMTableFieldBarcode = class;
+  TLlDOMPropertyBarcodeSource =class;
   TLlDOMPropertyVisual = class;
   TLlDOMPropertyLineSmoothing = class;
   TLlDOMPropertyInputButtonActionPdfSig = class;
@@ -158,6 +161,7 @@ type
   TLlDOMPropertyChartEngineShapeFile = class;
   TLlDOMPropertyChartEngineDonut2D = class;
   TLlDOMPropertyChartEnginePie3D = class;
+  TLlDOMPropertyDrawing = class;
   TLlDOMSumVariableList = class;
   TLlDOMUserVariableList = class;
   TLlDOMObjectList = class;
@@ -290,6 +294,10 @@ type
       : TLlDOMPropertyValueAxisBase;
     class function SafeInputButtonActionCast(input: TLlDOMPropertyInputButtonActionBase)
       : TLlDOMPropertyInputButtonActionBase;
+    class function SafeBarcodeSourceCast(input: TLlDOMPropertyBarcodeSource)
+      : TLlDOMPropertyBarcodeSource;
+    class function SafeTableFielBarcodeSourceCast(source: TLlDOMPropertyTableFieldBarCodeSource; input: TLlDOMTableFieldBarcode)
+      :TLlDOMPropertyTableFieldBarCodeSource;
   end;
 
   TLlDOMItem = class(TObject)
@@ -1793,7 +1801,6 @@ type
 
   TLlDOMPropertyBarcodeSource = class(TLlDOMItem)
   private
-    fPremiumAdress: TLlDOMPropertyPremiumAdress;
     function GetFormula: TString;
     procedure SetFormula(const value: TString);
     function GetMode: TString;
@@ -1804,24 +1811,112 @@ type
     procedure SetBarcodeType(const value: TString);
     function GetVariable: TString;
     procedure SetVariable(const value: TString);
-    function GetPremiumAdress: TLlDOMPropertyPremiumAdress;
   public
     property Formula: TString read GetFormula write SetFormula;
     property Mode: TString read GetMode write SetMode;
     property Text: TString read GetText write SetText;
     property BarcodeType: TString read GetBarcodeType write SetBarcodeType;
     property Variable: TString read GetVariable write SetVariable;
-    property PremiumAdress: TLlDOMPropertyPremiumAdress read GetPremiumAdress;
-    destructor Destroy; override;
   end;
 
-  TLlDOMPropertyInputButtonActionBase = class(TLlDOMItem)
-  private
-    function GetActionType: TString;
-    procedure SetActionType(const value: TString);
+TLlDOMPropertyPremiumAddressBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  fPremiumAdress: TLlDOMPropertyPremiumAdress;
+  function GetPremiumAdress: TLlDOMPropertyPremiumAdress;
+public
+  property PremiumAdress: TLlDOMPropertyPremiumAdress read GetPremiumAdress;
+  destructor Destroy; override;
+end;
+
+TLlDOMPropertyPDF417BarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetColumnCount: TString;
+  function GetErrorCorrection: TString;
+  function GetTruncated: TString;
+  function GetYToXRatio: TString;
+  procedure SetColumnCount(const value: TString);
+  procedure SetErrorCorrection(const value: TString);
+  procedure SetTruncated(const value: TString);
+  procedure SetYToXRatio(const value: TString);
+public
+  property ColumnCount: TString read GetColumnCount write SetColumnCount;
+  property ErrorCorrection: TString read GetErrorCorrection write SetErrorCorrection;
+  property Truncated: TString read GetTruncated write SetTruncated;
+  property YToXRatio: TString read GetYToXRatio write SetYToXRatio;
+end;
+
+
+TLlDOMPropertyMicroPDF417BarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetEncoding: TString;
+  function GetFormat: TString;
+  function GetYToXRatio: TString;
+  procedure SetEncoding(const value: TString);
+  procedure SetFormat(const value: TString);
+  procedure SetYToXRatio(const value: TString);
+public
+  property Encoding: TString read GetEncoding write SetEncoding;
+  property Format: TString read GetFormat write SetFormat;
+  property YToXRatio: TString read GetYToXRatio write SetYToXRatio;
+end;
+
+TLlDOMPropertyMaxicodeBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetPolygonFillRate: TString;
+  function GetMaxicodeMode: TString;
+  procedure SetPolygonFillRate(const value: TString);
+  procedure SetMaxicodeMode(const value: TString);
+public
+  property PolygonFillRate: TString read GetPolygonFillRate write SetPolygonFillRate;
+  property MaxicodeMode: TString read GetMaxicodeMode write SetMaxicodeMode;
+end;
+
+TLlDOMPropertyDatamatrixBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetEncoding: TString;
+  function GetPreferredFormat: TString;
+  procedure SetEncoding(const value: TString);
+  procedure SetPreferredFormat(const value: TString);
   public
-     property Actiontype : TString read GetActionType write SetActionType;
-  end;
+  property Encoding: TString read GetEncoding write SetEncoding;
+  property PreferredFormat: TString read GetPreferredFormat write SetPreferredFormat;
+end;
+
+TLlDOMPropertyAztecBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetDataLayer: TString;
+  procedure SetDataLayer(const value: TString);
+public
+  property DataLayer: TString read GetDataLayer write SetDataLayer;
+end;
+
+TLlDOMPropertyQRBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetEncoding: TString;
+  function GetPreferredFormat: TString;
+  function GetCorrectionLevel: TString;
+  function GetFNC1Mode: TString;
+  procedure SetEncoding(const value: TString);
+  procedure SetPreferredFormat(const value: TString);
+  procedure SetCorrectionLevel(const value: TString);
+  procedure SetFNC1Mode(const value: TString);
+public
+  property Encoding: TString read GetEncoding write SetEncoding;
+  property PreferredFormat: TString read GetPreferredFormat write SetPreferredFormat;
+  property CorrectionLevel: TString read GetCorrectionLevel write SetCorrectionLevel;
+  property FNC1Mode: TString read GetFNC1Mode write SetFNC1Mode;
+end;
+
+
+
+
+TLlDOMPropertyInputButtonActionBase = class(TLlDOMItem)
+private
+  function GetActionType: TString;
+  procedure SetActionType(const value: TString);
+public
+   property Actiontype : TString read GetActionType write SetActionType;
+end;
 
   TLlDOMPropertyInputButtonActionHttpPost = class (TLlDOMPropertyInputButtonActionBase)
   private
@@ -1889,6 +1984,7 @@ type
   TLlDOMPropertySource = class(TLlDOMItem)
   private
     fFileinfo: TLlDOMPropertyFileInfo;
+    fVerification: TLlDOMPropertyVerification;
     function GetFileinfo: TLlDOMPropertyFileInfo;
     function GetMode: TString;
     procedure SetMode(const value: TString);
@@ -1896,11 +1992,13 @@ type
     procedure SetFormula(const value: TString);
     function GetVariable: TString;
     procedure SetVariable(const value: TString);
+    function GetVerification: TLlDOMPropertyVerification;
   public
     property Fileinfo: TLlDOMPropertyFileInfo read GetFileinfo;
     property Formula: TString read GetFormula write SetFormula;
     property Mode: TString read GetMode write SetMode;
     property Variable: TString read GetVariable write SetVariable;
+    property Verification: TLlDOMPropertyVerification read GetVerification;
     destructor Destroy; override;
   end;
 
@@ -2180,9 +2278,11 @@ type
   TLlDOMPropertyCrosstabDimensionGroupLabelCell = class
     (TLlDOMPropertyCrosstabDimensionCellBase)
   private
+    fDrawing: TLlDOMPropertyDrawing;
     fMaxEntryCount: TLlDOMPropertyMaxEntryCount;
     fSortOrderAscending: TLlDOMPropertySortOrderAscending;
     fAutoFill: TLlDOMPropertyAutoFill;
+    function GetDrawing: TLlDOMPropertyDrawing;
     function GetAutoFill: TLlDOMPropertyAutoFill;
     function GetMaxEntryCount: TLlDOMPropertyMaxEntryCount;
     function GetSortOrderAscending: TLlDOMPropertySortOrderAscending;
@@ -2197,6 +2297,7 @@ type
     property AutoFill: TLlDOMPropertyAutoFill read GetAutoFill;
     property SortOrderAscending: TLlDOMPropertySortOrderAscending read GetSortOrderAscending;
     property MaxEntryCount: TLlDOMPropertyMaxEntryCount read GetMaxEntryCount;
+    property Drawing: TLlDOMPropertyDrawing read GetDrawing;
     destructor Destroy; override;
   end;
 
@@ -4119,6 +4220,8 @@ type
       : TLlDOMPropertyCoordinateLabelPlacement;
     function GetMinimumPercentage: TString;
     procedure SetMinimumPercentage(const value: TString);
+	function GetMaxEntriesForArcs: TString;
+    procedure SetMaxEntriesForArcs(const value: TString);
     function GetSamplesForDesigner: TString;
     procedure SetSamplesForDesigner(const value: TString);
     function GetSorted: TString;
@@ -4128,6 +4231,7 @@ type
     function GetCoordinateLabelOthers: TLlDOMPropertyChartLabelCoordinateOthers;
     function GetCoordinateLabelPie: TLlDOMPropertyChartLabelPie;
   public
+	property MaxEntriesForArcs: TString read GetMaxEntriesForArcs write SetMaxEntriesForArcs;
     property CoordinateLabelOthers: TLlDOMPropertyChartLabelCoordinateOthers
       read GetCoordinateLabelOthers;
     property CoordinateLabelPlacement: TLlDOMPropertyCoordinateLabelPlacement
@@ -5263,6 +5367,23 @@ type
       write SetUserVarOptions;
   end;
 
+  TLlDOMPropertyDrawing = class(TLlDOMItem)
+  private
+    function GetFormula: TString;
+    procedure SetFormula(const value: TString);
+    function GetHeight: TString;
+    procedure SetHeight(const value: TString);
+    function GetWidth: TString;
+    procedure SetWidth(const value: TString);
+    function GetPosition: TString;
+    procedure SetPosition(const value: TString);
+  public
+    property Formula: TString read GetFormula write SetFormula;
+    property Height: TString read GetHeight write SetHeight;
+    property Width: TString read GetWidth write SetWidth;
+    property Position: TString read GetPosition write SetPosition;
+  end;
+
   TLlDOMPropertyBitmap = class(TLlDOMItem)
   private
     fDisplay: TLlDOMPropertyDisplay;
@@ -5903,6 +6024,10 @@ type
   private
     fFont: TLlDOMPropertyFont;
     fMatchDevicePixel: TLlDOMPropertyMatchDevicePixel;
+    fSource: TLlDOMPropertyTableFieldBarCodeSource;
+    function GetBarcodeType: TString;
+    procedure SetBarcodeType(const value: TString);
+    function GetBarcodeSource: TLlDOMPropertyTableFieldBarCodeSource;
     function GetAlignmentVertical: TString;
     procedure SetAlignmentVertical(const value: TString);
     function GetBarColor: TString;
@@ -5924,6 +6049,8 @@ type
     procedure SetDirection(const value: TString);
     function GetMatchDevicePixel: TLlDOMPropertyMatchDevicePixel;
   public
+    property Source: TLlDOMPropertyTableFieldBarCodeSource read GetBarcodeSource;
+    property BarcodeType: TString read GetBarcodeType write SetBarcodeType;
     property AlignmentVertical: TString read GetAlignmentVertical
       write SetAlignmentVertical;
     property BarColor: TString read GetBarColor write SetBarColor;
@@ -6081,6 +6208,113 @@ public
     destructor Destroy; override;
 		constructor Create(list: TLlDOMTableLineFieldList); overload;
 end;
+
+{TLlDOMPropertyTableFieldBarCodeSource}
+TLlDOMPropertyTableFieldBarCodeSource = class(TLlDOMItem)
+end;
+{/TLlDOMPropertyTableFieldBarCodeSource}
+
+{TLDOMPropertyTableFieldQRBarcodeSource}
+TLDOMPropertyTableFieldQRBarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  function GetEncoding: TString;
+  function GetPreferredFormat: TString;
+  function GetCorrectionLevel: TString;
+  function GetFNC1Mode: TString;
+  procedure SetEncoding(const value: TString);
+  procedure SetPreferredFormat(const value: TString);
+  procedure SetCorrectionLevel(const value: TString);
+  procedure SetFNC1Mode(const value: TString);
+public
+  property Encoding: TString read GetEncoding write SetEncoding;
+  property PreferredFormat: TString read GetPreferredFormat write SetPreferredFormat;
+  property CorrectionLevel: TString read GetCorrectionLevel write SetCorrectionLevel;
+  property FNC1Mode: TString read GetFNC1Mode write SetFNC1Mode;
+end;
+{/TLDOMPropertyTableFieldQRBarcodeSource}
+
+{TLlDOMPropertyTableFieldAztecBarcodeSource}
+TLlDOMPropertyTableFieldAztecBarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  function GetDataLayer: TString;
+  procedure SetDataLayer(const value: TString);
+public
+  property DataLayer: TString read GetDataLayer write SetDataLayer;
+end;
+{/TLlDOMPropertyTableFieldAztecBarcodeSource}
+
+{PropertyTableFieldDatamatrixBarcodeSource}
+TLlDOMPropertyTableFieldDatamatrixBarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  function GetEncoding: TString;
+  function GetPreferredFormat: TString;
+  procedure SetEncoding(const value: TString);
+  procedure SetPreferredFormat(const value: TString);
+public
+  property Encoding: TString read GetEncoding write SetEncoding;
+  property PreferredFormat: TString read GetPreferredFormat write SetPreferredFormat;
+end;
+{/PropertyTableFieldDatamatrixBarcodeSource}
+
+{TLlDOMPropertyTableFieldMaxicodeBarcodeSource}
+TLlDOMPropertyTableFieldMaxicodeBarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  function GetPolygonFillRate: TString;
+  function GetMaxicodeMode: TString;
+  procedure SetPolygonFillRate(const value: TString);
+  procedure SetMaxicodeMode(const value: TString);
+public
+  property PolygonFillRate: TString read GetPolygonFillRate write SetPolygonFillRate;
+  property MaxicodeMode: TString read GetMaxicodeMode write SetMaxicodeMode;
+end;
+{/TLlDOMPropertyTableFieldMaxicodeBarcodeSource}
+
+{TLlDOMPropertyTableFieldMicroPDF417BarcodeSource}
+TLlDOMPropertyTableFieldMicroPDF417BarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  function GetEncoding: TString;
+  function GetFormat: TString;
+  function GetYToXRatio: TString;
+  procedure SetEncoding(const value: TString);
+  procedure SetFormat(const value: TString);
+  procedure SetYToXRatio(const value: TString);
+public
+  property Encoding: TString read GetEncoding write SetEncoding;
+  property Format: TString read GetFormat write SetFormat;
+  property YToXRatio: TString read GetYToXRatio write SetYToXRatio;
+end;
+
+{/TLlDOMPropertyTableFieldMicroPDF417BarcodeSource}
+
+{TLlDOMPropertyTableFieldPDF417BarcodeSource}
+TLlDOMPropertyTableFieldPDF417BarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  function GetColumnCount: TString;
+  function GetErrorCorrection: TString;
+  function GetTruncated: TString;
+  function GetYToXRatio: TString;
+  procedure SetColumnCount(const value: TString);
+  procedure SetErrorCorrection(const value: TString);
+  procedure SetTruncated(const value: TString);
+  procedure SetYToXRatio(const value: TString);
+public
+  property ColumnCount: TString read GetColumnCount write SetColumnCount;
+  property ErrorCorrection: TString read GetErrorCorrection write SetErrorCorrection;
+  property Truncated: TString read GetTruncated write SetTruncated;
+  property YToXRatio: TString read GetYToXRatio write SetYToXRatio;
+end;
+{/TLlDOMPropertyTableFieldPDF417BarcodeSource}
+
+{TLlDOMPropertyTableFieldPremiumAddressBarcodeSource}
+TLlDOMPropertyTableFieldPremiumAddressBarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
+private
+  fPremiumAdress: TLlDOMPropertyPremiumAdress;
+  function GetPremiumAdress: TLlDOMPropertyPremiumAdress;
+public
+  property PremiumAdress: TLlDOMPropertyPremiumAdress read GetPremiumAdress;
+  destructor Destroy; override;
+end;
+{/TLlDOMPropertyTableFieldPremiumAddressBarcodeSource}
 
 
   TLlDOMTableLineBase = class(TLlDOMItem)
@@ -9725,6 +9959,23 @@ begin
   SetProperty('Variable', value);
 end;
 
+function TLlDOMPropertySource.GetVerification: TLlDOMPropertyVerification;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fVerification <> nil then
+  begin
+    result := fVerification
+  end
+  else
+  begin
+    baseObj := GetObject('Verification');
+    fVerification := TLlDOMPropertyVerification.Create(baseObj);
+    baseObj.Free;
+    result := fVerification;
+  end;
+end;
+
 { TFile }
 
 function TLlDOMPropertyFileInfo.GetFileName: TString;
@@ -10382,9 +10633,11 @@ begin
     baseObj := GetObject('Source');
     fSource := TLlDOMPropertyBarcodeSource.Create(baseObj);
     baseObj.Free;
+	  fSource :=TLlDOMHelper.SafeBarcodeSourceCast(fSource);
     result := fSource;
   end;
 end;
+
 
 
 function TLlDOMObjectBarcode.GetBarColor: TString;
@@ -10542,11 +10795,6 @@ begin
 end;
 
 { TBarcodeSource }
-destructor TLlDOMPropertyBarcodeSource.Destroy;
-begin
-  fPremiumAdress.Free;
-  inherited;
-end;
 
 function TLlDOMPropertyBarcodeSource.GetBarcodeType: TString;
 begin
@@ -10563,23 +10811,6 @@ begin
   result := GetProperty('Mode');
 end;
 
-function TLlDOMPropertyBarcodeSource.GetPremiumAdress
-  : TLlDOMPropertyPremiumAdress;
-var
-  baseObj: TLlDOMItem;
-begin
-  if fPremiumAdress <> nil then
-  begin
-    result := fPremiumAdress
-  end
-  else
-  begin
-    baseObj := GetObject('PremiumAdress');
-    fPremiumAdress := TLlDOMPropertyPremiumAdress.Create(baseObj);
-    baseObj.Free;
-    result := fPremiumAdress;
-  end;
-end;
 
 function TLlDOMPropertyBarcodeSource.GetText: TString;
 begin
@@ -10615,6 +10846,211 @@ procedure TLlDOMPropertyBarcodeSource.SetVariable(const value: TString);
 begin
   SetProperty('Variable', value);
 end;
+
+{TLlDOMPropertyPremiumAddressBarcodeSource}
+function TLlDOMPropertyPremiumAddressBarcodeSource.GetPremiumAdress
+  : TLlDOMPropertyPremiumAdress;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fPremiumAdress <> nil then
+  begin
+    result := fPremiumAdress
+  end
+  else
+  begin
+    baseObj := GetObject('PremiumAdress');
+    fPremiumAdress := TLlDOMPropertyPremiumAdress.Create(baseObj);
+    baseObj.Free;
+    result := fPremiumAdress;
+  end;
+end;
+
+destructor TLlDOMPropertyPremiumAddressBarcodeSource.Destroy;
+begin
+  fPremiumAdress.Free;
+  inherited;
+end;
+
+{/TLlDOMPropertyPremiumAddressBarcodeSource}
+
+{TLlDOMPropertyPDF417BarcodeSource}
+
+function TLlDOMPropertyPDF417BarcodeSource.GetColumnCount: TString;
+begin
+  result:= GetProperty('ColumnCount');
+end;
+
+function TLlDOMPropertyPDF417BarcodeSource.GetErrorCorrection: TString;
+begin
+  result:= GetProperty('ErrorCorrection');
+end;
+
+function TLlDOMPropertyPDF417BarcodeSource.GetTruncated: TString;
+begin
+  result:= GetProperty('Truncated');
+end;
+
+function TLlDOMPropertyPDF417BarcodeSource.GetYToXRatio: TString;
+begin
+  result:= GetProperty('YToXRatio');
+end;
+
+procedure TLlDOMPropertyPDF417BarcodeSource.SetColumnCount(const value: TString);
+begin
+  SetProperty('ColumnCount', value);
+end;
+procedure TLlDOMPropertyPDF417BarcodeSource.SetErrorCorrection(const value: TString);
+begin
+  SetProperty('ErrorCorrection', value);
+end;
+procedure TLlDOMPropertyPDF417BarcodeSource.SetTruncated(const value: TString);
+begin
+  SetProperty('Truncated', value);
+end;
+procedure TLlDOMPropertyPDF417BarcodeSource.SetYToXRatio(const value: TString);
+begin
+  SetProperty('YToXRatio', value);
+end;
+{/TLlDOMPropertyPDF417BarcodeSource}
+
+{TLlDOMPropertyMicroPDF417BarcodeSource}
+
+function TLlDOMPropertyMicroPDF417BarcodeSource.GetEncoding: TString;
+begin
+  result:= GetProperty('Encoding');
+end;
+
+function TLlDOMPropertyMicroPDF417BarcodeSource.GetFormat: TString;
+begin
+  result:= GetProperty('Format');
+end;
+
+function TLlDOMPropertyMicroPDF417BarcodeSource.GetYToXRatio: TString;
+begin
+  result:= GetProperty('YToXRatio');
+end;
+
+procedure TLlDOMPropertyMicroPDF417BarcodeSource.SetEncoding(const value: TString);
+begin
+  SetProperty('Encoding', value);
+end;
+
+procedure TLlDOMPropertyMicroPDF417BarcodeSource.SetFormat(const value: TString);
+begin
+  SetProperty('Fortmat', value);
+end;
+
+procedure TLlDOMPropertyMicroPDF417BarcodeSource.SetYToXRatio(const value: TString);
+begin
+  SetProperty('YToXRatio', value);
+end;
+
+{/TLlDOMPropertyMicroPDF417BarcodeSource}
+
+{TLlDOMPropertyMaxicodeBarcodeSource}
+function TLlDOMPropertyMaxicodeBarcodeSource.GetPolygonFillRate: TString;
+begin
+  GetProperty('PolygonFillRate');
+end;
+
+function TLlDOMPropertyMaxicodeBarcodeSource.GetMaxicodeMode: TString;
+begin
+  GetProperty('MaxicodeMode');
+end;
+
+procedure TLlDOMPropertyMaxicodeBarcodeSource.SetPolygonFillRate(const value: TString);
+begin
+    SetProperty('PolygonFillRate', value);
+end;
+
+procedure TLlDOMPropertyMaxicodeBarcodeSource.SetMaxicodeMode(const value: TString);
+begin
+    SetProperty('MaxicodeMode', value);
+end;
+
+{/TLlDOMPropertyMaxicodeBarcodeSource}
+
+
+{TLlDOMPropertyDatamatrixBarcodeSource}
+function TLlDOMPropertyDatamatrixBarcodeSource.GetEncoding: TString;
+begin
+  result:= GetProperty('Encoding');
+end;
+
+function TLlDOMPropertyDatamatrixBarcodeSource.GetPreferredFormat: TString;
+begin
+  result:= GetProperty('PreferredFormat');
+end;
+
+procedure TLlDOMPropertyDatamatrixBarcodeSource.SetEncoding(const value: TString);
+begin
+  SetProperty('Encoding', value);
+end;
+
+procedure TLlDOMPropertyDatamatrixBarcodeSource.SetPreferredFormat(const value: TString);
+begin
+  SetProperty('PreferredFormat', value);
+end;
+{/TLlDOMPropertyDatamatrixBarcodeSource}
+
+{TLlDOMPropertyAztecBarcodeSource}
+
+function TLlDOMPropertyAztecBarcodeSource.GetDataLayer: TString;
+begin
+  result:= GetProperty('DataLayer');
+end;
+
+procedure TLlDOMPropertyAztecBarcodeSource.SetDataLayer(const value: TString);
+begin
+  SetProperty('DataLayer', value);
+end;
+{/TLlDOMPropertyAztecBarcodeSource}
+
+{TLlDOMPropertyQRBarcodeSource}
+function TLlDOMPropertyQRBarcodeSource.GetEncoding: TString;
+begin
+  result:= GetProperty('Encoding');
+end;
+
+function TLlDOMPropertyQRBarcodeSource.GetPreferredFormat: TString;
+begin
+  result:= GetProperty('PreferredFormat');
+end;
+
+
+procedure TLlDOMPropertyQRBarcodeSource.SetPreferredFormat(const value: TString);
+begin
+  SetProperty('PreferredFormat', value);
+end;
+
+
+procedure TLlDOMPropertyQRBarcodeSource.SetEncoding(const value: TString);
+begin
+  SetProperty('Encoding', value);
+end;
+
+function TLlDOMPropertyQRBarcodeSource.GetCorrectionLevel: TString;
+begin
+  result:= GetProperty('CorrectionLevel');
+end;
+
+function TLlDOMPropertyQRBarcodeSource.GetFNC1Mode: TString;
+begin
+  result:= GetProperty('FNC1Mode');
+end;
+
+procedure TLlDOMPropertyQRBarcodeSource.SetCorrectionLevel(const value: TString);
+begin
+  SetProperty('CorrectionLevel', value);
+end;
+
+procedure TLlDOMPropertyQRBarcodeSource.SetFNC1Mode(const value: TString);
+begin
+  SetProperty('FNC1Mode', value);
+end;
+
+{/TLlDOMPropertyQRBarcodeSource}
 
 { TLlDOMObjectRTF }
 
@@ -15450,6 +15886,7 @@ begin
   fMaxEntryCount.Free;
   fSortOrderAscending.Free;
   fAutoFill.Free;
+  fDrawing.free;
   inherited;
 end;
 
@@ -15488,6 +15925,16 @@ TLlDOMPropertySortOrderAscending;
       (GetObject('SortOrderAscending'));
   end;
   result := fSortOrderAscending;
+end;
+
+function TLlDOMPropertyCrosstabDimensionGroupLabelCell.GetDrawing: TLlDOMPropertyDrawing;
+  begin
+  if fDrawing = nil then
+  begin
+    fDrawing := TLlDOMPropertyDrawing.Create
+      (GetObject('Drawing'));
+  end;
+  result := fDrawing;
 end;
 
 function  TLlDOMPropertyCrosstabDimensionGroupLabelCell.GetAutoFill:
@@ -16255,6 +16702,210 @@ begin
   end;
 end;
 
+{TLDOMPropertyTableFieldQRBarcodeSource}
+function TLDOMPropertyTableFieldQRBarcodeSource.GetEncoding: TString;
+begin
+  result:= GetProperty('Encoding');
+end;
+
+function TLDOMPropertyTableFieldQRBarcodeSource.GetPreferredFormat: TString;
+begin
+  result:= GetProperty('PreferredFormat');
+end;
+
+
+procedure TLDOMPropertyTableFieldQRBarcodeSource.SetPreferredFormat(const value: TString);
+begin
+  SetProperty('PreferredFormat', value);
+end;
+
+
+procedure TLDOMPropertyTableFieldQRBarcodeSource.SetEncoding(const value: TString);
+begin
+  SetProperty('Encoding', value);
+end;
+
+function TLDOMPropertyTableFieldQRBarcodeSource.GetCorrectionLevel: TString;
+begin
+  result:= GetProperty('CorrectionLevel');
+end;
+
+function TLDOMPropertyTableFieldQRBarcodeSource.GetFNC1Mode: TString;
+begin
+  result:= GetProperty('FNC1Mode');
+end;
+
+procedure TLDOMPropertyTableFieldQRBarcodeSource.SetCorrectionLevel(const value: TString);
+begin
+  SetProperty('CorrectionLevel', value);
+end;
+
+procedure TLDOMPropertyTableFieldQRBarcodeSource.SetFNC1Mode(const value: TString);
+begin
+  SetProperty('FNC1Mode', value);
+end;
+
+{/TLDOMPropertyTableFieldQRBarcodeSource}
+
+{TLlDOMPropertyTableFieldAztecBarcodeSource}
+
+function TLlDOMPropertyTableFieldAztecBarcodeSource.GetDataLayer: TString;
+begin
+  result:= GetProperty('DataLayer');
+end;
+
+procedure TLlDOMPropertyTableFieldAztecBarcodeSource.SetDataLayer(const value: TString);
+begin
+  SetProperty('DataLayer', value);
+end;
+{/TLlDOMPropertyTableFieldAztecBarcodeSource}
+
+{TLlDOMPropertyTableFieldDatamatrixBarcodeSource}
+function TLlDOMPropertyTableFieldDatamatrixBarcodeSource.GetEncoding: TString;
+begin
+  result:= GetProperty('Encoding');
+end;
+
+function TLlDOMPropertyTableFieldDatamatrixBarcodeSource.GetPreferredFormat: TString;
+begin
+  result:= GetProperty('PreferredFormat');
+end;
+
+procedure TLlDOMPropertyTableFieldDatamatrixBarcodeSource.SetEncoding(const value: TString);
+begin
+  SetProperty('Encoding', value);
+end;
+
+procedure TLlDOMPropertyTableFieldDatamatrixBarcodeSource.SetPreferredFormat(const value: TString);
+begin
+  SetProperty('PreferredFormat', value);
+end;
+{/TLlDOMPropertyTableFieldDatamatrixBarcodeSource}
+
+{TLlDOMPropertyTableFieldMaxicodeBarcodeSource}
+function TLlDOMPropertyTableFieldMaxicodeBarcodeSource.GetPolygonFillRate: TString;
+begin
+  GetProperty('PolygonFillRate');
+end;
+
+function TLlDOMPropertyTableFieldMaxicodeBarcodeSource.GetMaxicodeMode: TString;
+begin
+  GetProperty('MaxicodeMode');
+end;
+
+procedure TLlDOMPropertyTableFieldMaxicodeBarcodeSource.SetPolygonFillRate(const value: TString);
+begin
+    SetProperty('PolygonFillRate', value);
+end;
+
+procedure TLlDOMPropertyTableFieldMaxicodeBarcodeSource.SetMaxicodeMode(const value: TString);
+begin
+    SetProperty('MaxicodeMode', value);
+end;
+
+{/TLlDOMPropertyTableFieldMaxicodeBarcodeSource}
+
+{TLlDOMPropertyTableFieldMicroPDF417BarcodeSource}
+
+function TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.GetEncoding: TString;
+begin
+  result:= GetProperty('Encoding');
+end;
+
+function TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.GetFormat: TString;
+begin
+  result:= GetProperty('Format');
+end;
+
+function TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.GetYToXRatio: TString;
+begin
+  result:= GetProperty('YToXRatio');
+end;
+
+procedure TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.SetEncoding(const value: TString);
+begin
+  SetProperty('Encoding', value);
+end;
+
+procedure TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.SetFormat(const value: TString);
+begin
+  SetProperty('Fortmat', value);
+end;
+
+procedure TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.SetYToXRatio(const value: TString);
+begin
+  SetProperty('YToXRatio', value);
+end;
+
+{/TLlDOMPropertyTableFieldMicroPDF417BarcodeSource}
+
+{TLlDOMPropertyTableFieldPDF417BarcodeSource}
+
+function TLlDOMPropertyTableFieldPDF417BarcodeSource.GetColumnCount: TString;
+begin
+  result:= GetProperty('ColumnCount');
+end;
+
+function TLlDOMPropertyTableFieldPDF417BarcodeSource.GetErrorCorrection: TString;
+begin
+  result:= GetProperty('ErrorCorrection');
+end;
+
+function TLlDOMPropertyTableFieldPDF417BarcodeSource.GetTruncated: TString;
+begin
+  result:= GetProperty('Truncated');
+end;
+
+function TLlDOMPropertyTableFieldPDF417BarcodeSource.GetYToXRatio: TString;
+begin
+  result:= GetProperty('YToXRatio');
+end;
+
+procedure TLlDOMPropertyTableFieldPDF417BarcodeSource.SetColumnCount(const value: TString);
+begin
+  SetProperty('ColumnCount', value);
+end;
+procedure TLlDOMPropertyTableFieldPDF417BarcodeSource.SetErrorCorrection(const value: TString);
+begin
+  SetProperty('ErrorCorrection', value);
+end;
+procedure TLlDOMPropertyTableFieldPDF417BarcodeSource.SetTruncated(const value: TString);
+begin
+  SetProperty('Truncated', value);
+end;
+procedure TLlDOMPropertyTableFieldPDF417BarcodeSource.SetYToXRatio(const value: TString);
+begin
+  SetProperty('YToXRatio', value);
+end;
+{/TLlDOMPropertyTableFieldPDF417BarcodeSource}
+
+{TLlDOMPropertyTableFieldPremiumAddressBarcodeSource}
+function TLlDOMPropertyTableFieldPremiumAddressBarcodeSource.GetPremiumAdress
+  : TLlDOMPropertyPremiumAdress;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fPremiumAdress <> nil then
+  begin
+    result := fPremiumAdress
+  end
+  else
+  begin
+    baseObj := GetObject('PremiumAdress');
+    fPremiumAdress := TLlDOMPropertyPremiumAdress.Create(baseObj);
+    baseObj.Free;
+    result := fPremiumAdress;
+  end;
+end;
+
+destructor TLlDOMPropertyTableFieldPremiumAddressBarcodeSource.Destroy;
+begin
+  fPremiumAdress.Free;
+  inherited;
+end;
+
+{/TLlDOMPropertyTableFieldPremiumAddressBarcodeSource}
+
 constructor TLlDOMTableField.Create(list: TLlDOMTableLineFieldList;
   objType: TString; index: integer);
 var
@@ -17008,6 +17659,35 @@ end;
 
 { TLlDOMTableFieldBarcode }
 
+
+function TLlDOMTableFieldBarcode.GetBarcodeSource: TLlDOMPropertyTableFieldBarcodeSource;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fSource <> nil then
+  begin
+    result := fSource
+  end
+  else
+  begin
+    baseObj := GetObject('Source');
+    fSource := TLlDOMPropertyTableFieldBarcodeSource.Create(baseObj);
+    baseObj.Free;
+	  fSource :=TLlDOMHelper.SafeTableFielBarcodeSourceCast(fSource, self);
+    result := fSource;
+  end;
+end;
+
+function TLlDOMTableFieldBarcode.GetBarcodeType: TString;
+begin
+  result:=  GetProperty('BarcodeType');
+end;
+
+procedure TLlDOMTableFieldBarcode.SetBarcodeType(const value: TString);
+begin
+  SetProperty('BarcodeType', value);
+end;
+
 constructor TLlDOMTableFieldBarcode.Create(list: TLlDOMTableLineFieldList);
 begin
   inherited Create(list, 'Barcode', list.Count);
@@ -17016,6 +17696,7 @@ end;
 destructor TLlDOMTableFieldBarcode.Destroy;
 begin
   fFont.Free;
+  fSource.Free;
   inherited;
 end;
 
@@ -18025,6 +18706,97 @@ begin
       input.Free;
       // input:=nil;
     end;
+end;
+
+class function TLlDOMHelper.SafeBarcodeSourceCast
+        (input: TLlDOMPropertyBarcodeSource):TLlDOMPropertyBarcodeSource;
+        var barcodeType: TString;
+begin
+barcodeType := input.BarcodeType;
+
+  if barcodeType ='PDF417' then
+    begin
+      result := TLlDOMPropertyPDF417BarcodeSource.Create(input);
+    end
+      else if barcodeType ='Maxicode' then
+    begin
+      result := TLlDOMPropertyMaxicodeBarcodeSource.Create(input);
+    end
+      else if barcodeType ='Datamatrix' then
+    begin
+      result := TLlDOMPropertyDatamatrixBarcodeSource.Create(input);
+    end
+      else if barcodeType ='Aztec' then
+    begin
+      result := TLlDOMPropertyAztecBarcodeSource.Create(input);
+    end
+      else if barcodeType ='QRCode' then
+    begin
+      result := TLlDOMPropertyQRBarcodeSource.Create(input);
+    end
+      else if barcodeType ='MicroPDF417' then
+    begin
+      result := TLlDOMPropertyMicroPDF417BarcodeSource.Create(input);
+    end
+      else if barcodeType ='PremiumAddress' then
+    begin
+      result := TLlDOMPropertyPremiumAddressBarcodeSource.Create(input);
+    end
+    else
+    result := input;
+
+   if result <> input then
+    begin
+      input.Free;
+      // input:=nil;
+    end;
+
+end;
+
+
+class function TLlDOMHelper.SafeTableFielBarcodeSourceCast
+        (source: TLlDOMPropertyTableFieldBarCodeSource; input: TLlDOMTableFieldBarcode):TLlDOMPropertyTableFieldBarCodeSource;
+        var barcodeType: TString;
+begin
+barcodeType := input.BarcodeType;
+
+  if barcodeType ='PDF417' then
+    begin
+      result := TLlDOMPropertyTableFieldPDF417BarcodeSource.Create(input);
+    end
+      else if barcodeType ='Maxicode' then
+    begin
+      result := TLlDOMPropertyTableFieldMaxicodeBarcodeSource.Create(input);
+    end
+      else if barcodeType ='Datamatrix' then
+    begin
+      result := TLlDOMPropertyTableFieldDatamatrixBarcodeSource.Create(input);
+    end
+      else if barcodeType ='Aztec' then
+    begin
+      result := TLlDOMPropertyTableFieldAztecBarcodeSource.Create(input);
+    end
+      else if barcodeType ='QRCode' then
+    begin
+      result := TLDOMPropertyTableFieldQRBarcodeSource.Create(input);
+    end
+      else if barcodeType ='MicroPDF417' then
+    begin
+      result := TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.Create(input);
+    end
+      else if barcodeType ='PremiumAddress' then
+    begin
+      result := TLlDOMPropertyTableFieldPremiumAddressBarcodeSource.Create(input);
+    end
+    else
+    result := source;
+
+   if result <> source then
+    begin
+      input.Free;
+      // input:=nil;
+    end;
+
 end;
 
 { TLlDOMPropertyOutpuFormatterDate }
@@ -21362,6 +22134,49 @@ begin
   SetProperty('UserVarOptions', value);
 end;
 
+{TLlDOMPropertyDrawing}
+function TLlDOMPropertyDrawing.GetFormula: TString;
+begin
+  result := GetProperty('Formula');
+end;
+
+function TLlDOMPropertyDrawing.GetHeight: TString;
+begin
+  result := GetProperty('Height');
+end;
+
+function TLlDOMPropertyDrawing.GetWidth: TString;
+begin
+  result := GetProperty('Width');
+end;
+
+function TLlDOMPropertyDrawing.GetPosition: TString;
+begin
+  result := GetProperty('Position');
+end;
+
+procedure TLlDOMPropertyDrawing.SetFormula(const value: TString);
+begin
+  SetProperty('Formula', value);
+end;
+
+procedure TLlDOMPropertyDrawing.SetHeight(const value: TString);
+begin
+  SetProperty('Height', value);
+end;
+
+procedure TLlDOMPropertyDrawing.SetWidth(const value: TString);
+begin
+  SetProperty('Width', value);
+end;
+
+procedure TLlDOMPropertyDrawing.SetPosition(const value: TString);
+begin
+  SetProperty('Position', value);
+end;
+
+{/TLlDOMPropertyDrawing}
+
 { TLlDOMPropertyBitmap }
 
 destructor TLlDOMPropertyBitmap.Destroy;
@@ -23626,6 +24441,11 @@ begin
   result := GetProperty('Value');
 end;
 
+function TLlDOMPropertyCategoryAxisPie.GetMaxEntriesForArcs: TString;
+begin
+  result := GetProperty('MaxEntriesForArcs');
+end;
+
 procedure TLlDOMPropertyCategoryAxisPie.SetMinimumPercentage
   (const value: TString);
 begin
@@ -23641,6 +24461,11 @@ end;
 procedure TLlDOMPropertyCategoryAxisPie.SetSorted(const value: TString);
 begin
   SetProperty('Sorted', value);
+end;
+
+procedure TLlDOMPropertyCategoryAxisPie.SetMaxEntriesForArcs(const value: TString);
+begin
+  SetProperty('MaxEntriesForArcs', value);
 end;
 
 procedure TLlDOMPropertyCategoryAxisPie.SetValue(const value: TString);
@@ -30650,7 +31475,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl26.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl27.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -30666,7 +31491,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl26.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl27.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;

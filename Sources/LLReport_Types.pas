@@ -5,8 +5,8 @@
 ----------------------------------------------------------------------------------
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
- Descr. : Implementation file for the List & Label 26 VCL-Component
- Version: 26.002
+ Descr. : Implementation file for the List & Label 27 VCL-Component
+ Version: 27.000
 ==================================================================================
 }
 
@@ -14,11 +14,8 @@ unit LLReport_Types;
 
 interface
 {$WEAKPACKAGEUNIT ON}
-
-
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll26x, Dialogs, System.UITypes, System.Generics.Collections;
-
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll27x, Dialogs, System.UITypes;
 
 Type
 
@@ -121,10 +118,7 @@ Type
                       PdfEncryptionEnableCopying,
                       PdfOwnerPassword,
                       PdfEncryptionLevel,
-                      PdfFontMode,
                       PdfCompressStreamMethod,
-                      PdfPdfAMode,
-                      PdfDontStackWorldModifications,
                       PdfUserPassword,
                       PdfExcludedFonts,
                       PdfFileAttachments,
@@ -296,7 +290,7 @@ Type
                  //lLatvian,
                  //lLizhuanian,
                  //lNorwegian,
-                 lPolish,
+                 //lPolish,
                  lPortuguese,
                  //lRomanian,
                  lRussian,
@@ -323,6 +317,139 @@ Type
 
   TLLCDefineMode   = (dmVariable, dmFields);
 
+  TLlPrintOption   =(
+        Copies = LL_PRNOPT_COPIES,
+        StartPage = LL_PRNOPT_STARTPAGE,
+        Page = LL_PRNOPT_PAGE,
+        Offset = LL_PRNOPT_OFFSET,
+        Copies_Supported = LL_PRNOPT_COPIES_SUPPORTED,
+        Units = LL_PRNOPT_UNITS,
+        FirstPage = LL_PRNOPT_FIRSTPAGE,
+        LastPage = LL_PRNOPT_LASTPAGE,
+        JobPages = LL_PRNOPT_JOBPAGES,
+        PrintOrder = LL_PRNOPT_PRINTORDER,
+        PrintOrder_Printer1 = 9,
+        PrintOrder_Printer2 = 10,
+        DefaultPrinterInstalled = LL_PRNOPT_DEFPRINTERINSTALLED,
+        Dialog_DestinationMask = LL_PRNOPT_PRINTDLG_DESTMASK,
+        Dialog_Destination = LL_PRNOPT_PRINTDLG_DEST,
+        Dialog_OnlyPrinterCopies = LL_PRNOPT_PRINTDLG_ONLYPRINTERCOPIES,
+        UseMemoryMetafile = LL_PRNOPT_USEMEMORYMETAFILE,
+        PageIndex = 18
+    );
+
+  TLlOption =(
+        NewExpressions = LL_OPTION_NEWEXPRESSIONS,
+        OnlyOneTable = LL_OPTION_ONLYONETABLE,
+        TableColoring = LL_OPTION_TABLE_COLORING,
+        SuperVisor = LL_OPTION_SUPERVISOR,
+        OptionUnits = LL_OPTION_UNITS,
+        TabStops = LL_OPTION_TABSTOPS,
+        CallbackMask = LL_OPTION_CALLBACKMASK,
+        CallbackParameter = LL_OPTION_CALLBACKPARAMETER,
+        HelpAvailable = LL_OPTION_HELPAVAILABLE,
+        SortVariables = LL_OPTION_SORTVARIABLES,
+        SupportPagebreak = LL_OPTION_SUPPORTPAGEBREAK,
+        ShowPredefinedVariables = LL_OPTION_SHOWPREDEFVARS,
+        UseHostprinter = LL_OPTION_USEHOSTPRINTER,
+        ExtendedEvaluation = LL_OPTION_EXTENDEDEVALUATION,
+        TabRepresentationCode = LL_OPTION_TABREPRESENTATIONCODE,
+        Metric = LL_OPTION_METRIC,
+        AddVarsToFields = LL_OPTION_ADDVARSTOFIELDS,
+        ConvertCRLF = LL_OPTION_CONVERTCRLF,
+        Wizard_FileNew = LL_OPTION_WIZ_FILENEW,
+        ReturnRepresentationCode = LL_OPTION_RETREPRESENTATIONCODE,
+        Preview_Zoom_Percent = LL_OPTION_PRVZOOM_PERC,
+        Preview_RectLeft = LL_OPTION_PRVRECT_LEFT,
+        Preview_RectTop = LL_OPTION_PRVRECT_TOP,
+        Preview_RectWidth = LL_OPTION_PRVRECT_WIDTH,
+        Preview_RectHeight = LL_OPTION_PRVRECT_HEIGHT,
+        StorageSystem = LL_OPTION_STORAGESYSTEM,
+        CompressStorage = LL_OPTION_COMPRESSSTORAGE,
+        NoParameterCheck = LL_OPTION_NOPARAMETERCHECK,
+        NoNoTableCheck = LL_OPTION_NONOTABLECHECK,
+        DrawFooterLineOnPrint = LL_OPTION_DRAWFOOTERLINEONPRINT,
+        Preview_Zoom_Left = LL_OPTION_PRVZOOM_LEFT,
+        Preview_Zoom_Top = LL_OPTION_PRVZOOM_TOP,
+        Preview_Zoom_Width = LL_OPTION_PRVZOOM_WIDTH,
+        Preview_Zoom_Height = LL_OPTION_PRVZOOM_HEIGHT,
+        SpaceOptimization = LL_OPTION_SPACEOPTIMIZATION,
+        Realtime = LL_OPTION_REALTIME,
+        AutoMultiPage = LL_OPTION_AUTOMULTIPAGE,
+        UseBarcodeSizes = LL_OPTION_USEBARCODESIZES,
+        MaxRtfVersion = LL_OPTION_MAXRTFVERSION,
+        VarsCaseSensitive = LL_OPTION_VARSCASESENSITIVE,
+        DelayTableHeader = LL_OPTION_DELAYTABLEHEADER,
+        EmfResolution = LL_OPTION_EMFRESOLUTION,
+        SetCreationInfo = LL_OPTION_SETCREATIONINFO,
+        XlatVarnames = LL_OPTION_XLATVARNAMES,
+        TranslationFlags = LL_OPTION_TRANSLATIONFLAGS,
+        PhantomspaceRepresentationCode = LL_OPTION_PHANTOMSPACEREPRESENTATIONCODE,
+        LockNextCharRepresentationCode = LL_OPTION_LOCKNEXTCHARREPRESENTATIONCODE,
+        ExpressionSeparatorRepresentationCode = LL_OPTION_EXPRSEPREPRESENTATIONCODE,
+        OptionDefaultPrinterInstalled = LL_OPTION_DEFPRINTERINSTALLED,
+        NoFooterPagewrap = LL_OPTION_NOFOOTERPAGEWRAP,
+        ImmediateLastpage = LL_OPTION_IMMEDIATELASTPAGE,
+        LCID = LL_OPTION_LCID,
+        TextquoteRepresentationCode = LL_OPTION_TEXTQUOTEREPRESENTATIONCODE,
+        DefaultDefaultFont = LL_OPTION_DEFDEFFONT,
+        Codepage = LL_OPTION_CODEPAGE,
+        ForceFontCharset = LL_OPTION_FORCEFONTCHARSET,
+        CompressRtf = LL_OPTION_COMPRESSRTF,
+        AllowLlxExporters = LL_OPTION_ALLOW_LLX_EXPORTERS,
+        Supports_PRNOPSTR_Export = LL_OPTION_SUPPORTS_PRNOPTSTR_EXPORT,
+        DebugFlag = LL_OPTION_DEBUGFLAG,
+        SkipReturnAtEndOfRtf = LL_OPTION_SKIPRETURNATENDOFRTF,
+        InterCharSpacing = LL_OPTION_INTERCHARSPACING,
+        IncludeFontDescent = LL_OPTION_INCLUDEFONTDESCENT,
+        ResolutioncompatibleTo9x = LL_OPTION_RESOLUTIONCOMPATIBLETO9X,
+        UseChartFields = LL_OPTION_USECHARTFIELDS,
+        OpenFileDialog_NoPlacesBar = LL_OPTION_OFNDIALOG_NOPLACESBAR,
+        SketchColorDepth = LL_OPTION_SKETCH_COLORDEPTH,
+        LLXInterface = 53,
+        UIStyle = LL_OPTION_UISTYLE,
+        NoFileVersionUpgradeWarning = LL_OPTION_NOFILEVERSIONUPGRADEWARNING,
+        ScalableFontsOnly = LL_OPTION_SCALABLEFONTSONLY,
+        NoPrintJobSupervision = LL_OPTION_NOPRINTJOBSUPERVISION,
+        ProhibitUserInteraction = LL_OPTION_PROHIBIT_USERINTERACTION,
+        EscClosesPreview = LL_OPTION_ESC_CLOSES_PREVIEW,
+        IncrementalPreview = LL_OPTION_INCREMENTAL_PREVIEW,
+        NoPrinterPathCheck = 137, // LL_OPTION_NOPRINTERPATHCHECK (137)
+        CalcSumVarsOnPartialLines = LL_OPTION_CALC_SUMVARS_ON_PARTIAL_LINES,
+        NoAutoPropertyCorrection = LL_OPTION_NOAUTOPROPERTYCORRECTION,
+        DesignerPreviewParameter = LL_OPTION_DESIGNERPREVIEWPARAMETER,
+        DesignerExportParameter = LL_OPTION_DESIGNEREXPORTPARAMETER,
+        Reserved = LL_OPTION_SKETCH_COLORDEPTH,
+        DesignerPrintSingleThreaded = LL_OPTION_DESIGNERPRINT_SINGLETHREADED,
+        DrillDownParameter = 162,
+        RoundingStrategy = 163,
+        CalcSumVarsOnInvisibleLines = LL_OPTION_CALCSUMVARSONINVISIBLELINES,
+        RibbonDefaultEnabledState = 217,
+        AllowCombinedCollectingOfDataForCollectionControls = 222,
+        SuppressLoadErrorMessages = LL_OPTION_SUPPRESS_LOADERRORMESSAGES,
+        ReportParameterJobParameter = 234, //LL_OPTION_RP_REALDATAJOBPARAMETER
+        ExpandableRegionsJobParameter = 235, //LL_OPTION_EXPANDABLE_REGIONS_REALDATAJOBPARAMETER
+        InteractiveSortingJobParameter = 237, // LL_OPTION_INTERACTIVESORTING_REALDATAJOBPARAMETER
+        DataproviderThreadedness = 257, // LL_OPTION_DATAPROVIDER_THREADEDNESS
+        ScriptingEngineEnabled = 276, // LL_OPTION_SCRIPTENGINE_ENABLED
+        ScriptingEngineTimeoutMs = 277, // LL_OPTION_SCRIPTENGINE_TIMEOUTMS
+        ScriptingEngineAutoExecute = 278, // LL_OPTION_SCRIPTENGINE_AUTOEXECUTE
+        ProjectBackup = LL_OPTION_PROJECTBACKUP,
+        PrintedRecordsCount = LL_OPTION_COUNTALLPRINTEDDATA_LASTPRINT,
+        /// <summary>Customize the auto recovery dialogue by providing a combination of supported modes (combine flags of <see cref="LlAutoRecoveryOption"/>).</summary>
+        AutoRecoverySaveOptions = LL_OPTION_AUTORECOVERY_SAVEOPTIONS,
+        /// <summary>For report parameter choices from the data source, this option lets the designer show only distinct display values (instead of removing duplicates from the real values only).</summary>
+        ForceUniqueReportParameterDisplayValues = LL_OPTION_FORCE_UNIQUE_PARAMETERUISTRING,
+        /// <summary>Use flags (0x1: Designer, 0x2: Preview Window) to decide where to match the physical size on screen. Requires Win 8.1 or newer.</summary>
+        PreviewScalesRelativeToPhysicalSize = 316, // LL_OPTION_PREVIEW_SCALES_RELATIVE_TO_PHYSICAL_SIZE
+        /// <summary>Use flags (0x1: Main variable/fields window, 0x2: variable treeview in fuction wizard) to enable or disable the filter edit control. Default: all enabled.</summary>
+        TreeviewFilterVisibilityFlags = 318, // LL_OPTION_TREEVIEWFILTER_VISIBILITYFLAGS
+        /// <summary>Limits the recursion depth when searching in the variable tree when tables have cyclic relations.</summary>
+        TreeviewFilterMaximumRecursionDepth = 320,  // LL_OPTION_TREEVIEWFILTER_MAXIMUM_RECURSION_SEARCH_DEPTH
+        GetCurrentProjectType = 328, // LL_OPTION_GET_CURRENT_PROJECTTYPE   returns the project type of the currently loaded project (list/card/label) or LL_ERR_NOPROJECT
+        ImprovedTableLineAnchoring = 236, // LL_OPTION_IMPROVED_TABLELINEANCHORING
+        SaveProjectInUtf8 = 178, // LL_OPTION_SAVE_PROJECT_IN_UTF8 (178) /* BOOL, default 0 (meaning: project is saved as UNICODE if A API is not used) */
+        Printerless = 375);
 
   TEnumTranslator = class
     public
@@ -671,7 +798,7 @@ begin
     //TLlLanguage.lLatvian: Result := CMBTLANG_LATVIAN;
     //TLlLanguage.lLizhuanian: Result := CMBTLANG_LITHUANIAN;
     //TLlLanguage.lNorwegian: Result := CMBTLANG_NORWEGIAN;
-    TLlLanguage.lPolish: Result := CMBTLANG_POLISH;
+    //TLlLanguage.lPolish: Result := CMBTLANG_POLISH;
     TLlLanguage.lPortuguese: Result := CMBTLANG_PORTUGUESE;
     //TLlLanguage.lRomanian: Result := CMBTLANG_ROMANIAN;
     TLlLanguage.lRussian: Result := CMBTLANG_RUSSIAN;
