@@ -1,50 +1,18 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL27.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-10-08 02:10:17] *)
+(*  [build of 2022-01-03 11:01:41] *)
 
 unit cmbtLL27x;
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
+{$if CompilerVersion > 12}
 {$define ADOAVAILABLE}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
-{$ifndef VER125}
-{$ifndef VER130}
-{$ifndef VER135}
-{$ifndef VER140}
-{$ifndef VER150}
-{$ifndef VER160}
-{$ifndef VER170}
-{$ifndef VER180}
-{$ifndef VER185}
-{$ifndef VER190}
+{$if CompilerVersion > 19}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
 {$ifdef WIN64}
 {$A16}
@@ -704,6 +672,8 @@ const
                     (* internal *)
   LL_NTFY_COMBINATIONPRINTSTEP   = 115;
                     (* lParam = &scLlCombinationPrintStep, return 0 on OK, error code on error *)
+  LL_NTFY_LOADERROR_DATABASESTRUCTURE = 116;
+                    (* lParam = @scLlNtfyDatabaseError *)
   OBJECT_LABEL                   = 1;
                     (* old - please do not use any more *)
   OBJECT_LIST                    = 2;
@@ -1904,6 +1874,10 @@ const
   LL_VIRTUALDEVICE_SCALINGOPTION_FIXED_DPI_THRESHOLD_MIN = 72;
                     (* use any value above or equal (and below or equal to _MAX) as the resolution in DPI  *)
   LL_VIRTUALDEVICE_SCALINGOPTION_FIXED_DPI_THRESHOLD_MAX = 2400;
+  LL_OPTION_IGNORE_PROJECTSOURCE_FOR_DEVICEMATCHING = 380;
+                    (* default: false *)
+  LL_OPTION_COMPAT_KEEPCASEDIFFONLYTABLENAMES = 381;
+                    (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -4357,6 +4331,15 @@ type
 	(_hLlJob:          HLLJOB;
 	 _lpExpr:          HLLEXPR
 	): integer; stdcall;
+  pfnLlStgTestJobCmpEmbeddedStorages2= function  
+	(_hJob:            HLLTESTJOB;
+	 _pvErrors:        PVARIANT;
+	 _pvarListOfProblematicStorages:                PVARIANT
+	): integer; stdcall;
+  pfnLlStgTestJobAddResultJobs= function  
+	(_hJob:            HLLTESTJOB;
+	 _pvarListOfProblematicStorages:                PCVARIANT
+	): integer; stdcall;
 
 const
    LlJobOpen: pfnLlJobOpen = NIL;
@@ -5709,6 +5692,8 @@ const
    LlProjectFindAndReplace: pfnLlProjectFindAndReplace = NIL;
    LlExprParseQueryDelayedDefine: pfnLlExprParseQueryDelayedDefine = NIL;
    LlExprTypeMask: pfnLlExprTypeMask = NIL;
+   LlStgTestJobCmpEmbeddedStorages2: pfnLlStgTestJobCmpEmbeddedStorages2 = NIL;
+   LlStgTestJobAddResultJobs: pfnLlStgTestJobAddResultJobs = NIL;
 
 function  LL27xModuleName: String;
 function  LL27xLoad: integer;
@@ -7102,6 +7087,8 @@ begin
       @LlProjectFindAndReplace := GetProcAddress(hDLLLL27,'LlProjectFindAndReplace');
       @LlExprParseQueryDelayedDefine := GetProcAddress(hDLLLL27,'LlExprParseQueryDelayedDefine');
       @LlExprTypeMask       := GetProcAddress(hDLLLL27,'LlExprTypeMask');
+      @LlStgTestJobCmpEmbeddedStorages2 := GetProcAddress(hDLLLL27,'LlStgTestJobCmpEmbeddedStorages2');
+      @LlStgTestJobAddResultJobs := GetProcAddress(hDLLLL27,'LlStgTestJobAddResultJobs');
       end;
     end;
 end;
@@ -7727,6 +7714,8 @@ begin
       LlProjectFindAndReplace := NIL;
       LlExprParseQueryDelayedDefine := NIL;
       LlExprTypeMask := NIL;
+      LlStgTestJobCmpEmbeddedStorages2 := NIL;
+      LlStgTestJobAddResultJobs := NIL;
       end;
     end;
 end;

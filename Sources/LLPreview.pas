@@ -6,7 +6,7 @@
  File   : LLPreview.pas
  Module : LLPreview.pas
  Descr. : Implementation file for the List & Label 27 VCL-Component
- Version: 27.000
+ Version: 27.001
 ==================================================================================
 }
 
@@ -16,7 +16,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, WinApi.Windows, Vcl.Graphics, Vcl.Controls,
-  cmbtLL27x, ListLabel27, LLReport_Types, l27CommonInterfaces;
+  cmbtLL27x, ListLabel27, LLReport_Types, l27CommonInterfaces, l27FireDACInterfaces;
 
 const
   IDM_PRV_ZOOMMUL2=100;

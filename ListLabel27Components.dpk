@@ -1,6 +1,7 @@
 package ListLabel27Components;
 
 {$R *.res}
+{$R 'ListLabel27ComponentsResource.dcr'}
 {$R *.dres}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -31,9 +32,7 @@ package ListLabel27Components;
 
 requires
   vcl,
-  {$ifdef win32}
   DesignIde,
-  {$endif}
   dbrtl,
   vclimg,
   rtl,
@@ -45,16 +44,13 @@ contains
   ListLabelDataProviderInterface in 'Sources\ListLabelDataProviderInterface.pas',
   LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
   LLDataProvider in 'Sources\LLDataProvider.pas',
-  {$ifdef win32}
   LLObjectEditor in 'Sources\LLObjectEditor.pas',
-  {$endif}
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  {$ifdef win32}
   LL27Report_Reg in 'Sources\LL27Report_Reg.pas',
-  {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel27 in 'Sources\ListLabel27.pas',
+  l27FireDACInterfaces in 'Sources\l27FireDACInterfaces.pas',
   l27CommonInterfaces in 'Sources\l27CommonInterfaces.pas',
   LLPreview in 'Sources\LLPreview.pas',
   cmbtLL27x in 'Sources\cmbtLL27x.pas',

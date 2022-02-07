@@ -6,12 +6,11 @@
  File   : LL27Report_Reg.pas
  Module : List & Label 27
  Descr. : Implementation file for the List & Label 27 VCL-Component
- Version: 27.000
+ Version: 27.001
 ==================================================================================
 }
 
 unit LL27Report_Reg;
-
 {$define UNICODE}
 
 interface
@@ -50,7 +49,7 @@ procedure Register;
 begin
 
   RegisterComponentEditor(TListLabel27, TListLabel27Loader);
-  RegisterComponents('combit', [TListLabel27, TLlPreviewControl27]);
+  RegisterComponents('combit', [TListLabel27, TLlPreviewControl27, TLlDesignerObject27, TLlDesignerFunction27, TLDesignerAction27, TLlRTFControl27]);
   RegisterPropertyEditor(TypeInfo(TDetailSourceList),TListLabel27, 'DetailSources',        TDetailsSourcesPropertyEditor);
   RegisterPropertyEditor(TypeInfo(TDetailSourceList),TLLDataController, 'DetailSources',TDetailsSourcesPropertyEditor);
 

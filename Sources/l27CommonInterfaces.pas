@@ -6,20 +6,19 @@
  File   : l27CommonInterfaces.pas
  Module : List & Label 27 Interface definitions
  Descr. : Implementation file for the List & Label 27 VCL-Component
- Version: 27.000
+ Version: 27.001
 ==================================================================================
 }
 unit l27CommonInterfaces;
 
 interface
-{$WEAKPACKAGEUNIT ON} 
+{$WEAKPACKAGEUNIT ON}
 
 uses
 	windows,
     activex,
     graphics,
-    classes
-    ;
+    classes;
 
 type
  {$if CompilerVersion > 19}
@@ -46,10 +45,10 @@ type
   XChar = Char;
   {$endif}
 
-   ILlDomParent = interface
-      procedure InitDataSource(projectFile: TString);
-      procedure DeclareLlXObjectsToLL;
-      function GetJobHandle: Integer;
-   end;
+ILlDomParent = interface
+  procedure InitDataSource(projectFile: TString);
+  procedure DeclareLlXObjectsToLL;
+  function GetJobHandle: Integer;
+end;
 implementation
 end.

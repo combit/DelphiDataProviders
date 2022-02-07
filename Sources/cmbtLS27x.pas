@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS27.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-10-01 04:10:23] *)
+(*  [build of 2021-12-18 02:12:04] *)
 
 unit cmbtLS27x;
 
@@ -541,6 +541,8 @@ const
   LS_VIEWERCONTROL_GET_HAS_SELECTION = WM_USER+73;
   LS_VIEWERCONTROL_SELECTION_SELECT = WM_USER+74;
                     (* wParam = page index#, -1 for all; lParam = 0 (select only this), 1 (add to selection) *)
+  LS_VIEWERCONTROL_GET_HASUNSAVEDINPUTOBJECTS = WM_USER+75;
+                    (* reserved, internal *)
   LS_VIEWERCONTROL_NTFY_PAGELOADED = 1;
                     (* lParam = page# *)
   LS_VIEWERCONTROL_NTFY_UPDATETOOLBAR = 2;
