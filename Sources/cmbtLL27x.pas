@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL27.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2022-01-03 11:01:41] *)
+(*  [build of 2022-04-08 22:04:25] *)
 
 unit cmbtLL27x;
 
@@ -1863,7 +1863,7 @@ const
   LL_OPTION_DOM_IGNORE_EXPRESSIONERRORS = 377;
                     (* internal *)
   LL_OPTION_SUPPRESS_EMPTY_PAGES_ON_PRINT = 378;
-                    (* default: false % nyi *)
+                    (* default: false *)
   LL_OPTION_VIRTUALDEVICE_SCALINGOPTIONS = 379;
   LL_VIRTUALDEVICE_SCALINGOPTION_UNSCALED = 0;
                     (* factor 1 (dim(DC) = dim(Project)/DPI(DC))  *)
@@ -1878,6 +1878,10 @@ const
                     (* default: false *)
   LL_OPTION_COMPAT_KEEPCASEDIFFONLYTABLENAMES = 381;
                     (* default: false *)
+  LL_OPTION_COMPAT_CROSSTAB_GANTT_SUPPORT_MINHEIGHTVALUE = 382;
+                    (* default: false *)
+  LL_OPTION_RTF_SHARE_OBJECTS_THRESHOLD = 383;
+                    (* default: 100 *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -3796,6 +3800,10 @@ type
   pfnLlProjectClose      = function  
 	(_hLlJob:          HLLJOB
 	): integer; stdcall;
+  pfnLlDomGetPropertyCount= function  
+	(_hDOMObj:         HLLDOMOBJ;
+	 _pnCount:         _LPINTJAVADUMMY
+	): integer; stdcall;
   pfnLlAssociatePreviewControl= function  
 	(_hLlJob:          HLLJOB;
 	 _hWndControl:     HWND;
@@ -5405,6 +5413,7 @@ const
       LlProjectSaveCopyAsO: pfnLlProjectSaveCopyAsW = NIL;
   {$endif}
    LlProjectClose: pfnLlProjectClose = NIL;
+   LlDomGetPropertyCount: pfnLlDomGetPropertyCount = NIL;
    LlAssociatePreviewControl: pfnLlAssociatePreviewControl = NIL;
   {$ifdef UNICODE}
       LlGetErrortextO: pfnLlGetErrortextA = NIL;
@@ -6800,6 +6809,7 @@ begin
           @LlProjectSaveCopyAsO := GetProcAddress(hDLLLL27,'LlProjectSaveCopyAsW');
       {$endif}
       @LlProjectClose       := GetProcAddress(hDLLLL27,'LlProjectClose');
+      @LlDomGetPropertyCount := GetProcAddress(hDLLLL27,'LlDomGetPropertyCount');
       @LlAssociatePreviewControl := GetProcAddress(hDLLLL27,'LlAssociatePreviewControl');
       {$ifdef UNICODE}
           @LlGetErrortextO := GetProcAddress(hDLLLL27,'LlGetErrortextA');
@@ -7571,6 +7581,7 @@ begin
       LlProjectSaveCopyAs := NIL;
       LlProjectSaveCopyAsO := NIL;
       LlProjectClose := NIL;
+      LlDomGetPropertyCount := NIL;
       LlAssociatePreviewControl := NIL;
       LlGetErrortext := NIL;
       LlGetErrortextO := NIL;

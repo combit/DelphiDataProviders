@@ -16,7 +16,7 @@ interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
      Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll27x, l27CommonInterfaces, l27FireDACInterfaces, Vcl.Menus, Vcl.AxCtrls,
-     ComCtrls, Vcl.Imaging.jpeg, System.Contnrs, System.SyncObjs, LLDataProvider, LLDataSetDataProvider, System.Generics.Collections, activex, System.StrUtils;
+     ComCtrls, Vcl.Imaging.jpeg, System.Contnrs, System.SyncObjs, LLDataProvider, LLDataSetDataProvider, System.Generics.Collections, activex, System.StrUtils, System.Types;
 
 type
 

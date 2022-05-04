@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS27.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2021-12-18 02:12:04] *)
+(*  [build of 2022-02-17 02:02:09] *)
 
 unit cmbtLS27x;
 
@@ -10,47 +10,15 @@ unit cmbtLS27x;
 - define CMLS27_LINK_INDEXED to use the indexed import (faster)
 *)
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
+{$if CompilerVersion > 12}
 {$define ADOAVAILABLE}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
-{$ifndef VER90}
-{$ifndef VER100}
-{$ifndef VER110}
-{$ifndef VER120}
-{$ifndef VER125}
-{$ifndef VER130}
-{$ifndef VER135}
-{$ifndef VER140}
-{$ifndef VER150}
-{$ifndef VER160}
-{$ifndef VER170}
-{$ifndef VER180}
-{$ifndef VER185}
-{$ifndef VER190}
+{$if CompilerVersion > 19}
 {$define UNICODESTRING_AWARE}
 {$define UNICODE}
 {$define USE_UNICODE_DLL}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
-{$endif}
+{$ifend}
 
 {$ifdef WIN64}
 {$A16}
@@ -422,6 +390,7 @@ const
   LS_VIEWERCONTROL_SET_PAGE      = WM_USER+20;
                     (* wParam = page# (0..n-1) *)
   LS_VIEWERCONTROL_GET_PAGE      = WM_USER+21;
+                    (* wParam = 0: currently selected page, wParam = 1: currently viewed top page in right pane *)
   LS_VIEWERCONTROL_GET_PAGECOUNT = WM_USER+22;
   LS_VIEWERCONTROL_GET_PAGECOUNT_FAXPAGES = WM_USER+23;
   LS_VIEWERCONTROL_GET_JOB       = WM_USER+24;

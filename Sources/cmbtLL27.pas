@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL27.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2022-01-03 11:01:41] *)
+(*  [build of 2022-04-08 22:04:25] *)
 
 unit cmbtLL27;
 
@@ -1862,7 +1862,7 @@ const
   LL_OPTION_DOM_IGNORE_EXPRESSIONERRORS = 377;
                     (* internal *)
   LL_OPTION_SUPPRESS_EMPTY_PAGES_ON_PRINT = 378;
-                    (* default: false % nyi *)
+                    (* default: false *)
   LL_OPTION_VIRTUALDEVICE_SCALINGOPTIONS = 379;
   LL_VIRTUALDEVICE_SCALINGOPTION_UNSCALED = 0;
                     (* factor 1 (dim(DC) = dim(Project)/DPI(DC))  *)
@@ -1877,6 +1877,10 @@ const
                     (* default: false *)
   LL_OPTION_COMPAT_KEEPCASEDIFFONLYTABLENAMES = 381;
                     (* default: false *)
+  LL_OPTION_COMPAT_CROSSTAB_GANTT_SUPPORT_MINHEIGHTVALUE = 382;
+                    (* default: false *)
+  LL_OPTION_RTF_SHARE_OBJECTS_THRESHOLD = 383;
+                    (* default: 100 *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -5816,6 +5820,11 @@ function   LlProjectClose
 	(hLlJob:                         HLLJOB
 	): integer; stdcall;
 
+function   LlDomGetPropertyCount
+	(hDOMObj:                        HLLDOMOBJ;
+	 pnCount:                        _LPINTJAVADUMMY
+	): integer; stdcall;
+
 function   LlAssociatePreviewControl
 	(hLlJob:                         HLLJOB;
 	 hWndControl:                    HWND;
@@ -9753,6 +9762,11 @@ implementation
     function   LlProjectClose;                 external LibNameLL27DLL index 216;
    {$else}
     function   LlProjectClose;                 external LibNameLL27DLL name 'LlProjectClose';
+  {$endif}
+  {$ifdef CMLL27_LINK_INDEXED}
+    function   LlDomGetPropertyCount;          external LibNameLL27DLL index 369;
+   {$else}
+    function   LlDomGetPropertyCount;          external LibNameLL27DLL name 'LlDomGetPropertyCount';
   {$endif}
   {$ifdef CMLL27_LINK_INDEXED}
     function   LlAssociatePreviewControl;      external LibNameLL27DLL index 218;

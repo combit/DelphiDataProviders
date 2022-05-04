@@ -13,6 +13,7 @@
 unit LLPreview;
 
 interface
+{$WEAKPACKAGEUNIT ON}
 
 uses
   System.SysUtils, System.Classes, WinApi.Windows, Vcl.Graphics, Vcl.Controls,
