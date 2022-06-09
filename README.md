@@ -1,35 +1,33 @@
-# Project Description
-This project is a community effort to write TListLabelDataProvider implementations for usage with reporting tool combit List & Label. While the support for .NET has been around a long time, we're trying to build a similar ecosystem for Delphi through this project. Any help is greatly appreciated.
+# List & Label Delphi Data Providers
+This repository is a community effort to write TListLabelDataProvider implementations for usage with the **List & Label Reporting Tool**.
 
-For a fully functional free 30-day trial version and further information about reporting tool List & Label 
-please visit: https://www.combit.com/reporting-tool/
+While the support for .NET has been around a long time, we're trying to build a similar ecosystem for Delphi through this repository. Any help is greatly appreciated.
 
-# What's Available So Far
-The sources feature a new VCL component that uses the data provider interface. This enables a number of great features that were previously unavailable to Delphi developers using our "old" databound component:
+# What's Available so Far
+The sources feature a new VCL component (using FireDAC) that uses the data provider interface. This enables a number of great features that were previously unavailable to Delphi developers using our "old" (BDE) databound component:
 
-* Multiple report containers
-* Nested tables
-* Databound report parameters
-* Expandable regions in tables and crosstabs
-* Interactive sorting in table headers
+- Multiple report containers
+- Nested tables
+- Databound report parameters
+- Expandable regions in tables and crosstabs
+- Interactive sorting in table headers
+- Support of DesignerFunctions and DesignerObjects
+- Keep blocks together
 
-Samples showing how to use the component to bind to FireDAC data are also included in the full product setup or here on [GitHub](https://github.com/combit/ll-samples/tree/master/Delphi/FireDAC/Samples). You should be able to bind to Oracle, MS SQL Server, SQLite, DB2, MySQL, PostgreSQL to name just a few. 
+Samples showing how to use the component to bind to FireDAC data are also included in the full product setup or here on [GitHub](https://github.com/combit/ll-samples/tree/main/Delphi/FireDAC/Samples). You should be able to bind to Oracle, MS SQL Server, SQLite, DB2, MySQL, PostgreSQL to name just a few. 
 
-Copy the contents of this repository to "...\Program Files(x86)\combit\LL??\Samples\Delphi\FireDAC"
+Copy the contents of this repository to your List & Label installation under "..\Samples\Delphi\FireDAC".
 
-# How Can I Help?
-We're happy to receive pull requests. Fields of interest include
+# Contributions
+We're happy to receive pull requests for any improvements on this repository. Please make sure with every contribution that the component needs to be "Delphi-like".
 
-* make sure the component is "Delphi-like"
-* support DesignerFunctions and DesignerObjects
-* add additional data providers to bind to CSV, XML, JSON etc.
+Further fields of interest include:
+- Add additional data providers to bind to CSV, XML, JSON etc.
 
-# Why Bother?
-If you're using List & Label with Delphi, you'll have encountered a set of restrictions this project is aiming to remove:
+A big special thank you goes to Andreas Müller of Nord-Vision IT - his contributions to this repository were invaluable.
 
-* Multiple report containers
-* Support for FireDAC instead of BDE
-* Nested tables
-* Keep blocks together
+# About List & Label and Where to Get
+List & Label is our **Reporting Tool for Software Developers** for desktop, web and cloud applications. For further information and a fully functional free 30-day trial version please visit our [website](https://www.combit.com/reporting-tool/).
 
-A big special thank you goes to Andreas Müller of Nord-Vision IT - his contributions to this project were invaluable. Any feedback as well as additional contributions are very welcome, just contact the project's administrator.
+# Contact
+Please contact us at [github@combit.com](mailto:github@combit.com) with any additional feedback.
