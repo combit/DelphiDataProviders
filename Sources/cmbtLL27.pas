@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL27.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2022-04-08 22:04:25] *)
+(*  [build of 2022-08-01 10:08:04] *)
 
 unit cmbtLL27;
 
@@ -1881,6 +1881,8 @@ const
                     (* default: false *)
   LL_OPTION_RTF_SHARE_OBJECTS_THRESHOLD = 383;
                     (* default: 100 *)
+  LL_OPTION_COMPAT_FORCE_PRNOPT_PAGE = 385;
+                    (* internal *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
