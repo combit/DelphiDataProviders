@@ -3,14 +3,14 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : L27FireDACInterfaces.pas
- Module : List & Label 27 FireDAC Interface definitions
- Descr. : Implementation file for the List & Label 27 VCL-Component
- Version: 27.001
+ File   : L28FireDACInterfaces.pas
+ Module : List & Label 28 FireDAC Interface definitions
+ Descr. : Implementation file for the List & Label 28 VCL-Component
+ Version: 28.000
 ==================================================================================
 }
 
-unit l27FireDACInterfaces;
+unit l28FireDACInterfaces;
 
 
 interface
@@ -21,7 +21,7 @@ uses
     activex,
     graphics,
     classes
-    ,cmbtll27x;
+    ,cmbtll28x;
 
 
 const
@@ -90,8 +90,8 @@ ILlXObject = interface(IUnknown)
   function GetDescr(var pbsDescr: OLEString):HResult;  stdcall;  // get description
   function GetIcon(var phIcon: HIcon):HResult;  stdcall; // get icon (must be released by LLX Object)
   function IsProjectSupported(const nProjType: integer; var pbSupported: boolean): HResult; stdcall;  // is project type (LL_PROJECT_xxx) supported
-  function SetOption (const nOption, nValue: integer): HResult;  stdcall;
-  function GetOption (const nOption: integer; var pnValue: integer): HResult; stdcall;
+  function SetOption (const nOption: integer; nValue: lParam): HResult;  stdcall;
+  function GetOption (const nOption: integer; var pnValue: lParam): HResult; stdcall;
   function SetOptionString(const sOption: OLEString; sValue:OLEString): HResult; stdcall;
   function GetOptionString(const sOption: OLEString; var psValue:OLEString): HResult; stdcall;
   function SetParameters(pIStream: IStream): HResult; stdcall;
@@ -141,8 +141,8 @@ end;
 
 ILlXFunction=Interface(IUnknown)
   function SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;  stdcall;
-  function SetOption (const nOption, nValue: integer): HResult;  stdcall;
-  function GetOption (const nOption: integer; var pnValue: integer): HResult; stdcall;
+  function SetOption (const nOption: integer; nValue: lParam): HResult;  stdcall;
+  function GetOption (const nOption: integer; var pnValue: lParam): HResult; stdcall;
   function GetName(var pbsName: OLEString): HResult;  stdcall;   // get name.
   function GetDescr(var pbsDescr: OLEString):HResult;  stdcall;  // get description
   function GetGroups(var pbsDescr: OLEString):HResult;  stdcall;
@@ -214,7 +214,7 @@ end;
 
 implementation
 
-uses ListLabel27;
+uses ListLabel28;
 constructor LlXInterface.Create(ObjList: TList; FctList: TList);
 begin
     inherited create;
@@ -347,7 +347,7 @@ end;
 
 function LlXEnumObjects.Next(nCount: cardinal; var Obj: pILlXObject; pnDone: PLongint): HResult;
 var
-    pObject: TLlDesignerObject27;
+    pObject: TLlDesignerObject28;
     pObj: ILlXObject;
 begin
     Obj[0] := NIL;
@@ -355,7 +355,7 @@ begin
     pnDone^:=0;
     if m_nIndex <= FObjList.Count-1 then
     	begin
-          pObject := TLlDesignerObject27(FObjList[m_nIndex]);
+          pObject := TLlDesignerObject28(FObjList[m_nIndex]);
           if FAILED(pObject.QueryInterface(IID_LLX_IOBJECT,pObj)) then
               begin
               pObject.Free;
@@ -445,7 +445,7 @@ end;
 
 function LlXEnumFunctions.Next(nCount: cardinal; var Obj: pILlXFunction; pnDone: PLongint): HResult;
 var
-    pFunction: TLlDesignerFunction27;
+    pFunction: TLlDesignerFunction28;
     pObj: ILlXFunction;
 begin
     Obj[0] := NIL;
@@ -453,7 +453,7 @@ begin
     pnDone^:=0;
     if m_nIndex <= FFctList.Count-1 then
     	begin
-          pFunction := TLlDesignerFunction27(FFctList[m_nIndex]);
+          pFunction := TLlDesignerFunction28(FFctList[m_nIndex]);
           if FAILED(pFunction.QueryInterface(IID_LLX_IFUNCTION,pObj)) then
               begin
               pFunction.Free;

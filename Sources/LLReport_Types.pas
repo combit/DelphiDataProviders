@@ -5,8 +5,8 @@
 ----------------------------------------------------------------------------------
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
- Descr. : Implementation file for the List & Label 27 VCL-Component
- Version: 27.000
+ Descr. : Implementation file for the List & Label 28 VCL-Component
+ Version: 28.000
 ==================================================================================
 }
 
@@ -15,7 +15,7 @@ unit LLReport_Types;
 interface
 {$WEAKPACKAGEUNIT ON}
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll27x, Dialogs, System.UITypes;
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll28x, Dialogs, System.UITypes;
 
 Type
 
@@ -116,6 +116,8 @@ Type
                       PdfEncryptionEnablePrinting,
                       PdfEncryptionEnableChanging,
                       PdfEncryptionEnableCopying,
+					  PdfEncryptionEnableFillingForms,
+					  PdfEncryptionEnableAnnotating,
                       PdfOwnerPassword,
                       PdfEncryptionLevel,
                       PdfCompressStreamMethod,
@@ -449,7 +451,8 @@ Type
         GetCurrentProjectType = 328, // LL_OPTION_GET_CURRENT_PROJECTTYPE   returns the project type of the currently loaded project (list/card/label) or LL_ERR_NOPROJECT
         ImprovedTableLineAnchoring = 236, // LL_OPTION_IMPROVED_TABLELINEANCHORING
         SaveProjectInUtf8 = 178, // LL_OPTION_SAVE_PROJECT_IN_UTF8 (178) /* BOOL, default 0 (meaning: project is saved as UNICODE if A API is not used) */
-        Printerless = 375);
+        Printerless = 375,
+		UseSimpleWindowsPenStyleFrameDrawing = 389); // LL_OPTION_USESIMPLEWINDOWSPENSTYLE_FRAMEDRAWING (389) /* default: false */
 
   TEnumTranslator = class
     public

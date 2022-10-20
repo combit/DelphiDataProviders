@@ -1,7 +1,7 @@
-package ListLabel27Components;
+package ListLabel28Components;
 
 {$R *.res}
-{$R 'ListLabel27ComponentsResource.dcr'}
+{$R 'ListLabel28ComponentsResource.dcr'}
 {$R *.dres}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -27,7 +27,7 @@ package ListLabel27Components;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'combit List & Label 27 Components'}
+{$DESCRIPTION 'combit List & Label 28 Components'}
 {$IMPLICITBUILD ON}
 
 requires
@@ -47,14 +47,14 @@ contains
   LLObjectEditor in 'Sources\LLObjectEditor.pas',
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  LL27Report_Reg in 'Sources\LL27Report_Reg.pas',
+  LL28Report_Reg in 'Sources\LL28Report_Reg.pas',
   LLReport_Types in 'Sources\LLReport_Types.pas',
-  ListLabel27 in 'Sources\ListLabel27.pas',
-  l27FireDACInterfaces in 'Sources\l27FireDACInterfaces.pas',
-  l27CommonInterfaces in 'Sources\l27CommonInterfaces.pas',
+  ListLabel28 in 'Sources\ListLabel28.pas',
+  l28FireDACInterfaces in 'Sources\l28FireDACInterfaces.pas',
+  l28CommonInterfaces in 'Sources\l28CommonInterfaces.pas',
   LLPreview in 'Sources\LLPreview.pas',
-  cmbtLL27x in 'Sources\cmbtLL27x.pas',
-  cmbtLS27x in 'Sources\cmbtLS27x.pas';
+  cmbtLL28x in 'Sources\cmbtLL28x.pas',
+  cmbtLS28x in 'Sources\cmbtLS28x.pas';
 
 end.
 

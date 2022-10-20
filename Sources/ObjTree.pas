@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : ObjTree.pas
- Module : List & Label 27
- Descr. : Implementation file for the List & Label 27 VCL-Component
- Version: 27.000
+ Module : List & Label 28
+ Descr. : Implementation file for the List & Label 28 VCL-Component
+ Version: 28.000
 ==================================================================================
 }
 

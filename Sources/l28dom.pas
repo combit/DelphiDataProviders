@@ -3,14 +3,14 @@
   Copyright © combit GmbH, Konstanz
 
   ----------------------------------------------------------------------------------
-  File   : l27dom.pas
-  Module : List & Label 27 DOM
-  Descr. : Implementation file for the List & Label 27 DOM
-  Version: 27.000
+  File   : l28dom.pas
+  Module : List & Label 28 DOM
+  Descr. : Implementation file for the List & Label 28 DOM
+  Version: 28.000
   ==================================================================================
 }
 
-unit l27dom;
+unit l28dom;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
@@ -26,7 +26,7 @@ unit l27dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l27CommonInterfaces,cmbtll27
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l28CommonInterfaces,cmbtll28
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -31475,7 +31475,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl27.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl28.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -31491,7 +31491,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl27.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl28.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;
