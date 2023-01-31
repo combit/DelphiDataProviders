@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS28.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2022-08-29 20:08:42] *)
+(*  [build of 2023-01-09 20:01:16] *)
 
 unit cmbtLS28x;
 
@@ -160,6 +160,8 @@ const
                     (* count of printers actually used (compares DEVMODEs etc) *)
   LS_OPTION_JOB_GTC_COUNT        = 215;
                     (* returns number of GTC pages, use this for each job, not with bOneJobTranslation *)
+  LS_OPTION_PRINT_OPTIMIZE_PRINTERS = 216;
+                    (* need to be in job 0, r/o *)
   LS_OPTION_PAGENUMBER           = 0;
                     (* page number of current page *)
   LS_OPTION_COPIES               = 1;
@@ -582,6 +584,7 @@ const
   LS_DIO_CHECKBOX                = 0;
   LS_DIO_PUSHBUTTON              = 1;
   LS_DIO_FLAG_READONLY           = $0001;
+  LS_DIO_FLAG_SUPPRESS_THEMING   = $0002;
   LS_GOTFG_FLAG_REORDER          = $00000001;
   LSMAILVIEW_HTMLRIGHT_ALLOW_NONE = $0000;
   LSMAILVIEW_HTMLRIGHT_ALLOW_NEW_WINDOW = $0001;

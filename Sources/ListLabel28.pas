@@ -6,7 +6,7 @@
  File   : ListLabel28.pas
  Module : List & Label 28
  Descr. : Implementation file for the List & Label 28 VCL-Component
- Version: 28.000
+ Version: 28.001
 ==================================================================================
 }
 
@@ -359,7 +359,7 @@ TPrintJobInfoEvent = procedure(Sender: TObject; LlJobID: HLLJOB; DeviceName: TSt
 TProjectLoadedEvent = procedure(Sender: TObject) of object;
 TProjectEvent = procedure(Sender: TObject; IsDesignerPreview: boolean; IsPreDraw: boolean; Canvas: TCanvas; Rect: TRect) of object;
 TObjectEvent = procedure(Sender: TObject; ObjectName: TString;
-   ObjectType: TObjectType; IsPreDraw: boolean; Canvas: TCanvas; Rect: TRect; var EventResult: integer) of object;
+   ObjectType: TObjectType; IsPreDraw: boolean; Canvas: TCanvas; Rect: TRect; var EventResult: NativeInt) of object;
 TPageEvent = procedure(Sender: TObject; IsDesignerPreview: boolean;
   IsPreDraw: boolean; var Canvas: TCanvas; Rect: TRect) of object;
 TAutoNotifyProgress = procedure(Sender: TObject; Progress: integer) of object;
@@ -533,7 +533,7 @@ Private
   procedure SetUnits(const Value: TLlUnits);
   procedure SetVarCaseSensitive(const Value: Boolean);
   procedure SetNoPrintJobSupervision(const Value: Boolean);
-
+  procedure OnDrillDownTerminating(Sender: TObject);
 public
 
   Constructor Create(AOwner: TComponent); Override;
@@ -564,6 +564,7 @@ public
 
   Property ShowErrors: Boolean read FShowErrors write SetShowErrors default true;
   Property NoPrintJobSupervision: Boolean read FNoPrintJobSupervision write SetNoPrintJobSupervision Default false;
+  Property Core: LlCore read GetCore;  
   // ILlDomParent
   procedure InitDataSource(projectFile: TString);
   procedure DeclareLlXObjectsToLL;
@@ -598,7 +599,6 @@ published
   Property TableColoring: TLlTableColoring read FTableColoring write SetTableColoring Default TLlTableColoring.tcListLabel;
   Property Language: TLlLanguage read FLanguage write SetLanguage Default TLlLanguage.lDefault;
   Property DataController: TLLDataController read FDataController Write FDataController;
-  Property Core: LlCore read GetCore;
   Property ExportOptions: TListLabelExportOptions read FExportOptions;
   Property DesignerFunctions: TDesignerFunctions read FLlXFunctionList;
   Property DesignerActions: TDesignerActions read FLlXActionList;
@@ -706,7 +706,7 @@ public
 end;
 
 
-function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt; export; stdcall;
+function NtfyCallback(nMsg: Cardinal; lParam: NativeUInt; lUserParam: NativeInt): NativeInt; export; stdcall;
 
 Type
   TJulianDate = LongInt;
@@ -728,7 +728,7 @@ uses ListLabelDataProviderInterface, LLThreads, UITypes;
 Const
   JulZero = 2415018; { 30.12.1899 im Julianischen Format ! }
 
-function NtfyCallback(nMsg: Integer; lParam: LongInt; lUserParam: LongInt): LongInt;
+function NtfyCallback(nMsg: Cardinal; lParam: NativeUInt; lUserParam: NativeInt): NativeInt;
 var
   lResult: NativeInt;
 begin
@@ -975,24 +975,25 @@ Begin
             FDrillDownThread := TDrillDownThread.Create(true);
             With TDrillDownThread(FDrillDownThread) do
             Begin
-          		 PrintInstance   := Self;
-       			   FreeOnTerminate := true;
-      			   UserParam       := param._nUserParameter;
-      			   ParentTableName := param._pszTableID;
-          	   RelationName    := param._pszRelationID;
-      			   ChildTableName  := param._pszSubreportTableID;
-      			   ParentKey       := param._pszKeyField;
-      			   ChildKey        := param._pszSubreportKeyField;
-			         KeyValue        := param._pszKeyValue;
-      			   ProjectFileName := param._pszProjectFileName;
-			         PreviewFileName := param._pszPreviewFileName;
-      			   TooltipText     := param._pszTooltipText;
-			         TabText         := param._pszTabText;
-			         WindowHandle    := param._hWnd;
-       			   JobID           := param._nID;
-      			   AttachInfo      := param._hAttachInfo;
-    		    	 FDrillDownThread.Start();
-               result:=FDrillDownJobId;
+				PrintInstance   := Self;
+				FreeOnTerminate := true;
+				UserParam       := param._nUserParameter;
+				ParentTableName := param._pszTableID;
+				RelationName    := param._pszRelationID;
+				ChildTableName  := param._pszSubreportTableID;
+				ParentKey       := param._pszKeyField;
+				ChildKey        := param._pszSubreportKeyField;
+				KeyValue        := param._pszKeyValue;
+				ProjectFileName := param._pszProjectFileName;
+				PreviewFileName := param._pszPreviewFileName;
+				TooltipText     := param._pszTooltipText;
+				TabText         := param._pszTabText;
+				WindowHandle    := param._hWnd;
+				JobID           := param._nID;
+				AttachInfo      := param._hAttachInfo;
+				OnTerminate		:= OnDrillDownTerminating;
+				FDrillDownThread.Start();
+				result:=FDrillDownJobId;
             end;
           finally
             Release;
@@ -1016,6 +1017,11 @@ Begin
         end;
    end;
 End;
+
+procedure TListLabel28.OnDrillDownTerminating(Sender: TObject);
+begin
+  FDrillDownThread := nil;
+end;
 
 procedure TListLabel28.NotifyProgressCallback(lParam: Integer);
 begin
@@ -1076,7 +1082,7 @@ procedure TListLabel28.ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt)
 var
   Canvas: TCanvas;
   Rect: TRect;
-  iResult: integer;
+  iResult: NativeInt;
 begin
   iResult := 0;
   if Assigned(FOnObjectCallback) then
@@ -1497,7 +1503,7 @@ begin
     StrDispose(tmp);
 
     lpfnNtfyProc := TFarProc(@NtfyCallback);
-    LlSetOption(JobHandle, LL_OPTION_CALLBACKPARAMETER, Integer(self));
+    LlSetOption(JobHandle, LL_OPTION_CALLBACKPARAMETER, NativeInt(self));
     LlSetOption(JobHandle, LL_OPTION_CALLBACKMASK, LL_CB_PAGE or LL_CB_OBJECT or LL_CB_PROJECT );
     LlSetOption(JobHandle, LL_OPTION_NOPRINTJOBSUPERVISION, 0);
     LlSetNotificationCallback(JobHandle, lpfnNtfyProc);

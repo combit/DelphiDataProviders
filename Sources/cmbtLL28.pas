@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL28.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2022-10-07 20:10:48] *)
+(*  [build of 2023-01-18 09:01:37] *)
 
 unit cmbtLL28;
 
@@ -999,6 +999,8 @@ const
                     (* internal *)
   LL_PRINT_REMOVE_UNUSED_VARS    = $00008000;
                     (* optimization flag *)
+  LL_PRINT_OPTIMIZE_PRINTERS_IN_PRV_PRINT = $00040000;
+                    (* optimization flag *)
   LL_BOXTYPE_BOXTYPEMASK         = $000000ff;
   LL_BOXTYPE_NONE                = $000000ff;
   LL_BOXTYPE_FLAG_ALLOWSUSPEND   = $40000000;
@@ -1158,7 +1160,7 @@ const
   LL_OPTION_LANGUAGE             = 52;
                     (* returns current language (r/o) *)
   LL_OPTION_PHANTOMSPACEREPRESENTATIONCODE = 54;
-                    (* default: LL_CHAR_PHANTOMSPACE *)
+                    (* default: LL_CHAR_PHANTOMSPA *)
   LL_OPTION_LOCKNEXTCHARREPRESENTATIONCODE = 55;
                     (* default: LL_CHAR_LOCK *)
   LL_OPTION_EXPRSEPREPRESENTATIONCODE = 56;
@@ -1176,7 +1178,7 @@ const
   LL_OPTION_TEXTQUOTEREPRESENTATIONCODE = 66;
                     (* default: 1 *)
   LL_OPTION_SCALABLEFONTSONLY    = 67;
-                    (* default: true *)
+                    (* default: 1, 0 = all fonts, 2 = only TRUETYPE fonts (ignoring that the device may have downloadable truetype fonts), all others: all but raster fonts *)
   LL_OPTION_NOTIFICATIONMESSAGEHWND = 68;
                     (* default: NULL (parent window handle) *)
   LL_OPTION_DEFDEFFONT           = 69;
@@ -1891,6 +1893,20 @@ const
                     (* default: false *)
   LL_OPTION_DISABLE_GDIPLUS_PATHS_IN_EMFDRAWINGS = 390;
                     (* default: false *)
+  LL_OPTION_KEEP_EXPORTER_CONTROL_FILES_IN_MEMORY = 391;
+                    (* default: false *)
+  LL_OPTION_ALLOW_EMBEDDING_OF_PICTURES = 392;
+                    (* default: true *)
+  LL_OPTION_COMPAT_ALLOW_NEGATIVE_DISTANCE_BEFORE = 393;
+                    (* default: false *)
+  LL_OPTION_COMPAT_NULLSAFE_PRE_26_003 = 394;
+                    (* default: false *)
+  LL_OPTION_DEFAULT_DATE_FORMAT_INCLUDES_TIME = 395;
+                    (* default: false *)
+  LL_OPTION_SVG_TO_DIB_RESOLUTION = 396;
+                    (* default: 150 DPI. 0 to fit to printer resolution *)
+  LL_OPTION_SVG_TO_DIB_MAX_SIZE  = 397;
+                    (* max area in pixel, default: x * y < 5 MB *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -6832,6 +6848,28 @@ function   LlStgTestJobAddResultJobs
 	 const pvarListOfProblematicStorages:                               PCVARIANT
 	): integer; stdcall;
 
+function   LlStgCreateFrom
+	(hJob:                           HLLJOB;
+	 nLCID:                          cardinal;
+	 hWndForLengthyOpDialog:         HWND;
+	 pszFile:                        pWCHAR;
+	 pszResultingFileNameBuffer:     pWCHAR;
+	 nResultingFileNameBufferSize:   cardinal;
+	 nOptions:                       cardinal
+	): integer; stdcall;
+
+function   LlRemoveIdentifier
+	(hLlJob:                         HLLJOB;
+	 pszVarName:                     pWCHAR
+	): integer; stdcall;
+
+function   LlExprParseEx
+	(hLlJob:                         HLLJOB;
+	 lpExprText:                     pWCHAR;
+	 nParaTypes:                     cardinal;
+	 bIncludeFields:                 longbool
+	): HLLEXPR; stdcall;
+
 
 implementation
 
@@ -10569,6 +10607,21 @@ implementation
     function   LlStgTestJobAddResultJobs;      external LibNameLL28DLL index 349;
    {$else}
     function   LlStgTestJobAddResultJobs;      external LibNameLL28DLL name 'LlStgTestJobAddResultJobs';
+  {$endif}
+  {$ifdef CMLL28_LINK_INDEXED}
+    function   LlStgCreateFrom;                external LibNameLL28DLL index 391;
+   {$else}
+    function   LlStgCreateFrom;                external LibNameLL28DLL name 'LlStgCreateFrom';
+  {$endif}
+  {$ifdef CMLL28_LINK_INDEXED}
+    function   LlRemoveIdentifier;             external LibNameLL28DLL index 392;
+   {$else}
+    function   LlRemoveIdentifier;             external LibNameLL28DLL name 'LlRemoveIdentifier';
+  {$endif}
+  {$ifdef CMLL28_LINK_INDEXED}
+    function   LlExprParseEx;                  external LibNameLL28DLL index 393;
+   {$else}
+    function   LlExprParseEx;                  external LibNameLL28DLL name 'LlExprParseEx';
   {$endif}
 
 begin

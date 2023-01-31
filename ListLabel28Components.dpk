@@ -32,7 +32,9 @@ package ListLabel28Components;
 
 requires
   vcl,
+  {$ifdef win32}
   DesignIde,
+  {$endif}
   dbrtl,
   vclimg,
   rtl,
@@ -44,10 +46,14 @@ contains
   ListLabelDataProviderInterface in 'Sources\ListLabelDataProviderInterface.pas',
   LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
   LLDataProvider in 'Sources\LLDataProvider.pas',
-  LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  {$ifdef win32}
+   LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  {$endif}
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  LL28Report_Reg in 'Sources\LL28Report_Reg.pas',
+  {$ifdef win32}
+   LL28Report_Reg in 'Sources\LL28Report_Reg.pas',
+  {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel28 in 'Sources\ListLabel28.pas',
   l28FireDACInterfaces in 'Sources\l28FireDACInterfaces.pas',
