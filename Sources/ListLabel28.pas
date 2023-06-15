@@ -6,7 +6,7 @@
  File   : ListLabel28.pas
  Module : List & Label 28
  Descr. : Implementation file for the List & Label 28 VCL-Component
- Version: 28.001
+ Version: 28.002
 ==================================================================================
 }
 
@@ -658,6 +658,11 @@ end;
  {$else}
  function LlGetPrinterFromPrinterFile(ProjectType: Cardinal; ProjectName: TString; PrinterIndex: integer; var Printer: TString; var DevMode: _PDEVMODEA): Integer;
  {$endif}
+ function LlPrintSetProjectParameter(ParamName, ParamValue: TString; Flag: Longint): integer;
+ function LlPrintGetProjectParameter(ParamName: TString; Evaluated: Boolean; var ParamValue: TString; var Flag: _LPUINT): integer;
+ function LlGetDefaultProjectParameter(ParamName: TString; var ParamValue: TString; var Flag: _LPUINT): integer;
+ function LlGetProjectParameter(ProjectName: TString; ParamName: TString; var ParamValue: TString): integer;
+ function LlSetDefaultProjectParameter(ParamName, ParamValue: TString; Flag: Longint): integer;
 end;
 
 
@@ -2834,6 +2839,88 @@ begin
   PrinterPort := TString(BufPort);
   FreeMem(BufPrinter);
   FreeMem(BufPort);
+end;
+
+function LlCore.LlPrintSetProjectParameter(ParamName, ParamValue: TString; Flag: Longint):integer;
+begin
+  Result := cmbTLl28x.LlPrintSetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), PTChar(ParamValue), Flag);
+end;
+
+function LlCore.LlPrintGetProjectParameter(ParamName: TString; Evaluated: Boolean; var ParamValue: TString; var Flag: _LPUINT): integer;
+var
+  Buffer: PTChar;
+  length: integer;
+begin
+  length := cmbTLl28x.LlPrintGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), Evaluated, nil, 0, nil);
+  if length>0 then
+  begin
+    GetMem(Buffer, length * sizeof(TChar));
+    Buffer^ := #0;
+    Result := cmbTLl28x.LlPrintGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), Evaluated, Buffer, length, nil);
+    ParamValue := TString(Buffer);
+    FreeMem(Buffer);
+  end
+  else
+  begin
+    Result:=length;
+    ParamValue:='';
+  end;
+end;
+
+function LlCore.LlGetProjectParameter(ProjectName: TString; ParamName: TString; var ParamValue: TString): integer;
+var
+  Buffer: PTChar;
+  length: integer;
+begin
+  length := cmbTLl28x.LlGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ProjectName), PTChar(ParamName), nil, 0);
+  if length>0 then
+  begin
+    GetMem(Buffer, length * sizeof(TChar));
+    Buffer^ := #0;
+    Result := cmbTLl28x.LlGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ProjectName), PTChar(ParamName), Buffer, length);
+    ParamValue := TString(Buffer);
+    FreeMem(Buffer);
+  end
+  else
+  begin
+    Result:=length;
+    ParamValue:='';
+  end;
+end;
+
+function LlCore.LlGetDefaultProjectParameter(ParamName: TString; var ParamValue: TString; var Flag: _LPUINT): integer;
+var
+  Buffer: PTChar;
+  length: integer;
+  pParamName: PTChar;
+begin
+  if ParamName<>'' then
+  begin
+    pParamName := PTChar(ParamName);
+  end
+  else
+  begin
+    pParamName := nil;
+  end;
+  length := cmbTLl28x.LlGetDefaultProjectParameter(fParentObject.CurrentJobHandle, pParamName, nil, 0, nil);
+  if length>0 then
+  begin
+    GetMem(Buffer, length * sizeof(TChar));
+    Buffer^ := #0;
+    Result := cmbTLl28x.LlGetDefaultProjectParameter(fParentObject.CurrentJobHandle, pParamName, Buffer, length, _LPUINT(@Flag));
+    ParamValue := TString(Buffer);
+    FreeMem(Buffer);
+  end
+  else
+  begin
+    Result:=length;
+    ParamValue:='';
+  end;
+end;
+
+function LlCore.LlSetDefaultProjectParameter(ParamName, ParamValue: TString; Flag: Longint): integer;
+begin
+  Result := cmbTLl28x.LlSetDefaultProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), PTChar(ParamValue), Flag)
 end;
 
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }

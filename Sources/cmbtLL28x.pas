@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL28.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2023-01-18 09:01:37] *)
+(*  [build of 2023-06-07 09:06:13] *)
 
 unit cmbtLL28x;
 
@@ -1857,6 +1857,7 @@ const
                     (* internal *)
   LL_WEBDESIGNER_STATEFLAGS_ACTIVE = $1;
   LL_WEBDESIGNER_STATEFLAGS_PRINTING = $2;
+  LL_WEBDESIGNER_STATEFLAGS_SAVE_REBUILDDBSTRUCT = $4;
   LL_WEBDESIGNER_STATEFLAGS_INTERNAL_MASK = $ffff0000;
   LL_WEBDESIGNER_STATEFLAGS_INTERNAL_TOCIDXATROOT = $10000;
   LL_OPTION_DOM_IGNORE_EXPRESSIONERRORS = 377;
@@ -1908,6 +1909,10 @@ const
                     (* default: 150 DPI. 0 to fit to printer resolution *)
   LL_OPTION_SVG_TO_DIB_MAX_SIZE  = 397;
                     (* max area in pixel, default: x * y < 5 MB *)
+  LL_OPTION_TRIM_ALSO_EXTENDEDSPACECHARS = 398;
+                    (* default: false *)
+  LL_OPTION_HIDE_EXTENDED_PRINTMODES = 399;
+                    (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
