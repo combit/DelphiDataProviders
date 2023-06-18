@@ -19364,7 +19364,7 @@ begin
   end
   else
   begin
-    baseObj := GetObject('Columns');
+    baseObj := GetObject('PageBreakOptions');
     fBreakBefore := TLlDOMPropertyPageBreakOptions.Create(baseObj);
     baseObj.Free;
     result := fBreakBefore;
