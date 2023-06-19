@@ -26,7 +26,7 @@ unit l28dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l28CommonInterfaces,cmbtll28
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l28CommonInterfaces,cmbtll28x
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -31475,7 +31475,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl28.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl28x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -31491,7 +31491,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl28.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl28x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;
