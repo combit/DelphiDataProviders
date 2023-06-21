@@ -14009,12 +14009,12 @@ end;
 
 function  TLlDOMPropertyDataLinesOptions.GetKeepTogetherDataLine;
 begin
-  result := GetProperty('KeepTogetherDataLine');
+  result := GetProperty('KeepTogether.DataLine');
 end;
 
 procedure TLlDOMPropertyDataLinesOptions.SetKeepTogetherDataLine(const value: TString);
 begin
-  SetProperty('KeepTogetherDataLine', value);
+  SetProperty('KeepTogether.DataLine', value);
 end;
 { TLlDOMPropertyDataLinesOptionsStaticTable }
 
