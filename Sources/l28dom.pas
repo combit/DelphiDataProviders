@@ -6099,6 +6099,20 @@ end;
     constructor Create(list: TLlDOMTableLineFieldList); overload;
   end;
 
+  TLlDOMTableFieldTable = class(TLlDOMTableField)
+
+  private
+    fSubItems: TLlDOMSubItemCoreList;
+    function GetReservedMinHeight: string;
+    function GetSubItems: TLlDOMSubItemCoreList;
+    procedure SetReservedMinHeight(const Value: string);
+  public
+    constructor Create(list: TLlDOMTableLineFieldList);
+    destructor Destroy; override;
+    property ReservedMinHeight: string read GetReservedMinHeight write SetReservedMinHeight;
+    property SubItems: TLlDOMSubItemCoreList read GetSubItems;
+  end;
+
   TLlDOMTableInputFieldBase = class(TLlDOMTableField)
   private
     fConditionalFormatters: TLlDOMConditionalFormatterItemList;
@@ -31494,6 +31508,34 @@ begin
   cmbTLl28x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
+end;
+
+constructor TLlDOMTableFieldTable.Create(list: TLlDOMTableLineFieldList);
+begin
+  inherited Create(list, 'SubTableList', list.Count);
+end;
+
+destructor TLlDOMTableFieldTable.Destroy;
+begin
+  fSubItems.Free;
+  inherited;
+end;
+
+function TLlDOMTableFieldTable.GetReservedMinHeight: string;
+begin
+  Result := GetProperty('ReservedMinHeight');
+end;
+
+function TLlDOMTableFieldTable.GetSubItems: TLlDOMSubItemCoreList;
+begin
+  if fSubItems = nil then
+    fSubItems := TLlDOMSubItemCoreList.Create(GetObject('SubItems'));
+  result := fSubItems;
+end;
+
+procedure TLlDOMTableFieldTable.SetReservedMinHeight(const Value: string);
+begin
+  SetProperty('ReservedMinHeight', Value);
 end;
 
 
