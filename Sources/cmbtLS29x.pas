@@ -1,13 +1,13 @@
-(* Pascal/Delphi runtime linkage constants and function definitions for LS28.DLL *)
+(* Pascal/Delphi runtime linkage constants and function definitions for LS29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2023-01-09 20:01:16] *)
+(*  [build of 2023-09-18 12:09:59] *)
 
-unit cmbtLS28x;
+unit cmbtLS29x;
 
 (* --- remarks: -----------------------------------------------------
 - define USE_UNICODE_DLL to use the Unicode version of the DLL
 - define UNICODE to use the Unicode functions by default
-- define CMLS28_LINK_INDEXED to use the indexed import (faster)
+- define CMLS29_LINK_INDEXED to use the indexed import (faster)
 *)
 
 {$if CompilerVersion > 12}
@@ -1365,344 +1365,344 @@ const
    LlStgsysGetPageData: pfnLlStgsysGetPageData = NIL;
    LlStgsysSetUILanguage: pfnLlStgsysSetUILanguage = NIL;
 
-function  LS28xModuleName: String;
-function  LS28xLoad: integer;
-procedure LS28xUnload;
+function  LS29xModuleName: String;
+function  LS29xLoad: integer;
+procedure LS29xUnload;
 
 implementation
 
-var hDLLLS28: HMODULE = 0;
-var nDLLLS28Usage: longint = 0;
+var hDLLLS29: HMODULE = 0;
+var nDLLLS29Usage: longint = 0;
 
 {$ifdef WIN64}
-  const LibNameLS28DLL = 'CXLS28.DLL';
+  const LibNameLS29DLL = 'CXLS29.DLL';
  {$else}
-  const LibNameLS28DLL = 'CMLS28.DLL';
+  const LibNameLS29DLL = 'CMLS29.DLL';
 {$endif}
 
-function  LS28xModuleName: String;
+function  LS29xModuleName: String;
 begin
-  Result := LibNameLS28DLL;
+  Result := LibNameLS29DLL;
 end;
 
-function  LS28xLoad: integer;
+function  LS29xLoad: integer;
 var nError: integer;
 begin
   Result := 0;
-  inc(nDLLLS28Usage);
-  if (nDLLLS28Usage = 1) then
+  inc(nDLLLS29Usage);
+  if (nDLLLS29Usage = 1) then
     begin
     nError := SetErrorMode($8000); { SEM_NOOPENFILEERRORBOX }
     {$ifdef UNICODESTRING_AWARE}
-      hDLLLS28 := LoadLibrary(pWideChar(LS28xModuleName()));
+      hDLLLS29 := LoadLibrary(pWideChar(LS29xModuleName()));
      {$else}
-      hDLLLS28 := LoadLibrary(pChar(LS28xModuleName()));
+      hDLLLS29 := LoadLibrary(pChar(LS29xModuleName()));
     {$endif}
     SetErrorMode(nError);
 
-    if (hDLLLS28 = 0) then
+    if (hDLLLS29 = 0) then
       begin
       Result := -1;
-      dec(nDLLLS28Usage);
+      dec(nDLLLS29Usage);
       end
      else
       begin
       {$ifdef UNICODE}
-          @LlStgsysStorageOpenO := GetProcAddress(hDLLLS28,'LlStgsysStorageOpenA');
+          @LlStgsysStorageOpenO := GetProcAddress(hDLLLS29,'LlStgsysStorageOpenA');
         {$else}
-          @LlStgsysStorageOpen := GetProcAddress(hDLLLS28,'LlStgsysStorageOpenA');
+          @LlStgsysStorageOpen := GetProcAddress(hDLLLS29,'LlStgsysStorageOpenA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysStorageOpen := GetProcAddress(hDLLLS28,'LlStgsysStorageOpenW');
+          @LlStgsysStorageOpen := GetProcAddress(hDLLLS29,'LlStgsysStorageOpenW');
         {$else}
-          @LlStgsysStorageOpenO := GetProcAddress(hDLLLS28,'LlStgsysStorageOpenW');
+          @LlStgsysStorageOpenO := GetProcAddress(hDLLLS29,'LlStgsysStorageOpenW');
       {$endif}
-      @LlStgsysStorageClose := GetProcAddress(hDLLLS28,'LlStgsysStorageClose');
-      @LlStgsysGetAPIVersion := GetProcAddress(hDLLLS28,'LlStgsysGetAPIVersion');
-      @LlStgsysGetFileVersion := GetProcAddress(hDLLLS28,'LlStgsysGetFileVersion');
+      @LlStgsysStorageClose := GetProcAddress(hDLLLS29,'LlStgsysStorageClose');
+      @LlStgsysGetAPIVersion := GetProcAddress(hDLLLS29,'LlStgsysGetAPIVersion');
+      @LlStgsysGetFileVersion := GetProcAddress(hDLLLS29,'LlStgsysGetFileVersion');
       {$ifdef UNICODE}
-          @LlStgsysGetFilenameO := GetProcAddress(hDLLLS28,'LlStgsysGetFilenameA');
+          @LlStgsysGetFilenameO := GetProcAddress(hDLLLS29,'LlStgsysGetFilenameA');
         {$else}
-          @LlStgsysGetFilename := GetProcAddress(hDLLLS28,'LlStgsysGetFilenameA');
-      {$endif}
-      {$ifdef UNICODE}
-          @LlStgsysGetFilename := GetProcAddress(hDLLLS28,'LlStgsysGetFilenameW');
-        {$else}
-          @LlStgsysGetFilenameO := GetProcAddress(hDLLLS28,'LlStgsysGetFilenameW');
-      {$endif}
-      @LlStgsysGetJobCount  := GetProcAddress(hDLLLS28,'LlStgsysGetJobCount');
-      @LlStgsysSetJob       := GetProcAddress(hDLLLS28,'LlStgsysSetJob');
-      @LlStgsysGetJob       := GetProcAddress(hDLLLS28,'LlStgsysGetJob');
-      @LlStgsysGetPageCount := GetProcAddress(hDLLLS28,'LlStgsysGetPageCount');
-      @LlStgsysGetJobOptionValue := GetProcAddress(hDLLLS28,'LlStgsysGetJobOptionValue');
-      @LlStgsysGetPageOptionValue := GetProcAddress(hDLLLS28,'LlStgsysGetPageOptionValue');
-      {$ifdef UNICODE}
-          @LlStgsysGetPageOptionStringO := GetProcAddress(hDLLLS28,'LlStgsysGetPageOptionStringA');
-        {$else}
-          @LlStgsysGetPageOptionString := GetProcAddress(hDLLLS28,'LlStgsysGetPageOptionStringA');
+          @LlStgsysGetFilename := GetProcAddress(hDLLLS29,'LlStgsysGetFilenameA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysGetPageOptionString := GetProcAddress(hDLLLS28,'LlStgsysGetPageOptionStringW');
+          @LlStgsysGetFilename := GetProcAddress(hDLLLS29,'LlStgsysGetFilenameW');
         {$else}
-          @LlStgsysGetPageOptionStringO := GetProcAddress(hDLLLS28,'LlStgsysGetPageOptionStringW');
+          @LlStgsysGetFilenameO := GetProcAddress(hDLLLS29,'LlStgsysGetFilenameW');
+      {$endif}
+      @LlStgsysGetJobCount  := GetProcAddress(hDLLLS29,'LlStgsysGetJobCount');
+      @LlStgsysSetJob       := GetProcAddress(hDLLLS29,'LlStgsysSetJob');
+      @LlStgsysGetJob       := GetProcAddress(hDLLLS29,'LlStgsysGetJob');
+      @LlStgsysGetPageCount := GetProcAddress(hDLLLS29,'LlStgsysGetPageCount');
+      @LlStgsysGetJobOptionValue := GetProcAddress(hDLLLS29,'LlStgsysGetJobOptionValue');
+      @LlStgsysGetPageOptionValue := GetProcAddress(hDLLLS29,'LlStgsysGetPageOptionValue');
+      {$ifdef UNICODE}
+          @LlStgsysGetPageOptionStringO := GetProcAddress(hDLLLS29,'LlStgsysGetPageOptionStringA');
+        {$else}
+          @LlStgsysGetPageOptionString := GetProcAddress(hDLLLS29,'LlStgsysGetPageOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysSetPageOptionStringO := GetProcAddress(hDLLLS28,'LlStgsysSetPageOptionStringA');
+          @LlStgsysGetPageOptionString := GetProcAddress(hDLLLS29,'LlStgsysGetPageOptionStringW');
         {$else}
-          @LlStgsysSetPageOptionString := GetProcAddress(hDLLLS28,'LlStgsysSetPageOptionStringA');
+          @LlStgsysGetPageOptionStringO := GetProcAddress(hDLLLS29,'LlStgsysGetPageOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysSetPageOptionString := GetProcAddress(hDLLLS28,'LlStgsysSetPageOptionStringW');
+          @LlStgsysSetPageOptionStringO := GetProcAddress(hDLLLS29,'LlStgsysSetPageOptionStringA');
         {$else}
-          @LlStgsysSetPageOptionStringO := GetProcAddress(hDLLLS28,'LlStgsysSetPageOptionStringW');
-      {$endif}
-      @LlStgsysGetPageOptionV := GetProcAddress(hDLLLS28,'LlStgsysGetPageOptionV');
-      @LlStgsysAppend       := GetProcAddress(hDLLLS28,'LlStgsysAppend');
-      @LlStgsysDeleteJob    := GetProcAddress(hDLLLS28,'LlStgsysDeleteJob');
-      @LlStgsysDeletePage   := GetProcAddress(hDLLLS28,'LlStgsysDeletePage');
-      @LlStgsysGetPageMetafile := GetProcAddress(hDLLLS28,'LlStgsysGetPageMetafile');
-      @LlStgsysDestroyMetafile := GetProcAddress(hDLLLS28,'LlStgsysDestroyMetafile');
-      @LlStgsysDrawPage     := GetProcAddress(hDLLLS28,'LlStgsysDrawPage');
-      @LlStgsysGetLastError := GetProcAddress(hDLLLS28,'LlStgsysGetLastError');
-      @LlStgsysDeleteFiles  := GetProcAddress(hDLLLS28,'LlStgsysDeleteFiles');
-      {$ifdef UNICODE}
-          @LlStgsysPrintO := GetProcAddress(hDLLLS28,'LlStgsysPrintA');
-        {$else}
-          @LlStgsysPrint := GetProcAddress(hDLLLS28,'LlStgsysPrintA');
+          @LlStgsysSetPageOptionString := GetProcAddress(hDLLLS29,'LlStgsysSetPageOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysPrint := GetProcAddress(hDLLLS28,'LlStgsysPrintW');
+          @LlStgsysSetPageOptionString := GetProcAddress(hDLLLS29,'LlStgsysSetPageOptionStringW');
         {$else}
-          @LlStgsysPrintO := GetProcAddress(hDLLLS28,'LlStgsysPrintW');
+          @LlStgsysSetPageOptionStringO := GetProcAddress(hDLLLS29,'LlStgsysSetPageOptionStringW');
+      {$endif}
+      @LlStgsysGetPageOptionV := GetProcAddress(hDLLLS29,'LlStgsysGetPageOptionV');
+      @LlStgsysAppend       := GetProcAddress(hDLLLS29,'LlStgsysAppend');
+      @LlStgsysDeleteJob    := GetProcAddress(hDLLLS29,'LlStgsysDeleteJob');
+      @LlStgsysDeletePage   := GetProcAddress(hDLLLS29,'LlStgsysDeletePage');
+      @LlStgsysGetPageMetafile := GetProcAddress(hDLLLS29,'LlStgsysGetPageMetafile');
+      @LlStgsysDestroyMetafile := GetProcAddress(hDLLLS29,'LlStgsysDestroyMetafile');
+      @LlStgsysDrawPage     := GetProcAddress(hDLLLS29,'LlStgsysDrawPage');
+      @LlStgsysGetLastError := GetProcAddress(hDLLLS29,'LlStgsysGetLastError');
+      @LlStgsysDeleteFiles  := GetProcAddress(hDLLLS29,'LlStgsysDeleteFiles');
+      {$ifdef UNICODE}
+          @LlStgsysPrintO := GetProcAddress(hDLLLS29,'LlStgsysPrintA');
+        {$else}
+          @LlStgsysPrint := GetProcAddress(hDLLLS29,'LlStgsysPrintA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysStoragePrintO := GetProcAddress(hDLLLS28,'LlStgsysStoragePrintA');
+          @LlStgsysPrint := GetProcAddress(hDLLLS29,'LlStgsysPrintW');
         {$else}
-          @LlStgsysStoragePrint := GetProcAddress(hDLLLS28,'LlStgsysStoragePrintA');
+          @LlStgsysPrintO := GetProcAddress(hDLLLS29,'LlStgsysPrintW');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysStoragePrint := GetProcAddress(hDLLLS28,'LlStgsysStoragePrintW');
+          @LlStgsysStoragePrintO := GetProcAddress(hDLLLS29,'LlStgsysStoragePrintA');
         {$else}
-          @LlStgsysStoragePrintO := GetProcAddress(hDLLLS28,'LlStgsysStoragePrintW');
+          @LlStgsysStoragePrint := GetProcAddress(hDLLLS29,'LlStgsysStoragePrintA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysGetPagePrinterO := GetProcAddress(hDLLLS28,'LlStgsysGetPagePrinterA');
+          @LlStgsysStoragePrint := GetProcAddress(hDLLLS29,'LlStgsysStoragePrintW');
         {$else}
-          @LlStgsysGetPagePrinter := GetProcAddress(hDLLLS28,'LlStgsysGetPagePrinterA');
+          @LlStgsysStoragePrintO := GetProcAddress(hDLLLS29,'LlStgsysStoragePrintW');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysGetPagePrinter := GetProcAddress(hDLLLS28,'LlStgsysGetPagePrinterW');
+          @LlStgsysGetPagePrinterO := GetProcAddress(hDLLLS29,'LlStgsysGetPagePrinterA');
         {$else}
-          @LlStgsysGetPagePrinterO := GetProcAddress(hDLLLS28,'LlStgsysGetPagePrinterW');
-      {$endif}
-      @LsSetDebug           := GetProcAddress(hDLLLS28,'LsSetDebug');
-      {$ifdef UNICODE}
-          @LsGetViewerControlClassNameO := GetProcAddress(hDLLLS28,'LsGetViewerControlClassNameA');
-        {$else}
-          @LsGetViewerControlClassName := GetProcAddress(hDLLLS28,'LsGetViewerControlClassNameA');
+          @LlStgsysGetPagePrinter := GetProcAddress(hDLLLS29,'LlStgsysGetPagePrinterA');
       {$endif}
       {$ifdef UNICODE}
-          @LsGetViewerControlClassName := GetProcAddress(hDLLLS28,'LsGetViewerControlClassNameW');
+          @LlStgsysGetPagePrinter := GetProcAddress(hDLLLS29,'LlStgsysGetPagePrinterW');
         {$else}
-          @LsGetViewerControlClassNameO := GetProcAddress(hDLLLS28,'LsGetViewerControlClassNameW');
+          @LlStgsysGetPagePrinterO := GetProcAddress(hDLLLS29,'LlStgsysGetPagePrinterW');
       {$endif}
-      @LsGetViewerControlDefaultMessage := GetProcAddress(hDLLLS28,'LsGetViewerControlDefaultMessage');
-      @LsCreateViewerControlOverParent := GetProcAddress(hDLLLS28,'LsCreateViewerControlOverParent');
+      @LsSetDebug           := GetProcAddress(hDLLLS29,'LsSetDebug');
       {$ifdef UNICODE}
-          @LlStgsysGetJobOptionStringExO := GetProcAddress(hDLLLS28,'LlStgsysGetJobOptionStringExA');
+          @LsGetViewerControlClassNameO := GetProcAddress(hDLLLS29,'LsGetViewerControlClassNameA');
         {$else}
-          @LlStgsysGetJobOptionStringEx := GetProcAddress(hDLLLS28,'LlStgsysGetJobOptionStringExA');
-      {$endif}
-      {$ifdef UNICODE}
-          @LlStgsysGetJobOptionStringEx := GetProcAddress(hDLLLS28,'LlStgsysGetJobOptionStringExW');
-        {$else}
-          @LlStgsysGetJobOptionStringExO := GetProcAddress(hDLLLS28,'LlStgsysGetJobOptionStringExW');
+          @LsGetViewerControlClassName := GetProcAddress(hDLLLS29,'LsGetViewerControlClassNameA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysSetJobOptionStringExO := GetProcAddress(hDLLLS28,'LlStgsysSetJobOptionStringExA');
+          @LsGetViewerControlClassName := GetProcAddress(hDLLLS29,'LsGetViewerControlClassNameW');
         {$else}
-          @LlStgsysSetJobOptionStringEx := GetProcAddress(hDLLLS28,'LlStgsysSetJobOptionStringExA');
+          @LsGetViewerControlClassNameO := GetProcAddress(hDLLLS29,'LsGetViewerControlClassNameW');
+      {$endif}
+      @LsGetViewerControlDefaultMessage := GetProcAddress(hDLLLS29,'LsGetViewerControlDefaultMessage');
+      @LsCreateViewerControlOverParent := GetProcAddress(hDLLLS29,'LsCreateViewerControlOverParent');
+      {$ifdef UNICODE}
+          @LlStgsysGetJobOptionStringExO := GetProcAddress(hDLLLS29,'LlStgsysGetJobOptionStringExA');
+        {$else}
+          @LlStgsysGetJobOptionStringEx := GetProcAddress(hDLLLS29,'LlStgsysGetJobOptionStringExA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysSetJobOptionStringEx := GetProcAddress(hDLLLS28,'LlStgsysSetJobOptionStringExW');
+          @LlStgsysGetJobOptionStringEx := GetProcAddress(hDLLLS29,'LlStgsysGetJobOptionStringExW');
         {$else}
-          @LlStgsysSetJobOptionStringExO := GetProcAddress(hDLLLS28,'LlStgsysSetJobOptionStringExW');
-      {$endif}
-      @LlStgsysGetJobOptionV := GetProcAddress(hDLLLS28,'LlStgsysGetJobOptionV');
-      {$ifdef UNICODE}
-          @LsConversionJobOpenO := GetProcAddress(hDLLLS28,'LsConversionJobOpenA');
-        {$else}
-          @LsConversionJobOpen := GetProcAddress(hDLLLS28,'LsConversionJobOpenA');
+          @LlStgsysGetJobOptionStringExO := GetProcAddress(hDLLLS29,'LlStgsysGetJobOptionStringExW');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionJobOpen := GetProcAddress(hDLLLS28,'LsConversionJobOpenW');
+          @LlStgsysSetJobOptionStringExO := GetProcAddress(hDLLLS29,'LlStgsysSetJobOptionStringExA');
         {$else}
-          @LsConversionJobOpenO := GetProcAddress(hDLLLS28,'LsConversionJobOpenW');
-      {$endif}
-      @LsConversionJobClose := GetProcAddress(hDLLLS28,'LsConversionJobClose');
-      @LsConversionConvertEMFToStream := GetProcAddress(hDLLLS28,'LsConversionConvertEMFToStream');
-      @LsConversionConvertStgToStream := GetProcAddress(hDLLLS28,'LsConversionConvertStgToStream');
-      {$ifdef UNICODE}
-          @LsConversionPrintO := GetProcAddress(hDLLLS28,'LsConversionPrintA');
-        {$else}
-          @LsConversionPrint := GetProcAddress(hDLLLS28,'LsConversionPrintA');
+          @LlStgsysSetJobOptionStringEx := GetProcAddress(hDLLLS29,'LlStgsysSetJobOptionStringExA');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionPrint := GetProcAddress(hDLLLS28,'LsConversionPrintW');
+          @LlStgsysSetJobOptionStringEx := GetProcAddress(hDLLLS29,'LlStgsysSetJobOptionStringExW');
         {$else}
-          @LsConversionPrintO := GetProcAddress(hDLLLS28,'LsConversionPrintW');
+          @LlStgsysSetJobOptionStringExO := GetProcAddress(hDLLLS29,'LlStgsysSetJobOptionStringExW');
       {$endif}
-      @LsConversionConfigurationDlg := GetProcAddress(hDLLLS28,'LsConversionConfigurationDlg');
+      @LlStgsysGetJobOptionV := GetProcAddress(hDLLLS29,'LlStgsysGetJobOptionV');
       {$ifdef UNICODE}
-          @LsConversionSetOptionStringO := GetProcAddress(hDLLLS28,'LsConversionSetOptionStringA');
+          @LsConversionJobOpenO := GetProcAddress(hDLLLS29,'LsConversionJobOpenA');
         {$else}
-          @LsConversionSetOptionString := GetProcAddress(hDLLLS28,'LsConversionSetOptionStringA');
-      {$endif}
-      {$ifdef UNICODE}
-          @LsConversionSetOptionString := GetProcAddress(hDLLLS28,'LsConversionSetOptionStringW');
-        {$else}
-          @LsConversionSetOptionStringO := GetProcAddress(hDLLLS28,'LsConversionSetOptionStringW');
+          @LsConversionJobOpen := GetProcAddress(hDLLLS29,'LsConversionJobOpenA');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionGetOptionStringO := GetProcAddress(hDLLLS28,'LsConversionGetOptionStringA');
+          @LsConversionJobOpen := GetProcAddress(hDLLLS29,'LsConversionJobOpenW');
         {$else}
-          @LsConversionGetOptionString := GetProcAddress(hDLLLS28,'LsConversionGetOptionStringA');
+          @LsConversionJobOpenO := GetProcAddress(hDLLLS29,'LsConversionJobOpenW');
+      {$endif}
+      @LsConversionJobClose := GetProcAddress(hDLLLS29,'LsConversionJobClose');
+      @LsConversionConvertEMFToStream := GetProcAddress(hDLLLS29,'LsConversionConvertEMFToStream');
+      @LsConversionConvertStgToStream := GetProcAddress(hDLLLS29,'LsConversionConvertStgToStream');
+      {$ifdef UNICODE}
+          @LsConversionPrintO := GetProcAddress(hDLLLS29,'LsConversionPrintA');
+        {$else}
+          @LsConversionPrint := GetProcAddress(hDLLLS29,'LsConversionPrintA');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionGetOptionString := GetProcAddress(hDLLLS28,'LsConversionGetOptionStringW');
+          @LsConversionPrint := GetProcAddress(hDLLLS29,'LsConversionPrintW');
         {$else}
-          @LsConversionGetOptionStringO := GetProcAddress(hDLLLS28,'LsConversionGetOptionStringW');
+          @LsConversionPrintO := GetProcAddress(hDLLLS29,'LsConversionPrintW');
+      {$endif}
+      @LsConversionConfigurationDlg := GetProcAddress(hDLLLS29,'LsConversionConfigurationDlg');
+      {$ifdef UNICODE}
+          @LsConversionSetOptionStringO := GetProcAddress(hDLLLS29,'LsConversionSetOptionStringA');
+        {$else}
+          @LsConversionSetOptionString := GetProcAddress(hDLLLS29,'LsConversionSetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionConvertEMFToFileO := GetProcAddress(hDLLLS28,'LsConversionConvertEMFToFileA');
+          @LsConversionSetOptionString := GetProcAddress(hDLLLS29,'LsConversionSetOptionStringW');
         {$else}
-          @LsConversionConvertEMFToFile := GetProcAddress(hDLLLS28,'LsConversionConvertEMFToFileA');
+          @LsConversionSetOptionStringO := GetProcAddress(hDLLLS29,'LsConversionSetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionConvertEMFToFile := GetProcAddress(hDLLLS28,'LsConversionConvertEMFToFileW');
+          @LsConversionGetOptionStringO := GetProcAddress(hDLLLS29,'LsConversionGetOptionStringA');
         {$else}
-          @LsConversionConvertEMFToFileO := GetProcAddress(hDLLLS28,'LsConversionConvertEMFToFileW');
+          @LsConversionGetOptionString := GetProcAddress(hDLLLS29,'LsConversionGetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionConvertStgToFileO := GetProcAddress(hDLLLS28,'LsConversionConvertStgToFileA');
+          @LsConversionGetOptionString := GetProcAddress(hDLLLS29,'LsConversionGetOptionStringW');
         {$else}
-          @LsConversionConvertStgToFile := GetProcAddress(hDLLLS28,'LsConversionConvertStgToFileA');
+          @LsConversionGetOptionStringO := GetProcAddress(hDLLLS29,'LsConversionGetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LsConversionConvertStgToFile := GetProcAddress(hDLLLS28,'LsConversionConvertStgToFileW');
+          @LsConversionConvertEMFToFileO := GetProcAddress(hDLLLS29,'LsConversionConvertEMFToFileA');
         {$else}
-          @LsConversionConvertStgToFileO := GetProcAddress(hDLLLS28,'LsConversionConvertStgToFileW');
+          @LsConversionConvertEMFToFile := GetProcAddress(hDLLLS29,'LsConversionConvertEMFToFileA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysStorageConvertO := GetProcAddress(hDLLLS28,'LlStgsysStorageConvertA');
+          @LsConversionConvertEMFToFile := GetProcAddress(hDLLLS29,'LsConversionConvertEMFToFileW');
         {$else}
-          @LlStgsysStorageConvert := GetProcAddress(hDLLLS28,'LlStgsysStorageConvertA');
+          @LsConversionConvertEMFToFileO := GetProcAddress(hDLLLS29,'LsConversionConvertEMFToFileW');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysStorageConvert := GetProcAddress(hDLLLS28,'LlStgsysStorageConvertW');
+          @LsConversionConvertStgToFileO := GetProcAddress(hDLLLS29,'LsConversionConvertStgToFileA');
         {$else}
-          @LlStgsysStorageConvertO := GetProcAddress(hDLLLS28,'LlStgsysStorageConvertW');
+          @LsConversionConvertStgToFile := GetProcAddress(hDLLLS29,'LsConversionConvertStgToFileA');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysConvertO := GetProcAddress(hDLLLS28,'LlStgsysConvertA');
+          @LsConversionConvertStgToFile := GetProcAddress(hDLLLS29,'LsConversionConvertStgToFileW');
         {$else}
-          @LlStgsysConvert := GetProcAddress(hDLLLS28,'LlStgsysConvertA');
+          @LsConversionConvertStgToFileO := GetProcAddress(hDLLLS29,'LsConversionConvertStgToFileW');
       {$endif}
       {$ifdef UNICODE}
-          @LlStgsysConvert := GetProcAddress(hDLLLS28,'LlStgsysConvertW');
+          @LlStgsysStorageConvertO := GetProcAddress(hDLLLS29,'LlStgsysStorageConvertA');
         {$else}
-          @LlStgsysConvertO := GetProcAddress(hDLLLS28,'LlStgsysConvertW');
+          @LlStgsysStorageConvert := GetProcAddress(hDLLLS29,'LlStgsysStorageConvertA');
       {$endif}
       {$ifdef UNICODE}
-          @LsMailConfigurationDialogO := GetProcAddress(hDLLLS28,'LsMailConfigurationDialogA');
+          @LlStgsysStorageConvert := GetProcAddress(hDLLLS29,'LlStgsysStorageConvertW');
         {$else}
-          @LsMailConfigurationDialog := GetProcAddress(hDLLLS28,'LsMailConfigurationDialogA');
+          @LlStgsysStorageConvertO := GetProcAddress(hDLLLS29,'LlStgsysStorageConvertW');
       {$endif}
       {$ifdef UNICODE}
-          @LsMailConfigurationDialog := GetProcAddress(hDLLLS28,'LsMailConfigurationDialogW');
+          @LlStgsysConvertO := GetProcAddress(hDLLLS29,'LlStgsysConvertA');
         {$else}
-          @LsMailConfigurationDialogO := GetProcAddress(hDLLLS28,'LsMailConfigurationDialogW');
-      {$endif}
-      @LsMailJobOpen        := GetProcAddress(hDLLLS28,'LsMailJobOpen');
-      @LsMailJobClose       := GetProcAddress(hDLLLS28,'LsMailJobClose');
-      {$ifdef UNICODE}
-          @LsMailSetOptionStringO := GetProcAddress(hDLLLS28,'LsMailSetOptionStringA');
-        {$else}
-          @LsMailSetOptionString := GetProcAddress(hDLLLS28,'LsMailSetOptionStringA');
+          @LlStgsysConvert := GetProcAddress(hDLLLS29,'LlStgsysConvertA');
       {$endif}
       {$ifdef UNICODE}
-          @LsMailSetOptionString := GetProcAddress(hDLLLS28,'LsMailSetOptionStringW');
+          @LlStgsysConvert := GetProcAddress(hDLLLS29,'LlStgsysConvertW');
         {$else}
-          @LsMailSetOptionStringO := GetProcAddress(hDLLLS28,'LsMailSetOptionStringW');
+          @LlStgsysConvertO := GetProcAddress(hDLLLS29,'LlStgsysConvertW');
       {$endif}
       {$ifdef UNICODE}
-          @LsMailGetOptionStringO := GetProcAddress(hDLLLS28,'LsMailGetOptionStringA');
+          @LsMailConfigurationDialogO := GetProcAddress(hDLLLS29,'LsMailConfigurationDialogA');
         {$else}
-          @LsMailGetOptionString := GetProcAddress(hDLLLS28,'LsMailGetOptionStringA');
+          @LsMailConfigurationDialog := GetProcAddress(hDLLLS29,'LsMailConfigurationDialogA');
       {$endif}
       {$ifdef UNICODE}
-          @LsMailGetOptionString := GetProcAddress(hDLLLS28,'LsMailGetOptionStringW');
+          @LsMailConfigurationDialog := GetProcAddress(hDLLLS29,'LsMailConfigurationDialogW');
         {$else}
-          @LsMailGetOptionStringO := GetProcAddress(hDLLLS28,'LsMailGetOptionStringW');
+          @LsMailConfigurationDialogO := GetProcAddress(hDLLLS29,'LsMailConfigurationDialogW');
       {$endif}
-      @LsMailSendFile       := GetProcAddress(hDLLLS28,'LsMailSendFile');
+      @LsMailJobOpen        := GetProcAddress(hDLLLS29,'LsMailJobOpen');
+      @LsMailJobClose       := GetProcAddress(hDLLLS29,'LsMailJobClose');
       {$ifdef UNICODE}
-          @LlStgsysStorageCreateO := GetProcAddress(hDLLLS28,'LlStgsysStorageCreateA');
+          @LsMailSetOptionStringO := GetProcAddress(hDLLLS29,'LsMailSetOptionStringA');
         {$else}
-          @LlStgsysStorageCreate := GetProcAddress(hDLLLS28,'LlStgsysStorageCreateA');
-      {$endif}
-      {$ifdef UNICODE}
-          @LlStgsysStorageCreate := GetProcAddress(hDLLLS28,'LlStgsysStorageCreateW');
-        {$else}
-          @LlStgsysStorageCreateO := GetProcAddress(hDLLLS28,'LlStgsysStorageCreateW');
-      {$endif}
-      @LlStgsysAppendEMF    := GetProcAddress(hDLLLS28,'LlStgsysAppendEMF');
-      {$ifdef UNICODE}
-          @LsProfileStartO := GetProcAddress(hDLLLS28,'LsProfileStartA');
-        {$else}
-          @LsProfileStart := GetProcAddress(hDLLLS28,'LsProfileStartA');
+          @LsMailSetOptionString := GetProcAddress(hDLLLS29,'LsMailSetOptionStringA');
       {$endif}
       {$ifdef UNICODE}
-          @LsProfileStart := GetProcAddress(hDLLLS28,'LsProfileStartW');
+          @LsMailSetOptionString := GetProcAddress(hDLLLS29,'LsMailSetOptionStringW');
         {$else}
-          @LsProfileStartO := GetProcAddress(hDLLLS28,'LsProfileStartW');
-      {$endif}
-      @LsProfileEnd         := GetProcAddress(hDLLLS28,'LsProfileEnd');
-      @LsGetOrgTextFromGlyphsW := GetProcAddress(hDLLLS28,'LsGetOrgTextFromGlyphsW');
-      {$ifdef UNICODE}
-          @LsMailViewO := GetProcAddress(hDLLLS28,'LsMailViewA');
-        {$else}
-          @LsMailView := GetProcAddress(hDLLLS28,'LsMailViewA');
+          @LsMailSetOptionStringO := GetProcAddress(hDLLLS29,'LsMailSetOptionStringW');
       {$endif}
       {$ifdef UNICODE}
-          @LsMailView := GetProcAddress(hDLLLS28,'LsMailViewW');
+          @LsMailGetOptionStringO := GetProcAddress(hDLLLS29,'LsMailGetOptionStringA');
         {$else}
-          @LsMailViewO := GetProcAddress(hDLLLS28,'LsMailViewW');
+          @LsMailGetOptionString := GetProcAddress(hDLLLS29,'LsMailGetOptionStringA');
       {$endif}
-      @LsInternalCreateViewerControlOverParent13 := GetProcAddress(hDLLLS28,'LsInternalCreateViewerControlOverParent13');
-      @LsInternalGetViewerControlFromParent13 := GetProcAddress(hDLLLS28,'LsInternalGetViewerControlFromParent13');
-      @LsSetDlgboxMode      := GetProcAddress(hDLLLS28,'LsSetDlgboxMode');
-      @LsGetDlgboxMode      := GetProcAddress(hDLLLS28,'LsGetDlgboxMode');
-      @LsGetViewerControlClassNameEx := GetProcAddress(hDLLLS28,'LsGetViewerControlClassNameEx');
-      @LsGetDebug           := GetProcAddress(hDLLLS28,'LsGetDebug');
-      @LsConvertImageStream := GetProcAddress(hDLLLS28,'LsConvertImageStream');
-      @LlStgsysStoragePrintExW := GetProcAddress(hDLLLS28,'LlStgsysStoragePrintExW');
-      @LsProcessEnhMetaFileRecord := GetProcAddress(hDLLLS28,'LsProcessEnhMetaFileRecord');
-      @LlStgsysGetPageData  := GetProcAddress(hDLLLS28,'LlStgsysGetPageData');
-      @LlStgsysSetUILanguage := GetProcAddress(hDLLLS28,'LlStgsysSetUILanguage');
+      {$ifdef UNICODE}
+          @LsMailGetOptionString := GetProcAddress(hDLLLS29,'LsMailGetOptionStringW');
+        {$else}
+          @LsMailGetOptionStringO := GetProcAddress(hDLLLS29,'LsMailGetOptionStringW');
+      {$endif}
+      @LsMailSendFile       := GetProcAddress(hDLLLS29,'LsMailSendFile');
+      {$ifdef UNICODE}
+          @LlStgsysStorageCreateO := GetProcAddress(hDLLLS29,'LlStgsysStorageCreateA');
+        {$else}
+          @LlStgsysStorageCreate := GetProcAddress(hDLLLS29,'LlStgsysStorageCreateA');
+      {$endif}
+      {$ifdef UNICODE}
+          @LlStgsysStorageCreate := GetProcAddress(hDLLLS29,'LlStgsysStorageCreateW');
+        {$else}
+          @LlStgsysStorageCreateO := GetProcAddress(hDLLLS29,'LlStgsysStorageCreateW');
+      {$endif}
+      @LlStgsysAppendEMF    := GetProcAddress(hDLLLS29,'LlStgsysAppendEMF');
+      {$ifdef UNICODE}
+          @LsProfileStartO := GetProcAddress(hDLLLS29,'LsProfileStartA');
+        {$else}
+          @LsProfileStart := GetProcAddress(hDLLLS29,'LsProfileStartA');
+      {$endif}
+      {$ifdef UNICODE}
+          @LsProfileStart := GetProcAddress(hDLLLS29,'LsProfileStartW');
+        {$else}
+          @LsProfileStartO := GetProcAddress(hDLLLS29,'LsProfileStartW');
+      {$endif}
+      @LsProfileEnd         := GetProcAddress(hDLLLS29,'LsProfileEnd');
+      @LsGetOrgTextFromGlyphsW := GetProcAddress(hDLLLS29,'LsGetOrgTextFromGlyphsW');
+      {$ifdef UNICODE}
+          @LsMailViewO := GetProcAddress(hDLLLS29,'LsMailViewA');
+        {$else}
+          @LsMailView := GetProcAddress(hDLLLS29,'LsMailViewA');
+      {$endif}
+      {$ifdef UNICODE}
+          @LsMailView := GetProcAddress(hDLLLS29,'LsMailViewW');
+        {$else}
+          @LsMailViewO := GetProcAddress(hDLLLS29,'LsMailViewW');
+      {$endif}
+      @LsInternalCreateViewerControlOverParent13 := GetProcAddress(hDLLLS29,'LsInternalCreateViewerControlOverParent13');
+      @LsInternalGetViewerControlFromParent13 := GetProcAddress(hDLLLS29,'LsInternalGetViewerControlFromParent13');
+      @LsSetDlgboxMode      := GetProcAddress(hDLLLS29,'LsSetDlgboxMode');
+      @LsGetDlgboxMode      := GetProcAddress(hDLLLS29,'LsGetDlgboxMode');
+      @LsGetViewerControlClassNameEx := GetProcAddress(hDLLLS29,'LsGetViewerControlClassNameEx');
+      @LsGetDebug           := GetProcAddress(hDLLLS29,'LsGetDebug');
+      @LsConvertImageStream := GetProcAddress(hDLLLS29,'LsConvertImageStream');
+      @LlStgsysStoragePrintExW := GetProcAddress(hDLLLS29,'LlStgsysStoragePrintExW');
+      @LsProcessEnhMetaFileRecord := GetProcAddress(hDLLLS29,'LsProcessEnhMetaFileRecord');
+      @LlStgsysGetPageData  := GetProcAddress(hDLLLS29,'LlStgsysGetPageData');
+      @LlStgsysSetUILanguage := GetProcAddress(hDLLLS29,'LlStgsysSetUILanguage');
       end;
     end;
 end;
 
-procedure LS28xUnload;
+procedure LS29xUnload;
 begin
-  dec(nDLLLS28Usage);
-  if (nDLLLS28Usage = 0) then
+  dec(nDLLLS29Usage);
+  if (nDLLLS29Usage = 0) then
     begin
-    if hDLLLS28 <> 0 then
+    if hDLLLS29 <> 0 then
       begin
-      FreeLibrary(hDLLLS28);
-      hDLLLS28 := 0;
+      FreeLibrary(hDLLLS29);
+      hDLLLS29 := 0;
       LlStgsysStorageOpen := NIL;
       LlStgsysStorageOpenO := NIL;
       LlStgsysStorageOpen := NIL;

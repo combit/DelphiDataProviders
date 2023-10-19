@@ -5,8 +5,8 @@
 ----------------------------------------------------------------------------------
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
- Descr. : Implementation file for the List & Label 28 VCL-Component
- Version: 28.000
+ Descr. : Implementation file for the List & Label 29 VCL-Component
+ Version: 29.000
 ==================================================================================
 }
 
@@ -15,7 +15,7 @@ unit LLReport_Types;
 interface
 {$WEAKPACKAGEUNIT ON}
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll28x, Dialogs, System.UITypes;
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll29x, Dialogs, System.UITypes;
 
 Type
 
@@ -125,6 +125,7 @@ Type
                       PdfExcludedFonts,
                       PdfFileAttachments,
                       PdfConformance,
+					  PdfUseSimpleFrames,
                       Resolution,
                       TxtFrameChar,
                       TxtSeparatorChar,

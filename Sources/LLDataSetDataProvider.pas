@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : LLDataSetDataProvider.pas
- Module : List & Label 28
- Descr. : Implementation file for the List & Label 28 VCL-Component
- Version: 28.000
+ Module : List & Label 29
+ Descr. : Implementation file for the List & Label 29 VCL-Component
+ Version: 29.000
 ==================================================================================
 }
 
@@ -184,7 +184,7 @@ const
     '{\f0\fswiss\fcharset0 Arial;}}\viewkind4\uc1\pard\f0\fs20\par}';
 
 implementation
-uses Sysutils, cmbtll28x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
+uses Sysutils, cmbtll29x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
 
 Constructor TDataSetDescription.Create(ADataset: TDataSet; AKeyField: String; ASortDescription: String; AFilter: String  );
 Begin
@@ -538,12 +538,9 @@ begin
   FNeedSyncMaster := FProvider.HasChildTable(TableName);
 
   FMemDataSet:=TFDMemTable.Create(nil);
-  Try
-     FDataSetInf.DataSet.Active:=True;
-     FMemDataSet.CopyDataSet(FDataSetInf.DataSet,[coStructure,coRestart, coAppend]);
-  Except
-     Exception.Create('Cannot open dataset '+TableName);
-  End;
+
+  FDataSetInf.DataSet.Active:=True;
+  FMemDataSet.CopyDataSet(FDataSetInf.DataSet,[coStructure,coRestart, coAppend]);
 
   // CopyDataSet ignores Blobfield Subtypes
   for i:=0 to  FMemDataSet.Fields.Count-1 do

@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : LLThreads.pas
- Module : List & Label 28
- Descr. : Implementation file for the List & Label 28 VCL-Component
- Version: 28.000
+ Module : List & Label 29
+ Descr. : Implementation file for the List & Label 29 VCL-Component
+ Version: 29.000
 ==================================================================================
 }
 
@@ -15,13 +15,13 @@ unit LLThreads;
 interface
 {$WEAKPACKAGEUNIT ON}
 uses
-  Classes, SysUtils, Windows, ListLabel28;
+  Classes, SysUtils, Windows, ListLabel29;
 
 type
 
   TPrintPreviewThread = class(TThread)
   private
-    FPrintInstance      : TListLabel28;
+    FPrintInstance      : TListLabel29;
     FProjectFile        : string;
     FOriginalProjectFile: string;
     FExportFormat       : String;
@@ -39,7 +39,7 @@ type
     procedure FinalizePrinting();
     procedure Abort();
 
-    property PrintInstance: TListLabel28 read FPrintInstance write FPrintInstance;
+    property PrintInstance: TListLabel29 read FPrintInstance write FPrintInstance;
     Property ProjectFile  : string read FProjectFile write FProjectFile;
     Property OriginalProjectFile: string read FOriginalProjectFile write FOriginalProjectFile;
     Property ExportFormat: String read FExportFormat write FExportFormat;
@@ -60,7 +60,7 @@ type
     FParentKey      : String;
     FParentTableName: String;
     FAttachInfo     : THandle;
-    FPrintInstance  : TListLabel28;
+    FPrintInstance  : TListLabel29;
     FTerminated     : boolean;
     FKeyValue       : String;
     FJobID          : longint;
@@ -74,7 +74,7 @@ type
     procedure Execute; override;
   public
     property Terminated: boolean read FTerminated write FTerminated;
-    property PrintInstance: TListLabel28 read FPrintInstance write FPrintInstance;
+    property PrintInstance: TListLabel29 read FPrintInstance write FPrintInstance;
     property UserParam: integer read FUserParam write FUserParam;
     property ParentTableName: String read FParentTableName write FParentTableName;
     property RelationName: String read FRelationName write FRelationName;
@@ -93,7 +93,7 @@ type
   end;
 
 implementation
-uses cmbtLS28x, LLDataSetDataProvider;
+uses cmbtLS29x, LLDataSetDataProvider;
 procedure TPrintPreviewThread.Abort;
 begin
   PrintInstance.AbortPrinting;

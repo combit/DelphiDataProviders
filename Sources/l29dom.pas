@@ -3,14 +3,14 @@
   Copyright © combit GmbH, Konstanz
 
   ----------------------------------------------------------------------------------
-  File   : l28dom.pas
-  Module : List & Label 28 DOM
-  Descr. : Implementation file for the List & Label 28 DOM
-  Version: 28.000
+  File   : l29dom.pas
+  Module : List & Label 29 DOM
+  Descr. : Implementation file for the List & Label 29 DOM
+  Version: 29.000
   ==================================================================================
 }
 
-unit l28dom;
+unit l29dom;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
@@ -26,7 +26,7 @@ unit l28dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l28CommonInterfaces,cmbtll28x
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l29CommonInterfaces,cmbtll29x
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -81,6 +81,7 @@ type
   TLlDOMTableInputFieldEdit = class;
   TLlDOMPropertyFillingExt = class;
   TLlDOMPropertyFillingWithBitmap = class;
+  TLlDOMPropertyFrameWithoutSpacing = class;
   TLlDOMTableField = class;
   TLlDOMTableInputFieldBase = class;
   TLlDOMPropertyDefaultFontExt = class;
@@ -141,6 +142,7 @@ type
   TLlDOMListCollectionVariables = class;
   TLlDOMCollectionVariable = class;
   TLlDOMListCollectionVariablesListItems = class;
+  TLlDOMCollectionAdjacentDefinitions  = class;
   TLlDOMCollectionVariableListItem = class;
   TLlDOMListCollectionVariableColumns = class;
   TLlDOMCollectionVariableColumn = class;
@@ -234,6 +236,7 @@ type
   TLlDOMReportParameterSource = class;
   TLlDOMPropertyDataGraphicDefinition = class;
   TLlDomPropertyGanttChartDefinition = class;
+  TLlDOMPropertyColorModeChart = class;
   TLlDomAccessMode = (amReadOnly, amReadWrite);
   TLlDOMFileMode = (fmOpen, fmCreate, fmCreateNew, fmOpenOrCreate);
   TLlDOMIgnoreErrors = (ieYes, ieNo);
@@ -320,7 +323,7 @@ type
 
   TLlDOMProjectBase = class(TLlDOMItem)
   private
-    fCollectionVariableList: TLlDOMListCollectionVariables;
+    fCollectionVariableList:  TLlDOMListCollectionVariables;
     projectLoaded: boolean;
     projectType: Cardinal;
     fSumVariableList: TLlDOMSumVariableList;
@@ -1433,6 +1436,17 @@ type
     property FillGap: TString read GetFillGap write SetFillGap;
   end;
 
+  TLlDOMPropertyColorModeChart = class(TLlDOMItem)
+  private
+    function GetMode: TString;
+    procedure SetMode(const value: TString);
+    function GetColor: TString;
+    procedure SetColor(const value: TString);
+  public
+    property Color: TString read GetColor write SetColor;
+    property Mode: TString read GetMode write SetMode;
+  end;
+
   TLlDOMPropertyLine = class(TLlDOMItem)
   private
     function GetLineType: TString;
@@ -1450,17 +1464,29 @@ type
     property Visible: TString read GetVisible write SetVisible;
   end;
 
-  TLlDOMPropertyFrameItem = class(TLlDOMItem)
+  TLlDOMPropertyFrameItemBase = class(TLlDomItem)
+    private
+      fLine :     TLlDOMPropertyLine;
+      function GetLine: TLlDOMPropertyLine;
+    public
+      property Line: TLlDOMPropertyLine read GetLine;
+
+  end;
+
+  TLlDOMPropertyFrameItem = class(TLlDOMPropertyFrameItemBase)
   private
-    fLine: TLlDOMPropertyLine;
+
     function GetSpace: TString;
     procedure SetSpace(const value: TString);
-    function GetLine: TLlDOMPropertyLine;
+
   public
-    property Line: TLlDOMPropertyLine read GetLine;
+
     property Space: TString read GetSpace write SetSpace;
     destructor Destroy; override;
+
   end;
+
+
 
   TLlDOMPropertyBottom = class(TLlDOMPropertyFrameItem)
   end;
@@ -1483,6 +1509,26 @@ type
   public
     property Automatic: TString read GetAutomatic write SetAutomatic;
     property Distance: TString read GetDistance write SetDistance;
+  end;
+
+  TLlDOMPropertyFrameWithoutSpacing = class (TLlDOMItem)
+  private
+    fBottom: TLlDOMPropertyBottom;
+    fLeft: TLlDOMPropertyLeft;
+    fRight: TLlDOMPropertyRight;
+    fTop: TLlDOMPropertyTop;
+    function GetLayout: TString;
+    procedure SetLayout(const value: TString);
+    function GetBottom: TLlDOMPropertyBottom;
+    function GetLeft: TLlDOMPropertyLeft;
+    function GetRight: TLlDOMPropertyRight;
+    function GetTop: TLlDOMPropertyTop;
+  public
+    property Layout: TString read GetLayout write SetLayout;
+    property Bottom: TLlDOMPropertyBottom read GetBottom;
+    property Left: TLlDOMPropertyLeft read GetLeft;
+    property Right: TLlDOMPropertyRight read GetRight;
+    property Top: TLlDOMPropertyTop read GetTop;
   end;
 
   TLlDOMPropertyFrame = class(TLlDOMItem)
@@ -2094,6 +2140,7 @@ end;
     property Bitmap: TLlDOMPropertyDrawingContents read GetBitmap;
   end;
 
+  
   TLlDOMPropertyPosition = class(TLlDOMItem)
   private
     function GetHeight: TString;
@@ -2357,17 +2404,35 @@ end;
     destructor Destroy; override;
   end;
 
-  TLlDOMPropertyCrosstabDefinition = class(TLlDOMItem)
+  TLlDOMPropertyCrosstabDefinitionBase  = class(TLlDOMItem)
   private
+    fCells: TLlDOMCrosstabCellsList;
+    fColumns: TLlDOMPropertyCrosstabDimension;
+    fDefaultFont: TLlDOMPropertyFont;
+    function GetCells: TLlDOMCrosstabCellsList;
+    function GetColumns: TLlDOMPropertyCrosstabDimension;
+    function GetFont: TLlDOMPropertyFont;
+    function GetUIName: TString;
+  public
+    property Cells: TLlDOMCrosstabCellsList read GetCells;
+    property Columns: TLlDOMPropertyCrosstabDimension read GetColumns;
+    property DefaultFont: TLlDOMPropertyFont read GetFont;
+    property UIName: TString read GetUIName;
+    //constructor Create(ItemCollection: TLlDOMCollectionAdjacentDefinitions); overload;
+
+  end;
+
+  TLlDOMPropertyCrosstabDefinition = class(TLlDOMPropertyCrosstabDefinitionBase)
+  private
+    fAdjacentDefinitions: TLlDOMCollectionAdjacentDefinitions;
     fBookmark: TLlDOMPropertyBookmark;
     fFilling: TLlDOMPropertyFilling;
     fDefaultFrame: TLlDOMPropertyFrame;
-    fDefaultFont: TLlDOMPropertyFont;
     fColumnWrapping: TLlDOMPropertyCrosstabColumnWrapping;
     fRowWrapping: TLlDOMPropertyCrosstabRowWrapping;
     fRows: TLlDOMPropertyCrosstabDimension;
-    fColumns: TLlDOMPropertyCrosstabDimension;
     fCells: TLlDOMCrosstabCellsList;
+    function GetAdjacentDefinitions: TLlDOMCollectionAdjacentDefinitions;
     function GetLinkURL: TString;
     procedure SetLinkURL(const value: TString);
 	  function GetHarmonicLineHeights: TString;
@@ -2380,29 +2445,24 @@ end;
     procedure SetWrapPercentage(const value: TString);
     function GetFilling: TLlDOMPropertyFilling;
     function GetFrame: TLlDOMPropertyFrame;
-    function GetFont: TLlDOMPropertyFont;
     function GetColumnWrapping: TLlDOMPropertyCrosstabColumnWrapping;
     function GetRowWrapping: TLlDOMPropertyCrosstabRowWrapping;
     function GetRows: TLlDOMPropertyCrosstabDimension;
-    function GetColumns: TLlDOMPropertyCrosstabDimension;
-    function GetCells: TLlDOMCrosstabCellsList;
     function GetBookmark: TLlDOMPropertyBookmark;
     function GetFilter: TString;
     procedure SetFilter(const value: TString);
   public
-	property HarmonicLineHeights: TString read GetHarmonicLineHeights write SetHarmonicLineHeights;
-	property SubCellCount: TString read GetSubCellCount write SetSubCellCount;
+    property AdjacentDefinitions: TLlDOMCollectionAdjacentDefinitions read GetAdjacentDefinitions;
+	  property HarmonicLineHeights: TString read GetHarmonicLineHeights write SetHarmonicLineHeights;
+	  property SubCellCount: TString read GetSubCellCount write SetSubCellCount;
     property Filter: TString read GetFilter write SetFilter;
     property Bookmark: TLlDOMPropertyBookmark read GetBookmark;
     property Filling: TLlDOMPropertyFilling read GetFilling;
     property DefaultFrame: TLlDOMPropertyFrame read GetFrame;
-    property DefaultFont: TLlDOMPropertyFont read GetFont;
     property ColumnWrapping: TLlDOMPropertyCrosstabColumnWrapping
       read GetColumnWrapping;
     property RowWrapping: TLlDOMPropertyCrosstabRowWrapping read GetRowWrapping;
     property Rows: TLlDOMPropertyCrosstabDimension read GetRows;
-    property Columns: TLlDOMPropertyCrosstabDimension read GetColumns;
-    property Cells: TLlDOMCrosstabCellsList read GetCells;
     property LinkURL: TString read GetLinkURL write SetLinkURL;
     property MinHeight: TString read GetMinHeight write SetMinHeight;
     property WrapPercentage: TString read GetWrapPercentage
@@ -4358,6 +4418,20 @@ end;
      procedure DeleteSubobject(index: integer); override;
   end;
 
+  TLlDomCollectionAdjacentDefinitions = class (TLlDOMList)
+    private
+      function GetItems(index: integer): TLlDOMPropertyCrosstabDefinitionBase;
+      procedure SetItems(index: integer; const value: TLlDOMPropertyCrosstabDefinitionBase);
+
+    public
+      function Add(domObj: TLlDOMPropertyCrosstabDefinitionBase): integer;
+      property Items[Index: integer]: TLlDOMPropertyCrosstabDefinitionBase
+        read GetItems  write SetItems; default;
+      constructor Create(hDomObj: TLlDOMItem);
+      function NewItem(index: integer): TLlDOMItem;
+      procedure DeleteSubobject(index: integer); override;
+
+  end;
   TLlDOMCollectionVariableListItem = class(TLlDOMItem)
   private
     fItems: TLlDOMListCollectionVariableColumns;
@@ -4398,7 +4472,7 @@ end;
   end;
 
   {/ Collection Variables classes}
-
+ 
   { Shape chart classes }
 
   TLlDOMPropertyChartEngineShapeFile = class(TLlDOMPropertyChartEngineBase)
@@ -5185,6 +5259,7 @@ end;
     fXaxis: TLlDOMPropertyCategoryAxis;
     fYAxis: TLlDOMPropertyCategoryAxis;
     fZAxes: TLlDOMPropertyValueAxisArray;
+    fColorMode: TLlDOMPropertyColorModeChart;
     function GetOrientation: TString;
     procedure SetOrientation(const value: TString);
     function GetUseLightEffect: TString;
@@ -5194,6 +5269,7 @@ end;
     function GetXAxis: TLlDOMPropertyCategoryAxis;
     function GetYAxis: TLlDOMPropertyCategoryAxis;
     function GetZAxes: TLlDOMPropertyValueAxisArray;
+    function GetColorMode: TLlDOMPropertyColorModeChart;
   public
     property Filling: TLlDOMPropertyTextFilling read GetFilling;
     property Orientation: TString read GetOrientation write SetOrientation;
@@ -5204,7 +5280,7 @@ end;
     property XAxis: TLlDOMPropertyCategoryAxis read GetXAxis;
     property YAxis: TLlDOMPropertyCategoryAxis read GetYAxis;
     property ZAxes: TLlDOMPropertyValueAxisArray read GetZAxes;
-
+    property ColorMode: TLlDOMPropertyColorModeChart read GetColorMode;
     destructor Destroy; override;
   end;
 
@@ -5214,6 +5290,7 @@ end;
     fSecondaryValueAxis: TLlDOMPropertyChartSecondaryValueAxis;
     fXaxis: TLlDOMPropertyCategoryAxis;
     fYaxes: TLlDOMPropertyValueAxisArray;
+    fColorMode: TLlDOMPropertyColorModeChart;
     function GetOrientation: TString;
     procedure SetOrientation(const value: TString);
     function GetUseLightEffect: TString;
@@ -5222,6 +5299,7 @@ end;
     function GetSecondaryValueAxis: TLlDOMPropertyChartSecondaryValueAxis;
     function GetXAxis: TLlDOMPropertyCategoryAxis;
     function GetYAxes: TLlDOMPropertyValueAxisArray;
+    function GetColorMode: TLlDOMPropertyColorModeChart;
   public
     property Filling: TLlDOMPropertyTextFilling read GetFilling;
     property Orientation: TString read GetOrientation write SetOrientation;
@@ -5231,7 +5309,7 @@ end;
       write SetUseLightEffect;
     property XAxis: TLlDOMPropertyCategoryAxis read GetXAxis;
     property YAxes: TLlDOMPropertyValueAxisArray read GetYAxes;
-
+    property ColorMode: TLlDOMPropertyColorModeChart read GetColorMode;
     destructor Destroy; override;
   end;
 
@@ -6098,9 +6176,8 @@ end;
     property FitToObject: TString read GetFitToObject write SetFitToObject;
     constructor Create(list: TLlDOMTableLineFieldList); overload;
   end;
-
+  
   TLlDOMTableFieldTable = class(TLlDOMTableField)
-
   private
     fSubItems: TLlDOMSubItemCoreList;
     function GetReservedMinHeight: string;
@@ -6874,6 +6951,9 @@ private
     fDefaultFrame: TLlDOMPropertyFrame;
     fFixedSize: TLlDOMPropertyFixedSize;
 
+    fFrame: TLlDOMPropertyFrameWithoutSpacing;
+    fFilling: TLlDOMPropertyFillingWithBitmap;
+
     function GetExpandable: TString;
     procedure SetExpandable(const value: TString);
 
@@ -6881,6 +6961,9 @@ private
     procedure SetPageBreakCondition(const value: TString);
 
     function GetDefaultFrame: TLlDOMPropertyFrame;
+
+    function GetFrame: TLlDOMPropertyFrameWithoutSpacing;
+    function GetFilling: TLlDOMPropertyFillingWithBitmap;
 
     function GetFixedSize: TLlDOMPropertyFixedSize;
 
@@ -6898,6 +6981,10 @@ private
     property PageBreakCondition: TString read GetPageBreakCondition
       write SetPageBreakCondition;
     property DefaultFrame: TLlDOMPropertyFrame read GetDefaultFrame;
+
+    property Frame: TLlDOMPropertyFrameWithoutSpacing read GetFrame;
+    property Filling: TLlDOMPropertyFillingWithBitmap read GetFilling;
+
     property FixedSize: TLlDOMPropertyFixedSize read GetFixedSize;
     property ShowSeparatorTickmarks: TString read GetShowSeparatorTickmarks
       write SetShowSeparatorTickmarks;
@@ -7816,6 +7903,7 @@ end;
 constructor TLlDOMProjectBase.Create(hTheParentComponent: ILlDomParent);
 begin
   inherited Create();
+  LL29xLoad();
   fhParentComponent := hTheParentComponent;
   projectLoaded := False;
 end;
@@ -7838,6 +7926,7 @@ begin
     fRegionList.Free;
   if Assigned(fProjectTemplateList) then
     fProjectTemplateList.Free;
+  LL29xUnload();
   inherited;
 end;
 
@@ -9520,6 +9609,73 @@ begin
   SetProperty('Layout', value);
 end;
 
+function TLlDOMPropertyFrameWithoutSpacing.GetBottom: TLlDOMPropertyBottom;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fBottom <> nil) then
+  begin
+    result := fBottom
+  end
+  else
+  begin
+    baseObj := GetObject('Bottom');
+    fBottom := TLlDOMPropertyBottom.Create(baseObj);
+    baseObj.Free;
+    result := fBottom;
+  end;
+end;
+
+function TLlDOMPropertyFrameWithoutSpacing.GetLeft: TLlDOMPropertyLeft;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fLeft <> nil) then
+  begin
+    result := fLeft
+  end
+  else
+  begin
+    baseObj := GetObject('Left');
+    fLeft := TLlDOMPropertyLeft.Create(baseObj);
+    baseObj.Free;
+    result := fLeft;
+  end;
+end;
+
+function TLlDOMPropertyFrameWithoutSpacing.GetRight: TLlDOMPropertyRight;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fRight <> nil) then
+  begin
+    result := fRight
+  end
+  else
+  begin
+    baseObj := GetObject('Right');
+    fRight := TLlDOMPropertyRight.Create(baseObj);
+    baseObj.Free;
+    result := fRight;
+  end;
+end;
+
+function TLlDOMPropertyFrameWithoutSpacing.GetTop: TLlDOMPropertyTop;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fTop <> nil) then
+  begin
+    result := fTop
+  end
+  else
+  begin
+    baseObj := GetObject('Top');
+    fTop := TLlDOMPropertyTop.Create(baseObj);
+    baseObj.Free;
+    result := fTop;
+  end;
+end;
 { TBottom }
 
 destructor TLlDOMPropertyFrameItem.Destroy;
@@ -9528,7 +9684,7 @@ begin
   inherited;
 end;
 
-function TLlDOMPropertyFrameItem.GetLine: TLlDOMPropertyLine;
+function TLlDOMPropertyFrameItemBase.GetLine: TLlDOMPropertyLine;
 var
   baseObj: TLlDOMItem;
 begin
@@ -9555,6 +9711,33 @@ begin
   SetProperty('Space', value);
 end;
 
+function TLlDOMPropertyFrameWithoutSpacing.GetLayout: TString;
+begin
+  result := GetProperty('Layout');
+end;
+
+procedure TLlDOMPropertyFrameWithoutSpacing.SetLayout(const value: TString);
+begin
+  SetProperty('Layout', value);
+end;
+
+{PropertyColorModeChart}
+function TLlDOMPropertyColorModeChart.GetColor: TString;
+begin
+ result := GetProperty('Color');
+end;
+function TLlDOMPropertyColorModeChart.GetMode: TString;
+begin
+ result := GetProperty('Mode');
+end;
+procedure TLlDOMPropertyColorModeChart.SetColor(const value: TString);
+begin
+  SetProperty('Color', value);
+end;
+procedure TLlDOMPropertyColorModeChart.SetMode(const value: TString);
+begin
+  SetProperty('Mode', value);
+end;
 { TLine }
 
 function TLlDOMPropertyLine.GetColor: TString;
@@ -13806,6 +13989,42 @@ begin
   end;
 end;
 
+function TLlDOMSubItemTableBase.GetFrame: TLlDOMPropertyFrameWithoutSpacing;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fFrame <> nil) then
+  begin
+    result := fFrame;
+  end
+  else
+  begin
+    baseObj := GetObject('Frame');
+    fFrame := TLlDOMPropertyFrameWithoutSpacing.Create(baseObj);
+    baseObj.Free;
+    result := fFrame;
+  end;
+end;
+
+
+function TLlDOMSubItemTableBase.GetFilling: TLlDOMPropertyFillingWithBitmap;
+var
+  baseObj: TLlDOMItem;
+begin
+  if (fFilling <> nil) then
+  begin
+    result := fFilling;
+  end
+  else
+  begin
+    baseObj := GetObject('Filling');
+    fFilling := TLlDOMPropertyFillingWithBitmap.Create(baseObj);
+    baseObj.Free;
+    result := fFilling;
+  end;
+
+end;
+
 { TLlDOMSubItemTable }
 
 constructor TLlDOMSubItemTable.Create(list: TLlDOMSubItemCoreList);
@@ -15216,32 +15435,6 @@ begin
   end;
 end;
 
-function TLlDOMPropertyCrosstabDefinition.GetCells: TLlDOMCrosstabCellsList;
-begin
-  if fCells = nil then
-  begin
-    fCells := TLlDOMCrosstabCellsList.Create(GetObject('Cells'));
-  end;
-  result := fCells;
-end;
-
-function TLlDOMPropertyCrosstabDefinition.GetColumns
-  : TLlDOMPropertyCrosstabDimension;
-var
-  baseObj: TLlDOMItem;
-begin
-  if fColumns <> nil then
-  begin
-    result := fColumns
-  end
-  else
-  begin
-    baseObj := GetObject('Columns');
-    fColumns := TLlDOMPropertyCrosstabDimension.Create(baseObj);
-    baseObj.Free;
-    result := fColumns;
-  end;
-end;
 
 function TLlDOMPropertyCrosstabDefinition.GetColumnWrapping
   : TLlDOMPropertyCrosstabColumnWrapping;
@@ -15261,6 +15454,23 @@ begin
   end;
 end;
 
+function TLlDOMPropertyCrosstabDefinition.GetAdjacentDefinitions
+  : TLlDomCollectionAdjacentDefinitions;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fAdjacentDefinitions <> nil then
+  begin
+    result := fAdjacentDefinitions
+  end
+  else
+  begin
+    baseObj := GetObject('AdjacentDefinitions');
+    fAdjacentDefinitions := TLlDomCollectionAdjacentDefinitions.Create(baseObj);
+    baseObj.Free;
+    result :=fAdjacentDefinitions;
+  end;
+end;
 function TLlDOMPropertyCrosstabDefinition.GetFilling: TLlDOMPropertyFilling;
 var
   baseObj: TLlDOMItem;
@@ -15281,23 +15491,6 @@ end;
 function TLlDOMPropertyCrosstabDefinition.GetFilter: TString;
 begin
   result := GetProperty('Filter');
-end;
-
-function TLlDOMPropertyCrosstabDefinition.GetFont: TLlDOMPropertyFont;
-var
-  baseObj: TLlDOMItem;
-begin
-  if fDefaultFont <> nil then
-  begin
-    result := fDefaultFont
-  end
-  else
-  begin
-    baseObj := GetObject('DefaultFont');
-    fDefaultFont := TLlDOMPropertyFont.Create(baseObj);
-    baseObj.Free;
-    result := fDefaultFont;
-  end;
 end;
 
 function TLlDOMPropertyCrosstabDefinition.GetFrame: TLlDOMPropertyFrame;
@@ -15409,6 +15602,54 @@ begin
   SetProperty('WrapPercentage', value);
 end;
 
+function TLlDOMPropertyCrosstabDefinitionBase.GetCells: TLlDOMCrosstabCellsList;
+begin
+  if fCells = nil then
+  begin
+    fCells := TLlDOMCrosstabCellsList.Create(GetObject('Cells'));
+  end;
+  result := fCells;
+end;
+
+function TLlDOMPropertyCrosstabDefinitionBase.GetColumns
+  : TLlDOMPropertyCrosstabDimension;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fColumns <> nil then
+  begin
+    result := fColumns
+  end
+  else
+  begin
+    baseObj := GetObject('Columns');
+    fColumns := TLlDOMPropertyCrosstabDimension.Create(baseObj);
+    baseObj.Free;
+    result := fColumns;
+  end;
+end;
+
+function TLlDOMPropertyCrosstabDefinitionBase.GetFont: TLlDOMPropertyFont;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fDefaultFont <> nil then
+  begin
+    result := fDefaultFont
+  end
+  else
+  begin
+    baseObj := GetObject('DefaultFont');
+    fDefaultFont := TLlDOMPropertyFont.Create(baseObj);
+    baseObj.Free;
+    result := fDefaultFont;
+  end;
+end;
+
+function TLlDOMPropertyCrosstabDefinitionBase.GetUIName: TString;
+begin
+  result := GetProperty('UIName');
+end;
 { TLlDOMPropertyCrosstabWrapping }
 
 destructor TLlDOMPropertyCrosstabWrapping.Destroy;
@@ -23438,7 +23679,44 @@ begin
   newCollectionVariableColumn.Free;
 end;
 
+function TLlDomCollectionAdjacentDefinitions.NewItem(index: integer): TLlDOMItem;
+var
+  newDomObj: TLlDOMPropertyCrosstabDefinitionBase;
+begin
+  newDomObj := TLlDOMPropertyCrosstabDefinitionBase.Create;
+  newDomObj.fDomHandle := fDOMObj.CreateSubObject(index, 'CrosstabDefinitionBase');
+  result := newDomObj;
+  Initialize();
+end;
 
+procedure TLlDomCollectionAdjacentDefinitions.DeleteSubobject(index: integer);
+begin
+  inherited DeleteSubobject(index);
+end;
+
+function TLlDomCollectionAdjacentDefinitions.Add(domObj: TLlDOMPropertyCrosstabDefinitionBase): integer;
+begin
+  result := inherited Add(domObj);
+  Initialize();
+end;
+
+function TLlDomCollectionAdjacentDefinitions.GetItems(index: Integer):TLlDOMPropertyCrosstabDefinitionBase;
+begin
+   result :=TLlDOMPropertyCrosstabDefinitionBase(inherited Items[index]);
+end;
+
+procedure TLlDomCollectionAdjacentDefinitions.SetItems(index: integer;
+  const value: TLlDOMPropertyCrosstabDefinitionBase);
+begin
+  inherited Items[index] := value;
+end;
+
+constructor TLlDomCollectionAdjacentDefinitions.Create(hDomObj: TLlDOMItem);
+begin
+  inherited Create();
+  fDOMObj := hDomObj;
+  Initialize();
+end;
 {/ Collection Variables functions / process}
 { Shapechart functions/procedures }
 
@@ -25505,6 +25783,7 @@ end;
 destructor TLlDOMPropertyChartEngineBar2D.Destroy;
 begin
   fFilling.Free;
+  fColorMode.Free;
   fSecondaryValueAxis.Free;
   fXaxis.Free;
   fYaxes.Free;
@@ -25525,6 +25804,23 @@ begin
     fFilling := TLlDOMPropertyTextFilling.Create(baseObj);
     baseObj.Free;
     result := fFilling;
+  end;
+end;
+
+function TLlDOMPropertyChartEngineBar2D.GetColorMode: TLlDOMPropertyColorModeChart ;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fColorMode <> nil then
+  begin
+    result := fColorMode
+  end
+  else
+  begin
+    baseObj := GetObject('ColorMode');
+    fColorMode := TLlDOMPropertyColorModeChart.Create(baseObj);
+    baseObj.Free;
+    result := fColorMode;
   end;
 end;
 
@@ -26851,6 +27147,7 @@ end;
 destructor TLlDOMPropertyChartEngineBar2DClustered.Destroy;
 begin
   fFilling.Free;
+  fColorMode.Free;
   fSecondaryValueAxis.Free;
   fXaxis.Free;
   fYAxis.Free;
@@ -26873,6 +27170,23 @@ begin
     fFilling := TLlDOMPropertyTextFilling.Create(baseObj);
     baseObj.Free;
     result := fFilling;
+  end;
+end;
+
+function TLlDOMPropertyChartEngineBar2DClustered.GetColorMode: TLlDOMPropertyColorModeChart ;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fColorMode <> nil then
+  begin
+    result := fColorMode
+  end
+  else
+  begin
+    baseObj := GetObject('ColorMode');
+    fColorMode := TLlDOMPropertyColorModeChart.Create(baseObj);
+    baseObj.Free;
+    result := fColorMode;
   end;
 end;
 
@@ -31489,7 +31803,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl28x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl29x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -31505,7 +31819,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl28x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl29x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;
@@ -31537,7 +31851,6 @@ procedure TLlDOMTableFieldTable.SetReservedMinHeight(const Value: string);
 begin
   SetProperty('ReservedMinHeight', Value);
 end;
-
 
 end.
 

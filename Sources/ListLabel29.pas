@@ -3,19 +3,19 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : ListLabel28.pas
- Module : List & Label 28
- Descr. : Implementation file for the List & Label 28 VCL-Component
- Version: 28.002
+ File   : ListLabel29.pas
+ Module : List & Label 29
+ Descr. : Implementation file for the List & Label 29 VCL-Component
+ Version: 29.000
 ==================================================================================
 }
 
-unit ListLabel28;
+unit ListLabel29;
 
 interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, StdCtrls,
-     Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll28x, l28CommonInterfaces, l28FireDACInterfaces, Vcl.Menus, Vcl.AxCtrls,
+     Buttons, ExtCtrls, Messages, Dialogs, DB, LLReport_Types, cmbtll29x, l29CommonInterfaces, l29FireDACInterfaces, Vcl.Menus, Vcl.AxCtrls,
      ComCtrls, Vcl.Imaging.jpeg, System.Contnrs, System.SyncObjs, LLDataProvider, LLDataSetDataProvider, System.Generics.Collections, activex, System.StrUtils, System.Types;
 
 type
@@ -26,42 +26,42 @@ type
   cmbtHWND = DWORD_PTR; // needed for C++Builder compatibility
   TObjectType = (otMarker, otText, otRectangle, otLine, otBarcode, otTable, otTemplate, otEllipse, otGroup, otRTF, otExtensionObject);
 
-  TLlDesignerObject28PrintState = (llxpsWaiting, llxpsUnfinished, llxpsFinished, llxpsPastFinished);
+  TLlDesignerObject29PrintState = (llxpsWaiting, llxpsUnfinished, llxpsFinished, llxpsPastFinished);
   TCreateObjectEvent = procedure(Sender:TObject; ParentHandle: cmbtHWND) of object;
   TEditObjectEvent = procedure(Sender:TObject; ParentHandle: cmbtHWND; var HasChanged: Boolean) of object;
   TDrawObjectEvent = procedure(Sender:TObject; Canvas: TCanvas; Rect: TRect; IsDesignMode: boolean; var IsFinished: boolean) of object;
   TClickEvent = procedure(Sender: TObject; Canvas: TCanvas; Point: TPoint; ParentHandle: cmbtHWND) of object;
   TGetVariableSizeInfoEvent = procedure(Sender: TObject; const hDC: HDC; const Width: integer; var MinimumHeight, IdealHeight: integer) of object;
   TResetPrintStateEvent = procedure(Sender: TObject) of object;
-  TLDesignerAction28InsertionType=(itAppend, itInsert);
-  TLDesignerAction28LlActionState=(asEnabled, asDisabled);
+  TLDesignerAction29InsertionType=(itAppend, itInsert);
+  TLDesignerAction29LlActionState=(asEnabled, asDisabled);
   TExecuteActionEvent = procedure of object;
-  TGetActionStateEvent = procedure(var state: TLDesignerAction28LlActionState) of object;
-  TLlDesignerFunction28ParameterType=(ptAll, ptDouble,ptDate,ptBool,ptString,ptDrawing,ptBarcode);
-  TEvaluateFunctionEvent = procedure(Sender:TObject; var ResultType: TLlDesignerFunction28ParameterType; var ResultValue: OleVariant; var DecimalPositions: integer; const ParameterCount: Integer; const Parameter1,Parameter2,Parameter3,Parameter4: OleVariant) of object;
+  TGetActionStateEvent = procedure(var state: TLDesignerAction29LlActionState) of object;
+  TLlDesignerFunction29ParameterType=(ptAll, ptDouble,ptDate,ptBool,ptString,ptDrawing,ptBarcode);
+  TEvaluateFunctionEvent = procedure(Sender:TObject; var ResultType: TLlDesignerFunction29ParameterType; var ResultValue: OleVariant; var DecimalPositions: integer; const ParameterCount: Integer; const Parameter1,Parameter2,Parameter3,Parameter4: OleVariant) of object;
   TParameterAutoCompleteEvent = procedure(Sender: TObject; ParameterIndex: integer; var Values: TStringList) of object;
-  TCheckFunctionSyntaxEvent = procedure(Sender:TObject; var IsValid: bool; var ErrorText: String; var ResultType: TLlDesignerFunction28ParameterType; var DecimalPositions: integer; const ParameterCount: Integer; const Parameter1,Parameter2,Parameter3,Parameter4: OleVariant) of object;
+  TCheckFunctionSyntaxEvent = procedure(Sender:TObject; var IsValid: bool; var ErrorText: String; var ResultType: TLlDesignerFunction29ParameterType; var DecimalPositions: integer; const ParameterCount: Integer; const Parameter1,Parameter2,Parameter3,Parameter4: OleVariant) of object;
   TLlRTFTextMode = (tmRTF, tmPlain);
   TLlRTFContentMode = (cmRaw, cmEvaluated);
   TLlRTFPrintState = (psPending, psFinished);
   ENoParentComponentError = class(Exception);
-  TListLabel28 = class;
+  TListLabel29 = class;
 
 [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-TLlRTFControl28 = class(TCustomControl)
+TLlRTFControl29 = class(TCustomControl)
 private
   FHandle: HLLRTFOBJ;
   FContentMode: TLlRTFContentMode;
   FPrintState: TLlRTFPrintState;
   FTextMode: TLlRTFTextMode;
-  FMyParentComponent: TListLabel28;
+  FMyParentComponent: TListLabel29;
   FFirst: boolean;
   procedure SetContentMode(const Value: TLlRTFContentMode);
   procedure SetPrintState(const Value: TLlRTFPrintState);
   procedure SetText(const Value: TString);
   procedure SetTextMode(const Value: TLlRTFTextMode);
   function GetText: TString;
-  procedure SetMyParentComponent(const Value: TListLabel28);
+  procedure SetMyParentComponent(const Value: TListLabel29);
 
 protected
   procedure WndProc(var Message: TMessage); override;
@@ -76,28 +76,28 @@ published
   property TabStop;
   property TabOrder;
   Property Align;
-  property ParentComponent: TListLabel28 read FMyParentComponent write SetMyParentComponent;
+  property ParentComponent: TListLabel29 read FMyParentComponent write SetMyParentComponent;
   function CopyToClipboard: integer;
   function Display(Canvas: TCanvas; Rect: TRect; FromStart: boolean): integer;
   property TextMode: TLlRTFTextMode read FTextMode write SetTextMode;
   property ContentMode: TLlRTFContentMode read FContentMode write SetContentMode;
 end;
 
-TLlDesignerFunction28Parameter=class(TPersistent)
+TLlDesignerFunction29Parameter=class(TPersistent)
 private
     FParameterDescription: String;
-    FParameterType: TLlDesignerFunction28ParameterType;
+    FParameterType: TLlDesignerFunction29ParameterType;
     procedure SetParameterDescription(const Value: String);
-    procedure SetParameterType(const Value: TLlDesignerFunction28ParameterType);
+    procedure SetParameterType(const Value: TLlDesignerFunction29ParameterType);
 published
-    property ParameterType: TLlDesignerFunction28ParameterType read FParameterType write SetParameterType;
+    property ParameterType: TLlDesignerFunction29ParameterType read FParameterType write SetParameterType;
     property ParameterDescription: String read FParameterDescription write SetParameterDescription;
 end;
 
 [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-TLlDesignerFunction28=class(TComponent,ILlXFunction,IUnknown)
+TLlDesignerFunction29=class(TComponent,ILlXFunction,IUnknown)
 private
-  FParent:TListLabel28;
+  FParent:TListLabel29;
   FILlBase: pILlBase;
   FLLJob: HLLJOB;
   FRefCount: Integer;
@@ -106,11 +106,11 @@ private
 
   FMaximumParameters: integer;
   FMinimumParameters: integer;
-  FParameter1: TLlDesignerFunction28Parameter;
-  FParameter2: TLlDesignerFunction28Parameter;
-  FParameter3: TLlDesignerFunction28Parameter;
-  FParameter4: TLlDesignerFunction28Parameter;
-  FResultType: TLlDesignerFunction28ParameterType;
+  FParameter1: TLlDesignerFunction29Parameter;
+  FParameter2: TLlDesignerFunction29Parameter;
+  FParameter3: TLlDesignerFunction29Parameter;
+  FParameter4: TLlDesignerFunction29Parameter;
+  FResultType: TLlDesignerFunction29ParameterType;
   FVisible: boolean;
   FGroupName: String;
   FFunctionName: String;
@@ -120,12 +120,12 @@ private
   FOnParameterAutoComplete: TParameterAutoCompleteEvent;
   procedure SetMaximumParameters(const Value: integer);
   procedure SetMinimumParameters(const Value: integer);
-  procedure SetParameter1(const Value: TLlDesignerFunction28Parameter);
-  procedure SetParameter2(const Value: TLlDesignerFunction28Parameter);
-  procedure SetParameter3(const Value: TLlDesignerFunction28Parameter);
-  procedure SetParameter4(const Value: TLlDesignerFunction28Parameter);
-  procedure SetResultType(const Value: TLlDesignerFunction28ParameterType);
-  procedure SetMyParentComponent(const Value: TListLabel28);
+  procedure SetParameter1(const Value: TLlDesignerFunction29Parameter);
+  procedure SetParameter2(const Value: TLlDesignerFunction29Parameter);
+  procedure SetParameter3(const Value: TLlDesignerFunction29Parameter);
+  procedure SetParameter4(const Value: TLlDesignerFunction29Parameter);
+  procedure SetResultType(const Value: TLlDesignerFunction29ParameterType);
+  procedure SetMyParentComponent(const Value: TListLabel29);
   procedure SetFunctionName(const Value: String);
   procedure SetGroupName(const Value: String);
   procedure SetVisible(const Value: boolean);
@@ -134,9 +134,9 @@ private
   procedure SetOnEvaluateFunction(const Value: TEvaluateFunctionEvent);
   procedure SetOnParameterAutoComplete(const Value: TParameterAutoCompleteEvent);
 protected
-  function GetParameterTypeText(Value: TLlDesignerFunction28ParameterType):String;
-  function GetLlFctparaTypeFromParamType(Value: TLlDesignerFunction28ParameterType): integer;
-  function GetLlFieldTypeFromParamType(Value: TLlDesignerFunction28ParameterType): integer;
+  function GetParameterTypeText(Value: TLlDesignerFunction29ParameterType):String;
+  function GetLlFctparaTypeFromParamType(Value: TLlDesignerFunction29ParameterType): integer;
+  function GetLlFieldTypeFromParamType(Value: TLlDesignerFunction29ParameterType): integer;
 public
   constructor Create(AOwner: TComponent); override;
   destructor Destroy; override;
@@ -159,12 +159,12 @@ public
 published
   property MinimumParameters: integer read FMinimumParameters write SetMinimumParameters;
   property MaximumParameters: integer read FMaximumParameters write SetMaximumParameters;
-  property ResultType: TLlDesignerFunction28ParameterType read FResultType write SetResultType;
-  property Parameter1: TLlDesignerFunction28Parameter read FParameter1 write SetParameter1;
-  property Parameter2: TLlDesignerFunction28Parameter read FParameter2 write SetParameter2;
-  property Parameter3: TLlDesignerFunction28Parameter read FParameter3 write SetParameter3;
-  property Parameter4: TLlDesignerFunction28Parameter read FParameter4 write SetParameter4;
-  property ParentComponent: TListLabel28 read FParent write SetMyParentComponent;
+  property ResultType: TLlDesignerFunction29ParameterType read FResultType write SetResultType;
+  property Parameter1: TLlDesignerFunction29Parameter read FParameter1 write SetParameter1;
+  property Parameter2: TLlDesignerFunction29Parameter read FParameter2 write SetParameter2;
+  property Parameter3: TLlDesignerFunction29Parameter read FParameter3 write SetParameter3;
+  property Parameter4: TLlDesignerFunction29Parameter read FParameter4 write SetParameter4;
+  property ParentComponent: TListLabel29 read FParent write SetMyParentComponent;
   property FunctionName: String read FFunctionName write SetFunctionName;
   property Description: String read FDescription write SetDescription;
   property GroupName: String read FGroupName write SetGroupName;
@@ -191,14 +191,14 @@ public
 end;
 
 [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-TLlDesignerObject28=class(TComponent,ILlXObject,IUnknown)
+TLlDesignerObject29=class(TComponent,ILlXObject,IUnknown)
 private
-  fParent: TListLabel28;
+  fParent: TListLabel29;
   FFontHandle: THandle;
   FFontColor: TColor;
   FFontSize: integer;
   FCommandHandlerList: TList;
-  FPrintState: TLlDesignerObject28PrintState;
+  FPrintState: TLlDesignerObject29PrintState;
   FOnClick: TClickEvent;
   FPopupMenu: TPopupMenu;
   FHint: String;
@@ -206,7 +206,7 @@ private
   FOnGetVariableSizeInfo: TGetVariableSizeInfoEvent;
   FSupportsMultipage: boolean;
   FOnResetPrintState: TResetPrintStateEvent;
-  procedure SetMyParentComponent(const Value: TListLabel28);
+  procedure SetMyParentComponent(const Value: TListLabel29);
   procedure SetOnClick(const Value: TClickEvent);
   procedure SetPopupMenu(const Value: TPopupMenu);
   procedure SetHint(const Value: String);
@@ -240,7 +240,7 @@ protected
 public
   Properties: TListLabelDesignerProperty;
   constructor Create(AOwner: TComponent); override;
-  constructor CreateCopy(AOwner:TComponent; Base: TLlDesignerObject28);
+  constructor CreateCopy(AOwner:TComponent; Base: TLlDesignerObject29);
   destructor Destroy; override;
   function QueryInterface(const IID: TGUID; out Obj): HResult; override; stdcall;
   function _AddRef: Integer; stdcall;
@@ -285,11 +285,11 @@ public
   function OnMouseLButton(const hDC: HDC; ptMouse: TPoint; const hWnd: cmbtHWND) :HResult ;stdcall;
   function OnDeclareChartRow:HResult ;stdcall;
   function CanCreateObjectFromType(const nLLType: integer; const sVarName: OLEString; var prcCreate: TRect):HResult;stdcall;
-  function GetVarSizeInfo(const hDC: HDC; const prcSpaceAvailable: cmbtll28x.pTRect; var pnMinHeight,pnIdealHeight: integer): HRESULT; stdcall;
+  function GetVarSizeInfo(const hDC: HDC; const prcSpaceAvailable: cmbtll29x.pTRect; var pnMinHeight,pnIdealHeight: integer): HRESULT; stdcall;
 published
   property Description: String read FDescription write SetDescription;
   property Hint: String read FHint write SetHint;
-  property ParentComponent: TListLabel28 read FParent write SetMyParentComponent;
+  property ParentComponent: TListLabel29 read FParent write SetMyParentComponent;
   property PopupMenu: TPopupMenu read FPopupMenu write SetPopupMenu;
   property Icon: TIcon read FIcon write SetIcon;
   property LargeRibbonImage: TBitmap read FLargeRibbonImage write SetLargeRibbonImage;
@@ -306,12 +306,12 @@ published
 end;
 
 [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-TLDesignerAction28=class(TComponent)
+TLDesignerAction29=class(TComponent)
 private
-  FParent: TListLabel28;
+  FParent: TListLabel29;
   FAddToToolbar: boolean;
   FIconId: integer;
-  FInsertionType: TLDesignerAction28InsertionType;
+  FInsertionType: TLDesignerAction29InsertionType;
   FMenuHierachy: string;
   FMenuText: string;
   FTooltipText: string;
@@ -325,10 +325,10 @@ private
   procedure SetOnExecuteAction(const Value: TExecuteActionEvent);
   property MenuId: integer read FMenuId write SetMenuId;
   procedure AddAction;
-  procedure SetMyParentComponent(const Value: TListLabel28);
+  procedure SetMyParentComponent(const Value: TListLabel29);
   procedure SetToToolbar(const Value: boolean);
   procedure SetIconId(const Value: integer);
-  procedure SetInsertionType(const Value: TLDesignerAction28InsertionType);
+  procedure SetInsertionType(const Value: TLDesignerAction29InsertionType);
   procedure SetMenuHierachy(const Value: string);
   procedure SetMenuText(const Value: string);
   procedure SetTooltipText(const Value: string);
@@ -338,10 +338,10 @@ public
 published
   property AddToToolbar: boolean read FAddToToolbar write SetToToolbar;
   property IconId: integer read FIconId write SetIconId;
-  property InsertionType: TLDesignerAction28InsertionType read FInsertionType write SetInsertionType;
+  property InsertionType: TLDesignerAction29InsertionType read FInsertionType write SetInsertionType;
   property MenuHierachy: string read FMenuHierachy write SetMenuHierachy;
   property MenuText: string read FMenuText write SetMenuText;
-  property ParentComponent: TListLabel28 read FParent write SetMyParentComponent;
+  property ParentComponent: TListLabel29 read FParent write SetMyParentComponent;
   property ShortCut: TShortCut read FShortCut write SetShortCut;
   property TooltipText: string read FTooltipText write SetTooltipText;
   property OnExecuteAction: TExecuteActionEvent read FOnExecuteAction write SetOnExecuteAction;
@@ -362,7 +362,8 @@ TObjectEvent = procedure(Sender: TObject; ObjectName: TString;
    ObjectType: TObjectType; IsPreDraw: boolean; Canvas: TCanvas; Rect: TRect; var EventResult: NativeInt) of object;
 TPageEvent = procedure(Sender: TObject; IsDesignerPreview: boolean;
   IsPreDraw: boolean; var Canvas: TCanvas; Rect: TRect) of object;
-TAutoNotifyProgress = procedure(Sender: TObject; Progress: integer) of object;
+TNotifyProgress = procedure(Sender: TObject; Progress: integer) of object;
+TNotifyViewerBtnClicked = function(Sender: TObject; ButtonID: integer) : Integer of object;
 LlCore = class;
 TListLabelExportOptions = class;
 TLlExprEvaluator = class;
@@ -371,30 +372,30 @@ TLlExprEvaluator = class;
 TDesignerFunctions = class(TList)
 
 public
-  procedure Add(TheFunction: TLlDesignerFunction28);
+  procedure Add(TheFunction: TLlDesignerFunction29);
 
 end;
 
 TDesignerObjects = class(TList)
 
 public
-  procedure Add(TheObject: TLlDesignerObject28);
+  procedure Add(TheObject: TLlDesignerObject29);
 
 end;
 
 TDesignerActions = class(TList)
 
 public
-  procedure Add(TheAction: TLDesignerAction28);
+  procedure Add(TheAction: TLDesignerAction29);
 
 end;
 
   // ==============================================================================================
-  // TListLabel28
+  // TListLabel29
   // ==============================================================================================
 
 [ComponentPlatformsAttribute(pidWin32 or pidWin64)]
-TListLabel28 = class(TComponent, ILlDomParent)
+TListLabel29 = class(TComponent, ILlDomParent)
 private
   FCore: LlCore;
   FAddVarsToFields: Boolean;
@@ -457,7 +458,8 @@ protected
   FOnAutoDefineVariable: TAutoDefineVariableEvent;
   FOnAutoDefineNewPage: TAutoDefineNewPageEvent;
   FOnAutoDefineNewLine: TAutoDefineNewLineEvent;
-  FOnAutoNotifyProgress: TAutoNotifyProgress;
+  FOnNotifyProgress: TNotifyProgress;
+  FOnNotifyViewerBtnClicked: TNotifyViewerBtnClicked;
   FOnSaveFileName: TSaveFileNameEvent;
   FOnPrintJobInfo: TPrintJobInfoEvent;
   FOnProjectLoaded: TProjectLoadedEvent;
@@ -494,6 +496,7 @@ protected
   procedure ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt);
   procedure PageCallback(pSCP: PSCLLPAGE);
   procedure NotifyProgressCallback(lParam: Integer);
+  Function  NotifyViewerBtnClicked(lParam: Integer) : Integer;
   Function  JobInit(Var Jobhandle: HJob) : Boolean;
   Procedure JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
 
@@ -610,7 +613,8 @@ published
   property OnAutoDefineField: TAutoDefineFieldEvent read FOnAutoDefineField write FOnAutoDefineField;
   property OnAutoDefineVariable: TAutoDefineVariableEvent read FOnAutoDefineVariable write FOnAutoDefineVariable;
   property OnAutoDefineNewLine: TAutoDefineNewLineEvent read FOnAutoDefineNewLine write FOnAutoDefineNewLine;
-  property OnAutoNotifyProgress: TAutoNotifyProgress read FOnAutoNotifyProgress write FOnAutoNotifyProgress;
+  property OnNotifyProgress: TNotifyProgress read FOnNotifyProgress write FOnNotifyProgress;
+  property OnNotifyViewerBtnClicked: TNotifyViewerBtnClicked read FOnNotifyViewerBtnClicked write FOnNotifyViewerBtnClicked;
   property OnSaveFileName: TSaveFileNameEvent read FOnSaveFileName write FOnSaveFileName;
   property OnPrintJobInfo: TPrintJobInfoEvent read FOnPrintJobInfo write FOnPrintJobInfo;
   property OnProjectLoaded: TProjectLoadedEvent read FOnProjectLoaded write FOnProjectLoaded;
@@ -622,9 +626,9 @@ end;
 //Core class
  LlCore = class (TObject)
  private
-  fParentObject: TListLabel28;
+  fParentObject: TListLabel29;
  public
- Constructor Create(ParentObject: TListLabel28);
+ Constructor Create(ParentObject: TListLabel29);
 
  function LlXSetParameter(extensionType: TLlExtensionType; extensionName: TString; name: TString; value: TString ): integer;
  function LlXGetParameter(extensionType: TLlExtensionType; ExtensionName: TString; Key: TString; var Value: TString): integer;
@@ -669,7 +673,7 @@ end;
 TListLabelExportOptions = class(TObject)
 private
   fInternalOptionList: TDictionary<TString, TString>;
-  fParent: TListLabel28;
+  fParent: TListLabel29;
   function GetExportOptionString(exportOption: TLlExportOption): TString;
   procedure SetExportOptions;
 public
@@ -683,7 +687,7 @@ public
   function Count(): integer;
   function Contains(option: TString): bool; overload;
   function Contains(option: TLlExportOption): bool; overload;
-  constructor Create(parent: TListLabel28);
+  constructor Create(parent: TListLabel29);
   destructor Destroy; Override;
 
 end;
@@ -691,7 +695,7 @@ end;
 TLlExprEvaluator = class(TObject)
 private
   FExprPointer: HLLEXPR;
-  FParent: TListLabel28;
+  FParent: TListLabel29;
   FErrorValue: integer;
   FExprType: integer;
   FErrorText: TString;
@@ -699,7 +703,7 @@ private
   FExpression: TString;
   procedure SetExpression(const Value: TString);
 public
-  constructor Create(Parent: TListLabel28; Expression: TString; IncludeTablefields: boolean);
+  constructor Create(Parent: TListLabel29; Expression: TString; IncludeTablefields: boolean);
   destructor Destroy; override;
   property ErrorText: TString read FErrorText;
   property Result: TString read FResult;
@@ -741,45 +745,51 @@ begin
   case nMsg of
     LL_NTFY_DESIGNERPRINTJOB:
       Begin
-        lResult :=TListLabel28(lUserParam).OnDesignerPrintPreviewCallback(pSCLLDESIGNERPRINTJOB(lParam));
+        lResult :=TListLabel29(lUserParam).OnDesignerPrintPreviewCallback(pSCLLDESIGNERPRINTJOB(lParam));
       End;
 
     LL_NTFY_VIEWERDRILLDOWN:
       begin
-        lResult:= TListLabel28(lUserParam).OnDrillDownCallBack(PSCLLDRILLDOWNJOBINFO(lParam));
+        lResult:= TListLabel29(lUserParam).OnDrillDownCallBack(PSCLLDRILLDOWNJOBINFO(lParam));
       end;
     LL_CMND_SAVEFILENAME:
       begin
-          (TListLabel28(lUserParam)).SaveFileNameCallback(PTChar(lparam));
+          (TListLabel29(lUserParam)).SaveFileNameCallback(PTChar(lparam));
       end;
     87:// LL_NTFY_PROGRESS
       begin
-          (TListLabel28(lUserParam)).NotifyProgressCallback(Integer(lparam));
+          (TListLabel29(lUserParam)).NotifyProgressCallback(Integer(lparam));
       end;
+	  
+	  LL_NTFY_VIEWERBTNCLICKED:
+      begin
+          lResult := (TListLabel29(lUserParam)).NotifyViewerBtnClicked(Integer(lparam));
+      end;
+	  
     LL_INFO_PRINTJOBSUPERVISION:
       begin
-          (TListLabel28(lUserParam)).PrintJobInfoCallback(PSCLLPRINTJOBINFO(lParam));
+          (TListLabel29(lUserParam)).PrintJobInfoCallback(PSCLLPRINTJOBINFO(lParam));
       end;
     LL_NTFY_PROJECTLOADED:
       begin
 		if (integer(lParam)=0) then
-          (TListLabel28(lUserParam)).ProjectLoadedEvent;
+          (TListLabel29(lUserParam)).ProjectLoadedEvent;
       end;
     LL_CMND_PROJECT:
       begin
-          (TListLabel28(lUserParam)).ProjectCallback(pSCLLPROJECT(lParam));
+          (TListLabel29(lUserParam)).ProjectCallback(pSCLLPROJECT(lParam));
       end;
     LL_CMND_OBJECT:
       begin
-          (TListLabel28(lUserParam)).ObjectCallback(pSCLLOBJECT(lParam), lResult);
+          (TListLabel29(lUserParam)).ObjectCallback(pSCLLOBJECT(lParam), lResult);
       end;
     LL_CMND_PAGE:
       begin
-          (TListLabel28(lUserParam)).PageCallback(pSCLLPAGE(lParam));
+          (TListLabel29(lUserParam)).PageCallback(pSCLLPAGE(lParam));
       end;
     LL_NTFY_QUEST_DRILLDOWNDENIED :
       begin
-        if TListLabel28(lUserParam).FDrilldownActive then
+        if TListLabel29(lUserParam).FDrilldownActive then
           lResult:= 1
         else
           lResult:= 0;
@@ -789,12 +799,12 @@ begin
 end;
 
 // =====================================================================
-// TListLabel28
+// TListLabel29
 // =====================================================================
-Constructor TListLabel28.Create(AOwner: TComponent);
+Constructor TListLabel29.Create(AOwner: TComponent);
 begin
   Inherited Create(AOwner);
-  LL28xLoad();
+  LL29xLoad();
   lpfnNtfyProc := nil;
   FDataController := TLLDataController.Create(self);
   FExportOptions := TListLabelExportOptions.Create(self);
@@ -842,7 +852,7 @@ begin
 
 end;
 
-destructor TListLabel28.Destroy;
+destructor TListLabel29.Destroy;
 begin
   JobFree(FBaseJob, nil);
   if (lpfnNtfyProc <> nil) then  FreeProcInstance(lpfnNtfyProc);
@@ -856,7 +866,7 @@ begin
   FDomDataProvider.Free;
   FreeAndNil(FDelayedRelations);
   FreeAndNil(FPassedRelations);
-  LL28xUnload();
+  LL29xUnload();
   FCore.Free;
   FExportOptions.Free;
   FLlXActionList.Free;
@@ -865,7 +875,7 @@ begin
   inherited Destroy;
 end;
 
-Function TListLabel28.OnDesignerPrintPreviewCallback(param: PSCLLDESIGNERPRINTJOB): LongInt;
+Function TListLabel29.OnDesignerPrintPreviewCallback(param: PSCLLDESIGNERPRINTJOB): LongInt;
 Begin
    result:=0;
    case param^._nFunction of
@@ -965,7 +975,7 @@ Begin
    end;
 End;
 
-Function  TListLabel28.OnDrillDownCallback(param: PSCLLDRILLDOWNJOBINFO): LongInt;
+Function  TListLabel29.OnDrillDownCallback(param: PSCLLDRILLDOWNJOBINFO): LongInt;
 Begin
    result:=0;
    case param._nFunction of
@@ -1023,23 +1033,32 @@ Begin
    end;
 End;
 
-procedure TListLabel28.OnDrillDownTerminating(Sender: TObject);
+procedure TListLabel29.OnDrillDownTerminating(Sender: TObject);
 begin
   FDrillDownThread := nil;
 end;
 
-procedure TListLabel28.NotifyProgressCallback(lParam: Integer);
+procedure TListLabel29.NotifyProgressCallback(lParam: Integer);
 begin
-  if(Assigned(FOnAutoNotifyProgress)) then
-    FOnAutoNotifyProgress(Self, lParam);
+  if(Assigned(FOnNotifyProgress)) then
+    FOnNotifyProgress(Self, lParam);
 end;
-procedure TListLabel28.SaveFileNameCallback(pszFileName: PTChar);
+
+function TListLabel29.NotifyViewerBtnClicked(lParam: Integer):Integer;
+begin
+  result := 0;
+  if(Assigned(FOnNotifyViewerBtnClicked)) then
+    result := FOnNotifyViewerBtnClicked(Self, lParam);
+
+end;
+
+procedure TListLabel29.SaveFileNameCallback(pszFileName: PTChar);
 begin
   if Assigned(FOnSaveFileName) then
     FOnSaveFileName(Self, pszFileName);
 end;
 
-procedure TListLabel28.PrintJobInfoCallback(pSCI:PSCLLPRINTJOBINFO);
+procedure TListLabel29.PrintJobInfoCallback(pSCI:PSCLLPRINTJOBINFO);
 begin
     if Assigned (FOnPrintJobInfo) then
     begin
@@ -1047,14 +1066,14 @@ begin
     end;
 end;
 
-procedure TListLabel28.ProjectLoadedEvent;
+procedure TListLabel29.ProjectLoadedEvent;
 begin
   if Assigned(FOnProjectLoaded) then
     FOnProjectLoaded(Self);
 end;
 
 
-procedure TListLabel28.ProjectCallback(pSCP: PSCLLPROJECT);
+procedure TListLabel29.ProjectCallback(pSCP: PSCLLPROJECT);
 var
   Canvas: TCanvas;
   paintDC: HDC;
@@ -1083,7 +1102,7 @@ begin
   end;
 end;
 
-procedure TListLabel28.ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt);
+procedure TListLabel29.ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt);
 var
   Canvas: TCanvas;
   Rect: TRect;
@@ -1108,7 +1127,7 @@ begin
   end;
 end;
 
-procedure TListLabel28.PageCallback(pSCP: PSCLLPAGE);
+procedure TListLabel29.PageCallback(pSCP: PSCLLPAGE);
 var
   Canvas: TCanvas;
   Rect: TRect;
@@ -1135,12 +1154,12 @@ begin
   end;
 end;
 
-procedure TListLabel28.SetVarCaseSensitive(const Value: Boolean);
+procedure TListLabel29.SetVarCaseSensitive(const Value: Boolean);
 begin
   FVarCaseSensitive := Value;
 end;
 
-procedure TListLabel28.SetLanguage(const Value: TLlLanguage);
+procedure TListLabel29.SetLanguage(const Value: TLlLanguage);
 var
   OldAddVarsToFields: Boolean;
   OldShowErrors: Boolean;
@@ -1215,7 +1234,7 @@ end;
 
 // LL helper functions
 
-function TListLabel28.LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
+function TListLabel29.LlPrintGetPrinterInfo(var PrinterName, PrinterPort: TString): Integer;
 var
   BufPrinter, BufPort: PTChar;
 
@@ -1224,28 +1243,28 @@ begin
   GetMem(BufPort, 40 * sizeof(tChar));
   BufPrinter^ := #0;
   BufPort^ := #0;
-  Result := cmbtll28x.LlPrintGetPrinterInfo(CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
+  Result := cmbtll29x.LlPrintGetPrinterInfo(CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
   PrinterName := TString(BufPrinter);
   PrinterPort := TString(BufPort);
   FreeMem(BufPrinter);
   FreeMem(BufPort);
 end;
 
-function TListLabel28.LlSelectFileDlgTitle(ParentHandle: cmbtHWND; Title: TString; ProjectType: Integer; var ProjectName: TString): Integer;
+function TListLabel29.LlSelectFileDlgTitle(ParentHandle: cmbtHWND; Title: TString; ProjectType: Integer; var ProjectName: TString): Integer;
 var
   pszProjectName: PTChar;
 
   begin
   pszProjectName := nil;
   StrPCopyExt(pszProjectName, ProjectName, 1024);
-  Result := cmbtll28x.LlSelectFileDlgTitleEx(CurrentJobHandle, ParentHandle, PTChar(Title), ProjectType, pszProjectName, 1024 - 1, nil);
+  Result := cmbtll29x.LlSelectFileDlgTitleEx(CurrentJobHandle, ParentHandle, PTChar(Title), ProjectType, pszProjectName, 1024 - 1, nil);
   ProjectName := TString(pszProjectName);
   FreeMem(pszProjectName);
 end;
 
 
 
-function TListLabel28.LlGetUsedIdentifiers(ProjectName: string; IdentifierTypes: Cardinal): TStringList;
+function TListLabel29.LlGetUsedIdentifiers(ProjectName: string; IdentifierTypes: Cardinal): TStringList;
 var
   pszIdentifiers: PTChar;
   size: integer;
@@ -1253,11 +1272,11 @@ var
 
 begin
   result:=nil;
-  size:=cmbtll28x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, nil, 0);
+  size:=cmbtll29x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, nil, 0);
   if (size<=0) then exit;
 
   GetMem(pszIdentifiers, (size+1)*2);
-  cmbtll28x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, pszIdentifiers, size);
+  cmbtll29x.LlGetUsedIdentifiersEx(CurrentJobHandle, PChar(ProjectName), IdentifierTypes, pszIdentifiers, size);
   result:=TStringList.Create;
   result.OwnsObjects:=true;
   result.Delimiter:=';';
@@ -1267,7 +1286,7 @@ begin
 end;
 
 
-procedure TListLabel28.SetAddVarsToFields(const Value: Boolean);
+procedure TListLabel29.SetAddVarsToFields(const Value: Boolean);
 begin
 
   FAddVarsToFields := Value;
@@ -1275,14 +1294,14 @@ begin
 
 end;
 
-procedure TListLabel28.SetShowErrors(const Value: Boolean);
+procedure TListLabel29.SetShowErrors(const Value: Boolean);
 begin
 
   FShowErrors := Value;
 
 end;
 
-procedure TListLabel28.SetUnits(const Value: TLlUnits);
+procedure TListLabel29.SetUnits(const Value: TLlUnits);
 begin
 
   FUnits := Value;
@@ -1305,7 +1324,7 @@ begin
        Item.Value);
 end;
 
-procedure TListLabel28.SetNoPrintJobSupervision(const Value: Boolean);
+procedure TListLabel29.SetNoPrintJobSupervision(const Value: Boolean);
 begin
 
   FNoPrintJobSupervision := Value;
@@ -1313,7 +1332,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetLicensingInfo(const Value: String);
+procedure TListLabel29.SetLicensingInfo(const Value: String);
 var
   tmp: PChar;
 begin
@@ -1323,70 +1342,70 @@ begin
   StrDispose(tmp);
 end;
 
-procedure TListLabel28.SetAutoBoxType(const Value: TLlAutoBoxType);
+procedure TListLabel29.SetAutoBoxType(const Value: TLlAutoBoxType);
 begin
 
   FAutoBoxType := Value;
 
 end;
 
-procedure TListLabel28.SetAutoDesignerPreview(const Value: Boolean);
+procedure TListLabel29.SetAutoDesignerPreview(const Value: Boolean);
 begin
 
   FAutoDesignerPreview := Value;
 
 end;
 
-procedure TListLabel28.SetAutoDestination(const Value: TLlPrintMode);
+procedure TListLabel29.SetAutoDestination(const Value: TLlPrintMode);
 begin
 
   FAutoDestination := Value;
 
 end;
 
-procedure TListLabel28.SetAutoDialogTitle(const Value: String);
+procedure TListLabel29.SetAutoDialogTitle(const Value: String);
 begin
 
   FAutoDialogTitle := Value;
 
 end;
 
-procedure TListLabel28.SetAutoFileAlsoNew(const Value: Boolean);
+procedure TListLabel29.SetAutoFileAlsoNew(const Value: Boolean);
 begin
 
   FAutoFileAlsoNew := Value;
 
 end;
 
-procedure TListLabel28.SetAutoProjectFile(const Value: String);
+procedure TListLabel29.SetAutoProjectFile(const Value: String);
 begin
 
   FAutoProjectFile := Value;
 
 end;
 
-procedure TListLabel28.SetAutoProjectType(const Value: TLlProject);
+procedure TListLabel29.SetAutoProjectType(const Value: TLlProject);
 begin
 
   FAutoProjectType := Value;
 
 end;
 
-procedure TListLabel28.SetAutoShowPrintOptions(const Value: Boolean);
+procedure TListLabel29.SetAutoShowPrintOptions(const Value: Boolean);
 begin
 
   FAutoShowPrintOptions := Value;
 
 end;
 
-procedure TListLabel28.SetAutoShowSelectFile(const Value: Boolean);
+procedure TListLabel29.SetAutoShowSelectFile(const Value: Boolean);
 begin
 
   FAutoShowSelectFile := Value;
 
 end;
 
-procedure TListLabel28.SetCompressStorage(const Value: Boolean);
+procedure TListLabel29.SetCompressStorage(const Value: Boolean);
 begin
 
   FCompressStorage := Value;
@@ -1394,7 +1413,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetConvertCRLF(const Value: Boolean);
+procedure TListLabel29.SetConvertCRLF(const Value: Boolean);
 begin
 
   FConvertCRLF := Value;
@@ -1402,7 +1421,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetDebug(const Value: TLlDebugFlags);
+procedure TListLabel29.SetDebug(const Value: TLlDebugFlags);
 var
   LlDebugFlags: Integer;
 
@@ -1417,7 +1436,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetDelayTableHeader(const Value: Boolean);
+procedure TListLabel29.SetDelayTableHeader(const Value: Boolean);
 begin
 
   FDelayTableHeader := Value;
@@ -1425,7 +1444,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetIncludeFontDescent(const Value: Boolean);
+procedure TListLabel29.SetIncludeFontDescent(const Value: Boolean);
 begin
 
   FIncludeFontDescent := Value;
@@ -1433,7 +1452,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetIncrementalPreview(const Value: Boolean);
+procedure TListLabel29.SetIncrementalPreview(const Value: Boolean);
 begin
 
   FIncrementalPreview := Value;
@@ -1441,7 +1460,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetMaximumIdleIterationsPerObject(const Value: Integer);
+procedure TListLabel29.SetMaximumIdleIterationsPerObject(const Value: Integer);
 begin
 
   FMaximumIdleIterationsPerObject := Value;
@@ -1449,19 +1468,19 @@ begin
 
 end;
 
-procedure TListLabel28.SetPrinterless(const Value: Boolean);
+procedure TListLabel29.SetPrinterless(const Value: Boolean);
 begin
   FPrinterless := Value;
   SetLanguage(Language);
 end;
 
-procedure TListLabel28.SetMaxRTFVersion(const Value: Integer);
+procedure TListLabel29.SetMaxRTFVersion(const Value: Integer);
 begin
   FMaxRTFVersion := Value;
   SetLanguage(Language); // makes sure to apply the value
 end;
 
-procedure TListLabel28.SetNoParameterCheck(const Value: Boolean);
+procedure TListLabel29.SetNoParameterCheck(const Value: Boolean);
 begin
 
   FNoParameterCheck := Value;
@@ -1469,7 +1488,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetPreviewZoom(const Value: Integer);
+procedure TListLabel29.SetPreviewZoom(const Value: Integer);
 begin
 
   FPreviewZoom := Value;
@@ -1479,7 +1498,7 @@ end;
 
 // Druck Prozeduren
 
-Function TListLabel28.JobInit(Var Jobhandle: HJob): Boolean;
+Function TListLabel29.JobInit(Var Jobhandle: HJob): Boolean;
 Var
   tmp : PChar;
   LlDebugFlags: Integer;
@@ -1542,7 +1561,7 @@ begin
 
 end;
 
-Procedure TListLabel28.JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
+Procedure TListLabel29.JobFree(JobHandle: HJob; DataProvider: TDataSetDataProvider);
 begin
   if (DataProvider = nil) or (JobHandle <> FBaseJob) then
   begin
@@ -1552,7 +1571,7 @@ begin
   if DataProvider<>nil then DataProvider.Free
 end;
 
-procedure TListLabel28.Notification(AComponent: TComponent; Operation: TOperation);
+procedure TListLabel29.Notification(AComponent: TComponent; Operation: TOperation);
 Var i : INteger;
 begin
   inherited Notification(AComponent, Operation);
@@ -1571,7 +1590,7 @@ begin
   end;
 end;
 
-Function TListLabel28.CheckError(ErrorCode: Integer): Integer;
+Function TListLabel29.CheckError(ErrorCode: Integer): Integer;
 Var
   Buffer: Array [0 .. 255] of char;
   ErrorText: TString;
@@ -1610,7 +1629,7 @@ begin
   end;
 end;
 
-procedure TListLabel28.CleanUpDataStructure;
+procedure TListLabel29.CleanUpDataStructure;
 begin
   LlDbAddTable(CurrentJobHandle, '', '');
   PassedTables.Clear;
@@ -1618,7 +1637,7 @@ begin
   DelayedRelations.Clear;
 end;
 
-procedure TListLabel28.SetProjectPassword(const Value: String);
+procedure TListLabel29.SetProjectPassword(const Value: String);
 var
   tmp: PChar;
 
@@ -1631,7 +1650,7 @@ begin
 
 end;
 
-procedure TListLabel28.SetTableColoring(const Value: TLlTableColoring);
+procedure TListLabel29.SetTableColoring(const Value: TLlTableColoring);
 begin
 
   FTableColoring := Value;
@@ -1649,7 +1668,7 @@ Begin
 
    if handled then exit(0);
 
-   result := cmbtLL28x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), FieldType, '');
+   result := cmbtLL29x.LLDefineVariableExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), FieldType, '');
 
 End;
 
@@ -1659,11 +1678,11 @@ Begin
    result:=0;
    case FieldType of
       LL_DRAWING_HMETA:
-         result := cmbtLL28x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, '');
+         result := cmbtLL29x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, '');
       LL_DRAWING_HBITMAP:
-         result := cmbtLL28x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, '');
+         result := cmbtLL29x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, '');
       LL_DRAWING_HICON:
-         result:= cmbtLL28x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
+         result:= cmbtLL29x.LlDefineVariableExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
    end;
 End;
 
@@ -1693,7 +1712,7 @@ Begin
 
    if handled then exit(0);
 
-   result := cmbtLL28x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), FieldType, '');
+   result := cmbtLL29x.LLDefineFieldExt(fParentObject.CurrentJobHandle, PWideChar(Fieldname), PWideChar(Contents), FieldType, '');
 
 End;
 
@@ -1703,16 +1722,16 @@ Begin
    result:=0;
    case FieldType of
       LL_DRAWING_HMETA:
-         result := cmbtLL28x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, '');
+         result := cmbtLL29x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HEMETA, '');
       LL_DRAWING_HBITMAP:
-         result := cmbtLL28x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, '');
+         result := cmbtLL29x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HBITMAP, '');
       LL_DRAWING_HICON:
-         result:= cmbtLL28x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
+         result:= cmbtLL29x.LlDefineFieldExtHandle(fParentObject.CurrentJobHandle, PWideChar(Fieldname), Handle,LL_DRAWING_HICON, '');
    end;
 End;
 function LlCore.LlXSetParameter(extensionType: TLlExtensionType; extensionName: TString; name: TString; value: TString ): integer;
 begin
-  Result := cmbtll28x.LlXSetParameter(fParentObject.CurrentJobHandle, Integer(extensionType), PChar(extensionName),PChar(name),PChar(value));
+  Result := cmbtll29x.LlXSetParameter(fParentObject.CurrentJobHandle, Integer(extensionType), PChar(extensionName),PChar(name),PChar(value));
 end;
 
 function LlCore.LlXGetParameter(extensionType: TLlExtensionType; ExtensionName: TString; Key: TString; var Value: TString ): integer;
@@ -1720,13 +1739,13 @@ var
   Buffer: PTChar;
   length: integer;
 begin
-  length := cmbtll28x.LlXGetParameter(fParentObject.CurrentJobHandle, integer(extensionType), PTChar(ExtensionName),
+  length := cmbtll29x.LlXGetParameter(fParentObject.CurrentJobHandle, integer(extensionType), PTChar(ExtensionName),
     PTChar(Key), nil, 0);
   if length >0 then
   begin
   GetMem(Buffer, length * sizeof(TChar));
   Buffer^ := #0;
-  Result := cmbtll28x.LlXGetParameter(fParentObject.CurrentJobHandle, integer(extensionType), PTChar(ExtensionName),
+  Result := cmbtll29x.LlXGetParameter(fParentObject.CurrentJobHandle, integer(extensionType), PTChar(ExtensionName),
     PTChar(Key), Buffer, length);
   Value := TString(Buffer);
   FreeMem(Buffer);
@@ -1740,7 +1759,7 @@ end;
 
 function LlCore.LlSetOption(OptionIndex: Integer; Value: NativeInt): Integer;
 begin
-  Result := cmbtLL28x.LlSetOption(fParentObject.CurrentJobHandle, OptionIndex, Value);
+  Result := cmbtLL29x.LlSetOption(fParentObject.CurrentJobHandle, OptionIndex, Value);
 end;
 
 function LlCore.LlSetOption(Option: TLlOption; Value: NativeInt): Integer;
@@ -1750,7 +1769,7 @@ end;
 
 function LlCore.LlPrintSetOption(PrintOptionIndex: Integer; Value: NativeInt): Integer;
 begin
-  Result := cmbtLL28x.LlPrintSetOption(fParentObject.CurrentJobHandle, PrintOptionIndex, Value);
+  Result := cmbtLL29x.LlPrintSetOption(fParentObject.CurrentJobHandle, PrintOptionIndex, Value);
 end;
 
 function LlCore.LlPrintSetOption(PrintOption: TLlPrintOption; Value: NativeInt): Integer;
@@ -1761,13 +1780,13 @@ end;
 
 function LlCore.LlSetOptionString(OptionIndex: integer; Value: TString): integer;
 begin
-  Result := cmbtLL28x.LlSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
+  Result := cmbtLL29x.LlSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
 end;
 
 function LlCore.LlPrintSetOptionString(OptionIndex: integer;
   Value: TString): integer;
 begin
-  Result := cmbtLL28x.LlPrintSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
+  Result := cmbtLL29x.LlPrintSetOptionString(fParentObject.CurrentJobHandle, OptionIndex, PTChar(Value));
 end;
 
 function LlCore.LlPrintGetOptionString(OptionIndex: integer; var Value: TString): integer;
@@ -1775,13 +1794,13 @@ var
   Buffer: PTChar;
   length: integer;
 begin
-  length := cmbtLL28x.LlPrintGetOptionString(fParentObject.CurrentJobHandle, OptionIndex,
+  length := cmbtLL29x.LlPrintGetOptionString(fParentObject.CurrentJobHandle, OptionIndex,
     nil, 0);
   if length>0 then
   begin
     GetMem(Buffer, length * sizeof(TChar));
     Buffer^ := #0;
-    Result := cmbtLL28x.LlPrintGetOptionString(fParentObject.CurrentJobHandle, OptionIndex,
+    Result := cmbtLL29x.LlPrintGetOptionString(fParentObject.CurrentJobHandle, OptionIndex,
       Buffer, length);
     Value := TString(Buffer);
     FreeMem(Buffer);
@@ -1796,7 +1815,7 @@ function LlCore.LlDesignerAddAction(actionID, nFlags: Cardinal; menuText,
   menuHierarchy, tooltipText: TString; iconId: Cardinal;
   pvReserved: Pointer): integer;
 begin
-  Result := cmbTLl28x.LlDesignerAddAction(fParentObject.CurrentJobHandle, actionID, nFlags, PTChar(menuText), PTChar(menuHierarchy), PTChar(tooltipText),iconID, pvReserved);
+  Result := cmbTLl29x.LlDesignerAddAction(fParentObject.CurrentJobHandle, actionID, nFlags, PTChar(menuText), PTChar(menuHierarchy), PTChar(tooltipText),iconID, pvReserved);
 end;
 
 
@@ -1818,7 +1837,7 @@ begin
 
   StrPCopyExt(buffer, formularText, 16384);
   fParentObject.DeclareLlXObjectsToLL;
-  result := cmbTLl28x.LlDlgEditLineEx(fParentObject.CurrentJobHandle, parentHandle, buffer, 16384, fieldType, title, useFields, nil);
+  result := cmbTLl29x.LlDlgEditLineEx(fParentObject.CurrentJobHandle, parentHandle, buffer, 16384, fieldType, title, useFields, nil);
   formularText := buffer;
 
   if useFields then
@@ -1832,7 +1851,7 @@ end;
 
 function LlCore.LlSetPrinterDefaultsDir(Directory: TString): integer;
 begin
-  Result := cmbtLL28x.LlSetPrinterDefaultsDir(fParentObject.CurrentJobHandle, PTChar(Directory));
+  Result := cmbtLL29x.LlSetPrinterDefaultsDir(fParentObject.CurrentJobHandle, PTChar(Directory));
 end;
 
 {$ifdef UNICODE}
@@ -1845,19 +1864,19 @@ function LlCore.LlSetPrinterInPrinterFile(ProjectType: cardinal;
   const DevModePointer: _PCDEVMODEA): integer;
 {$endif}
 begin
-  Result := cmbtLL28x.LlSetPrinterInPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
+  Result := cmbtLL29x.LlSetPrinterInPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
     PrinterIndex, PTChar(PrinterName), DevModePointer);
 end;
 
 function LlCore.LlSetPrinterToDefault(ProjectType: integer; ProjectName: TString): integer;
 begin
-  Result := cmbtLL28x.LlSetPrinterToDefault(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName));
+  Result := cmbtLL29x.LlSetPrinterToDefault(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName));
 end;
 
 function LlCore.LlGetOption(OptionIndex: integer
   ): integer;
 begin
-  Result := cmbtLL28x.LlGetOption(fParentObject.CurrentJobHandle, OptionIndex);
+  Result := cmbtLL29x.LlGetOption(fParentObject.CurrentJobHandle, OptionIndex);
 end;
 
 function LlCore.LlGetOption(Option: TLlOption
@@ -1869,11 +1888,11 @@ end;
 function LlCore.LlPrintGetOption(PrintOptionIndex: integer
   ): integer;
 begin
-  Result := cmbtLL28x.LlPrintGetOption(fParentObject.CurrentJobHandle, PrintOptionIndex);
+  Result := cmbtLL29x.LlPrintGetOption(fParentObject.CurrentJobHandle, PrintOptionIndex);
 end;
 
 
-Procedure TListLabel28.Design;
+Procedure TListLabel29.Design;
 Var
   OldMaster : Boolean;
   i, err, currentId           : Integer;
@@ -1888,12 +1907,12 @@ Var
 begin
   DeclareLlXObjectsToLL;
   currentId := 10100;
-  if FLlXActionList.Count < 0 then
+  if FLlXActionList.Count > 0 then
   begin
     for i := 0 to FLlXActionList.Count - 1 do
     begin
-      TLDesignerAction28(FLlXActionList.Items[i]).MenuId := currentId;
-      TLDesignerAction28(FLlXActionList.Items[i]).AddAction();
+      TLDesignerAction29(FLlXActionList.Items[i]).MenuId := currentId;
+      TLDesignerAction29(FLlXActionList.Items[i]).AddAction();
       Inc(currentId);
     end;
   end;
@@ -1976,7 +1995,7 @@ begin
   end;
 end;
 
-Function TListLabel28.InitDataProvider(JobHandle:HJob; DrillDownFilter: PFilterDescription): TDataSetDataProvider;
+Function TListLabel29.InitDataProvider(JobHandle:HJob; DrillDownFilter: PFilterDescription): TDataSetDataProvider;
 Var
     i             : Integer;
     Tables        : TObjectList<TListLabelTable>;
@@ -2124,7 +2143,7 @@ Begin
 End;
 
 
-procedure TListLabel28.DeclareLlXObjectsToLL;
+procedure TListLabel29.DeclareLlXObjectsToLL;
 begin
   FLlXInterface:=nil;
   FLlXInterface:=LlXInterface.Create(FLlXObjectList, FLlXFunctionList);
@@ -2132,7 +2151,7 @@ begin
   Core.LlSetOption(53, lParam(ILlXInterface(FLlXInterface)));
 end;
 
-procedure TListLabel28.InitDataSource(projectFile: TString);
+procedure TListLabel29.InitDataSource(projectFile: TString);
   var DataProvider: TDataSetDataProvider;
       DataProviderIntf: TDataProviderInterfaceProxyRoot;
       internalListExt: TString;
@@ -2150,7 +2169,7 @@ begin
 
 end;
 
-Procedure TListLabel28.DefineData(DataProvider: TDataSetDataProvider; table: TListLabelTable);
+Procedure TListLabel29.DefineData(DataProvider: TDataSetDataProvider; table: TListLabelTable);
 Var
   Rows          : TEnumerable<TListLabelTableRow>;
   RowEnumerator : TEnumerator<TListLabelTableRow>;
@@ -2214,7 +2233,7 @@ Begin
 End;
 
 
-Procedure TListLabel28.DefineSortOrders(table: TListLabelTable);
+Procedure TListLabel29.DefineSortOrders(table: TListLabelTable);
 Var
   Rows          : TEnumerable<TListLabelTableRow>;
   RowEnumerator : TEnumerator<TListLabelTableRow>;
@@ -2260,7 +2279,7 @@ Begin
 
 End;
 
-procedure TListLabel28.FillRootTables(DataProvider: TDataSetDataProvider;
+procedure TListLabel29.FillRootTables(DataProvider: TDataSetDataProvider;
   DataMember: string);
 begin
   RootTables.Clear;
@@ -2268,7 +2287,7 @@ begin
 end;
 
 
-procedure TListLabel28.GetChildTables(DataProvider: TDataSetDataProvider;
+procedure TListLabel29.GetChildTables(DataProvider: TDataSetDataProvider;
   TableName: string; var Tables: TStringList);
 var
       relation: TListLabelTableRelation;
@@ -2292,12 +2311,12 @@ begin
 end;
 
 
-function TListLabel28.GetJobHandle: Integer;
+function TListLabel29.GetJobHandle: Integer;
 begin
   result:=CurrentJobHandle;
 end;
 
-Procedure TListLabel28.DefineRelatedTables(DataProvider: TDataSetDataProvider; TableName: String);
+Procedure TListLabel29.DefineRelatedTables(DataProvider: TDataSetDataProvider; TableName: String);
 var
   relation: TListLabelTableRelation;
   relationsToPass: TObjectList<TListLabelTableRelation>;
@@ -2329,7 +2348,7 @@ begin
   end;
 end;
 
-Procedure TListLabel28.PassTableAndHierarchy(DataProvider: TDataSetDataProvider; relation: TListLabelTableRelation; TableName: String; onlyFor1To1Relations: boolean);
+Procedure TListLabel29.PassTableAndHierarchy(DataProvider: TDataSetDataProvider; relation: TListLabelTableRelation; TableName: String; onlyFor1To1Relations: boolean);
 var table: TListLabelTable;
     options: cardinal;
 Begin
@@ -2351,7 +2370,7 @@ Begin
 End;
 
 
-Procedure TListLabel28.Print;
+Procedure TListLabel29.Print;
 Var
   i: Integer;
   temp: Array [0 .. 255] of char;
@@ -2505,7 +2524,7 @@ begin
   End;
 End;
 
-procedure TListLabel28.DoExport(Wnd: HWND; const ProjectFile,
+procedure TListLabel29.DoExport(Wnd: HWND; const ProjectFile,
   OriginalProjectFile: String; MaxPages: Integer; const ExportFormat,
   ExportPath, ExportFile: String; const ExportQuiet, ExportShow: Boolean);
 Var
@@ -2619,14 +2638,14 @@ begin
   end;
 End;
 
-procedure TListLabel28.DoExport(Wnd: HWND; const ProjectFile, OriginalProjectFile: String;
+procedure TListLabel29.DoExport(Wnd: HWND; const ProjectFile, OriginalProjectFile: String;
   MaxPages: Integer; const ExportFormat: String);
 begin
   DoExport(Wnd, ProjectFile, OriginalProjectFile, MaxPages, ExportFormat,
   '', '', False, False);
 end;
 
-Procedure TListLabel28.DoPreviewAndDrilldown( Wnd               : HWND;
+Procedure TListLabel29.DoPreviewAndDrilldown( Wnd               : HWND;
                                            DrillDown          : Boolean;
                                            ProjectFile       : String;
                                            OriginalProjectFile: String;
@@ -2740,7 +2759,7 @@ begin
 End;
 
 
-Procedure TListLabel28.AbortPrinting();
+Procedure TListLabel29.AbortPrinting();
 begin
   if (CurrentJobHandle > 0) then
   begin
@@ -2748,7 +2767,7 @@ begin
   end;
 end;
 
-function TListLabel28.GetCore: LlCore;
+function TListLabel29.GetCore: LlCore;
 begin
 
   if(FCore = nil) then
@@ -2760,7 +2779,7 @@ end;
 
 //
 
-Constructor LlCore.Create(ParentObject: TListLabel28);
+Constructor LlCore.Create(ParentObject: TListLabel29);
 begin
    fParentObject := ParentObject;
 end;
@@ -2771,13 +2790,13 @@ var
   Buffer: PTChar;
   Length: integer;
 begin
-  Length := cmbTLl28x.LlGetOptionString(fParentObject.CurrentJobHandle, OptionIndex, nil,
+  Length := cmbTLl29x.LlGetOptionString(fParentObject.CurrentJobHandle, OptionIndex, nil,
     0);
   if length>0 then
   begin
     GetMem(Buffer, Length * sizeof(TChar));
     Buffer^ := #0;
-    Result := cmbTLl28x.LlGetOptionString(fParentObject.CurrentJobHandle, OptionIndex, Buffer,
+    Result := cmbTLl29x.LlGetOptionString(fParentObject.CurrentJobHandle, OptionIndex, Buffer,
       Length);
     Value := TString(Buffer);
     FreeMem(Buffer);
@@ -2809,14 +2828,14 @@ var
  PrnSize, DevModeSize: cardinal;
  nRet: integer;
 begin
-  nRet := cmbTLl28x.LlGetPrinterFromPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
+  nRet := cmbTLl29x.LlGetPrinterFromPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
                                                 PrinterIndex, nil, @PrnSize, nil, @DevModeSize);
   if nRet >= 0 then
   begin
    GetMem(BufPrinter, PrnSize*Sizeof(TChar));
    GetMem(BufDevMode, DevModeSize*Sizeof(TChar));
    BufPrinter^ := #0;
-   nRet := cmbTLl28x.LlGetPrinterFromPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
+   nRet := cmbTLl29x.LlGetPrinterFromPrinterFile(fParentObject.CurrentJobHandle, ProjectType, PTChar(ProjectName),
                                                 PrinterIndex, PTChar(BufPrinter), @PrnSize, BufDevMode, @DevModeSize);
    Printer := TString(BufPrinter);
    DevMode := BufDevMode;
@@ -2834,7 +2853,7 @@ begin
   GetMem(BufPort, 40 * sizeof(TChar));
   BufPrinter^ := #0;
   BufPort^ := #0;
-  Result := cmbTLl28x.LlPrintGetPrinterInfo(fParentObject.CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
+  Result := cmbTLl29x.LlPrintGetPrinterInfo(fParentObject.CurrentJobHandle, BufPrinter, 128 - 1, BufPort, 40 - 1);
   PrinterName := TString(BufPrinter);
   PrinterPort := TString(BufPort);
   FreeMem(BufPrinter);
@@ -2843,7 +2862,7 @@ end;
 
 function LlCore.LlPrintSetProjectParameter(ParamName, ParamValue: TString; Flag: Longint):integer;
 begin
-  Result := cmbTLl28x.LlPrintSetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), PTChar(ParamValue), Flag);
+  Result := cmbTLl29x.LlPrintSetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), PTChar(ParamValue), Flag);
 end;
 
 function LlCore.LlPrintGetProjectParameter(ParamName: TString; Evaluated: Boolean; var ParamValue: TString; var Flag: _LPUINT): integer;
@@ -2851,12 +2870,12 @@ var
   Buffer: PTChar;
   length: integer;
 begin
-  length := cmbTLl28x.LlPrintGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), Evaluated, nil, 0, nil);
+  length := cmbTLl29x.LlPrintGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), Evaluated, nil, 0, nil);
   if length>0 then
   begin
     GetMem(Buffer, length * sizeof(TChar));
     Buffer^ := #0;
-    Result := cmbTLl28x.LlPrintGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), Evaluated, Buffer, length, nil);
+    Result := cmbTLl29x.LlPrintGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), Evaluated, Buffer, length, nil);
     ParamValue := TString(Buffer);
     FreeMem(Buffer);
   end
@@ -2872,12 +2891,12 @@ var
   Buffer: PTChar;
   length: integer;
 begin
-  length := cmbTLl28x.LlGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ProjectName), PTChar(ParamName), nil, 0);
+  length := cmbTLl29x.LlGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ProjectName), PTChar(ParamName), nil, 0);
   if length>0 then
   begin
     GetMem(Buffer, length * sizeof(TChar));
     Buffer^ := #0;
-    Result := cmbTLl28x.LlGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ProjectName), PTChar(ParamName), Buffer, length);
+    Result := cmbTLl29x.LlGetProjectParameter(fParentObject.CurrentJobHandle, PTChar(ProjectName), PTChar(ParamName), Buffer, length);
     ParamValue := TString(Buffer);
     FreeMem(Buffer);
   end
@@ -2902,12 +2921,12 @@ begin
   begin
     pParamName := nil;
   end;
-  length := cmbTLl28x.LlGetDefaultProjectParameter(fParentObject.CurrentJobHandle, pParamName, nil, 0, nil);
+  length := cmbTLl29x.LlGetDefaultProjectParameter(fParentObject.CurrentJobHandle, pParamName, nil, 0, nil);
   if length>0 then
   begin
     GetMem(Buffer, length * sizeof(TChar));
     Buffer^ := #0;
-    Result := cmbTLl28x.LlGetDefaultProjectParameter(fParentObject.CurrentJobHandle, pParamName, Buffer, length, _LPUINT(@Flag));
+    Result := cmbTLl29x.LlGetDefaultProjectParameter(fParentObject.CurrentJobHandle, pParamName, Buffer, length, _LPUINT(@Flag));
     ParamValue := TString(Buffer);
     FreeMem(Buffer);
   end
@@ -2920,7 +2939,7 @@ end;
 
 function LlCore.LlSetDefaultProjectParameter(ParamName, ParamValue: TString; Flag: Longint): integer;
 begin
-  Result := cmbTLl28x.LlSetDefaultProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), PTChar(ParamValue), Flag)
+  Result := cmbTLl29x.LlSetDefaultProjectParameter(fParentObject.CurrentJobHandle, PTChar(ParamName), PTChar(ParamValue), Flag)
 end;
 
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
@@ -2928,7 +2947,7 @@ end;
 //==============================================================================
 //  TLlExprEvaluator
 //==============================================================================
- constructor TLlExprEvaluator.Create(Parent: TListLabel28; Expression: TString;
+ constructor TLlExprEvaluator.Create(Parent: TListLabel29; Expression: TString;
     IncludeTablefields: boolean);
   var
     pszErrorBuffer: PTChar;
@@ -2943,18 +2962,18 @@ end;
     VariantInit(Content);
     GetMem(pszErrorBuffer, 1024 * sizeof(TChar));
     FParent.DeclareLlXObjectsToLL;
-    FExprPointer := cmbtll28x.LlExprParse(Parent.CurrentJobHandle, PTChar(Expression), IncludeTablefields);
-    FErrorValue := cmbtll28x.LlExprEvaluateVar(Parent.CurrentJobHandle, FExprPointer, cmbtll28x.PVARIANT(@Content), 0);
+    FExprPointer := cmbtll29x.LlExprParse(Parent.CurrentJobHandle, PTChar(Expression), IncludeTablefields);
+    FErrorValue := cmbtll29x.LlExprEvaluateVar(Parent.CurrentJobHandle, FExprPointer, cmbtll29x.PVARIANT(@Content), 0);
     if (FErrorValue = 0) then
     begin
       FResult := Content;
-      FExprType := cmbtll28x.LlExprType(Parent.CurrentJobHandle, FExprPointer);
+      FExprType := cmbtll29x.LlExprType(Parent.CurrentJobHandle, FExprPointer);
     end
     else
     begin
       FResult := '';
       FExprType := 0;
-      cmbtll28x.LlExprError(Parent.CurrentJobHandle, pszErrorBuffer, 1024 - 1);
+      cmbtll29x.LlExprError(Parent.CurrentJobHandle, pszErrorBuffer, 1024 - 1);
       FErrorText := TString(pszErrorBuffer);
     end;
     FExpression := Expression;
@@ -2988,7 +3007,7 @@ end;
 
   destructor TLlExprEvaluator.Destroy;
   begin
-    cmbtll28x.LlExprFree(FParent.CurrentJobHandle, FExprPointer);
+    cmbtll29x.LlExprFree(FParent.CurrentJobHandle, FExprPointer);
     FParent.Core.LlSetOption(53,0);
 
     inherited Destroy;
@@ -2997,9 +3016,9 @@ end;
 
 
 
-{ TLl28RTFObject }
+{ TLl29RTFObject }
 
-  function TLlRTFControl28.CopyToClipboard: integer;
+  function TLlRTFControl29.CopyToClipboard: integer;
   begin
     if Assigned(FMyParentComponent) then
         Result := LlRTFCopyToClipboard(FMyParentComponent.CurrentJobHandle, FHandle)
@@ -3010,7 +3029,7 @@ end;
   end;
 
 
-constructor TLlRTFControl28.Create(AOwner: TComponent);
+constructor TLlRTFControl29.Create(AOwner: TComponent);
 begin
     inherited create(AOwner);
     PrintState := psPending;
@@ -3019,7 +3038,7 @@ begin
     FFirst:=true;
 end;
 
-procedure TLlRTFControl28.CreateWnd;
+procedure TLlRTFControl29.CreateWnd;
 begin
     inherited CreateWnd;
     if FFirst then
@@ -3029,7 +3048,7 @@ begin
             if Assigned(FMyParentComponent) then
             begin
                FHandle := LlRTFCreateObject(FMyParentComponent.CurrentJobHandle);
-               cmbTLl28x.LlRTFEditObject(FMyParentComponent.CurrentJobHandle, FHandle, handle, 0, LL_PROJECT_LIST, false);
+               cmbTLl29x.LlRTFEditObject(FMyParentComponent.CurrentJobHandle, FHandle, handle, 0, LL_PROJECT_LIST, false);
                FFirst:=False;
             end
             else
@@ -3039,18 +3058,18 @@ begin
     end;
 end;
 
-destructor TLlRTFControl28.Destroy;
+destructor TLlRTFControl29.Destroy;
   begin
     if not (csDesigning in ComponentState) and Assigned(FMyParentComponent) then
         LlRTFDeleteObject(FMyParentComponent.CurrentJobHandle, FHandle);
     inherited Destroy;
   end;
 
-function TLlRTFControl28.Display(Canvas: TCanvas; Rect: TRect;
+function TLlRTFControl29.Display(Canvas: TCanvas; Rect: TRect;
     FromStart: boolean): integer;
   var
     State: integer;
-    pRect: cmbTLl28x._PRECT;
+    pRect: cmbTLl29x._PRECT;
   begin
     if Assigned(FMyParentComponent) then
     begin
@@ -3076,7 +3095,7 @@ function TLlRTFControl28.Display(Canvas: TCanvas; Rect: TRect;
   end;
 
 
-  function TLlRTFControl28.GetText: TString;
+  function TLlRTFControl29.GetText: TString;
   var
     Flags: integer;
     Length: integer;
@@ -3109,27 +3128,27 @@ function TLlRTFControl28.Display(Canvas: TCanvas; Rect: TRect;
         raise ENoParentComponentError.Create('No parent component assigned');
   end;
 
-  function TLlRTFControl28.ProhibitAction(ControlID: integer): integer;
+  function TLlRTFControl29.ProhibitAction(ControlID: integer): integer;
 begin
     result:=LlRTFEditorProhibitAction(FMyParentComponent.CurrentJobHandle, FHandle, ControlID);
 end;
 
-procedure TLlRTFControl28.SetContentMode(const Value: TLlRTFContentMode);
+procedure TLlRTFControl29.SetContentMode(const Value: TLlRTFContentMode);
   begin
     FContentMode := Value;
   end;
 
-  procedure TLlRTFControl28.SetMyParentComponent(const Value: TListLabel28);
+  procedure TLlRTFControl29.SetMyParentComponent(const Value: TListLabel29);
 begin
   FMyParentComponent := Value;
 end;
 
-procedure TLlRTFControl28.SetPrintState(const Value: TLlRTFPrintState);
+procedure TLlRTFControl29.SetPrintState(const Value: TLlRTFPrintState);
   begin
     FPrintState := Value;
   end;
 
-  procedure TLlRTFControl28.SetText(const Value: TString);
+  procedure TLlRTFControl29.SetText(const Value: TString);
   begin
     if not (csDesigning in ComponentState) then
     begin
@@ -3141,12 +3160,12 @@ procedure TLlRTFControl28.SetPrintState(const Value: TLlRTFPrintState);
 
   end;
 
-  procedure TLlRTFControl28.SetTextMode(const Value: TLlRTFTextMode);
+  procedure TLlRTFControl29.SetTextMode(const Value: TLlRTFTextMode);
   begin
     FTextMode := Value;
   end;
 
-procedure TLlRTFControl28.WndProc(var Message: TMessage);
+procedure TLlRTFControl29.WndProc(var Message: TMessage);
 var hCtl: HWND;
 begin
   inherited;
@@ -3165,26 +3184,26 @@ begin
   end;
 end;
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
-{TLlDesignerFunction28Parameter}
+{TLlDesignerFunction29Parameter}
 
-procedure TLlDesignerFunction28Parameter.SetParameterDescription(
+procedure TLlDesignerFunction29Parameter.SetParameterDescription(
   const Value: String);
 begin
   FParameterDescription := Value;
 end;
 
-procedure TLlDesignerFunction28Parameter.SetParameterType(
-  const Value: TLlDesignerFunction28ParameterType);
+procedure TLlDesignerFunction29Parameter.SetParameterType(
+  const Value: TLlDesignerFunction29ParameterType);
 begin
   FParameterType := Value;
 end;
-{/TLlDesignerFunction28Parameter}
+{/TLlDesignerFunction29Parameter}
 
 //==============================================================================
 //  TListLabelExportOptions
 //==============================================================================
 
-  constructor TListLabelExportOptions.Create(parent: TListLabel28);
+  constructor TListLabelExportOptions.Create(parent: TListLabel29);
   begin
     inherited Create;
     fParent:= parent;
@@ -3652,6 +3671,8 @@ end;
                             result:= 'PDF.FileAttachments';
         PdfConformance:
                             result:= 'PDF.Conformance';
+		PdfUseSimpleFrames:
+							result:= 'PDF.UseSimpleFrames';
         PdfZUGFeRDXmlPath:
                             result:= 'PDF.ZUGFeRDXmlPath';
         PdfZUGFeRDConformanceLevel:
@@ -3785,39 +3806,39 @@ end;
 { - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - }
 
 {TDesignerFunctiions, DesignerObjects, DesignerActions}
-procedure TDesignerFunctions.Add(TheFunction: TLlDesignerFunction28);
+procedure TDesignerFunctions.Add(TheFunction: TLlDesignerFunction29);
 begin
   inherited Add(TheFunction);
 end;
 
-procedure TDesignerObjects.Add(TheObject: TLlDesignerObject28);
+procedure TDesignerObjects.Add(TheObject: TLlDesignerObject29);
 begin
   inherited Add(TheObject);
 end;
 
-procedure TDesignerActions.Add(TheAction: TLDesignerAction28);
+procedure TDesignerActions.Add(TheAction: TLDesignerAction29);
 begin
   inherited Add(TheAction);
 end;
 
 {/TDesignerFunctiions, DesignerObjects, DesignerActions}
 
-{TL28XFunctionen}
+{TL29XFunctionen}
 
-constructor TLlDesignerFunction28.Create(AOwner: TComponent);
+constructor TLlDesignerFunction29.Create(AOwner: TComponent);
 begin
     inherited create(AOwner);
-    FParameter1:=TLlDesignerFunction28Parameter.Create;
-    FParameter2:=TLlDesignerFunction28Parameter.Create;
-    FParameter3:=TLlDesignerFunction28Parameter.Create;
-    FParameter4:=TLlDesignerFunction28Parameter.Create;
+    FParameter1:=TLlDesignerFunction29Parameter.Create;
+    FParameter2:=TLlDesignerFunction29Parameter.Create;
+    FParameter3:=TLlDesignerFunction29Parameter.Create;
+    FParameter4:=TLlDesignerFunction29Parameter.Create;
     Visible:=true;
     FRefCount:=0;
     FHLib:=0;
 end;
 
 
-destructor TLlDesignerFunction28.Destroy;
+destructor TLlDesignerFunction29.Destroy;
 begin
     FParameter1.Free;
     FParameter2.Free;
@@ -3828,15 +3849,15 @@ end;
 
 
 
-function TLlDesignerFunction28._AddRef: Integer;
+function TLlDesignerFunction29._AddRef: Integer;
 begin
 	Result := InterlockedIncrement(FRefCount);
-  InterlockedIncrement(l28FireDACInterfaces.g_nObjects);
+  InterlockedIncrement(l29FireDACInterfaces.g_nObjects);
 end;
 
-function TLlDesignerFunction28._Release: Integer;
+function TLlDesignerFunction29._Release: Integer;
 begin
-    InterlockedDecrement(l28FireDACInterfaces.g_nObjects);
+    InterlockedDecrement(l29FireDACInterfaces.g_nObjects);
 	Result := InterlockedDecrement(FRefCount);
     if Result = 0 then
     begin
@@ -3847,12 +3868,12 @@ begin
 
 end;
 
-function TLlDesignerFunction28.CheckSyntax(var pbsError: OLEString;
+function TLlDesignerFunction29.CheckSyntax(var pbsError: OLEString;
   var pnTypeRes: integer; var pnTypeResLL, pnDecs: cardinal;
   const nArgs: cardinal; VarArg1, VarArg2, VarArg3,
   VarArg4: OleVariant): HResult;
 var IsValid: LongBool;
-    TmpResultType: TLlDesignerFunction28ParameterType;
+    TmpResultType: TLlDesignerFunction29ParameterType;
     ErrorText: String;
     Decimals: integer;
 begin
@@ -3876,11 +3897,11 @@ begin
    end;
 end;
 
-function TLlDesignerFunction28.Execute(var pVarRes: OleVariant; var pnTypeRes: integer;
+function TLlDesignerFunction29.Execute(var pVarRes: OleVariant; var pnTypeRes: integer;
   var pnTypeResLL, pnDecs: cardinal; const nArgs: cardinal; VarArg1,
   VarArg2, VarArg3, VarArg4: OleVariant): HResult;
 var
-    TmpResultType: TLlDesignerFunction28ParameterType;
+    TmpResultType: TLlDesignerFunction29ParameterType;
     Decimals: integer;
 
 begin
@@ -3894,7 +3915,7 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetDescr(var pbsDescr: OLEString): HResult;
+function TLlDesignerFunction29.GetDescr(var pbsDescr: OLEString): HResult;
 var ResultString: String;
     ParameterString: String;
 begin
@@ -3935,34 +3956,34 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetGroupDescr(const bsGroup: OLEString;
+function TLlDesignerFunction29.GetGroupDescr(const bsGroup: OLEString;
   var pbsDescr: OLEString): HResult;
 begin
     pbsDescr:=GroupName;
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetGroups(var pbsDescr: OLEString): HResult;
+function TLlDesignerFunction29.GetGroups(var pbsDescr: OLEString): HResult;
 begin
     pbsDescr:=GroupName;
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetName(var pbsName: OLEString): HResult;
+function TLlDesignerFunction29.GetName(var pbsName: OLEString): HResult;
 begin
     pbsName:=FunctionName;
     result:=S_OK;
 
 end;
 
-function TLlDesignerFunction28.GetOption(const nOption: integer;
+function TLlDesignerFunction29.GetOption(const nOption: integer;
   var pnValue: lParam): HResult;
 begin
     pnValue:=0;
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetParaCount(var pnMinParas,
+function TLlDesignerFunction29.GetParaCount(var pnMinParas,
   pnMaxParas: integer): HResult;
 begin
     pnMinParas:=MinimumParameters;
@@ -3970,7 +3991,7 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetLlFctparaTypeFromParamType(Value: TLlDesignerFunction28ParameterType): integer;
+function TLlDesignerFunction29.GetLlFctparaTypeFromParamType(Value: TLlDesignerFunction29ParameterType): integer;
 begin
     result:=LL_FCTPARATYPE_STRING;
     if(Value=ptBarcode) then result:=LL_FCTPARATYPE_BARCODE;
@@ -3981,7 +4002,7 @@ begin
     if(Value=ptAll) then result:=LL_FCTPARATYPE_ALL;
 end;
 
-function TLlDesignerFunction28.GetLlFieldTypeFromParamType(Value: TLlDesignerFunction28ParameterType): integer;
+function TLlDesignerFunction29.GetLlFieldTypeFromParamType(Value: TLlDesignerFunction29ParameterType): integer;
 begin
     result:=LL_TEXT;
     if(Value=ptBarcode) then result:=LL_BARCODE;
@@ -3992,7 +4013,7 @@ begin
 end;
 
 
-function TLlDesignerFunction28.GetParameterTypeText(Value: TLlDesignerFunction28ParameterType):String;
+function TLlDesignerFunction29.GetParameterTypeText(Value: TLlDesignerFunction29ParameterType):String;
 var Text: Array[0..6] of String;
 
 function LoadStringEx(hInstance: HMODULE; uID: Longint): String;
@@ -4017,7 +4038,7 @@ begin
     result:=Text[integer(Value)];
 end;
 
-function TLlDesignerFunction28.GetParaTypes(var pnTypeRes, pnTypeArg1, pnTypeArg2,
+function TLlDesignerFunction29.GetParaTypes(var pnTypeRes, pnTypeArg1, pnTypeArg2,
   pnTypeArg3, pnTypeArg4: integer): HResult;
 begin
     pnTypeRes:=GetLlFctparaTypeFromParamType(ResultType);
@@ -4028,7 +4049,7 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetParaValueHint(const nPara: integer; var pbsHint,
+function TLlDesignerFunction29.GetParaValueHint(const nPara: integer; var pbsHint,
   pbsTabbedList: OLEString): HResult;
 
 var ValueList: TStringList;
@@ -4059,13 +4080,13 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.GetVisibleFlag(var pbVisible: boolean): HResult;
+function TLlDesignerFunction29.GetVisibleFlag(var pbVisible: boolean): HResult;
 begin
     pbVisible:=visible;
     result:=S_OK;
 end;
 
-function TLlDesignerFunction28.QueryInterface(const IID: TGUID; out Obj): HResult;
+function TLlDesignerFunction29.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
 	Result := S_OK;
 	pointer(obj) := NIL;
@@ -4081,12 +4102,12 @@ begin
 
 end;
 
-procedure TLlDesignerFunction28.SetDescription(const Value: String);
+procedure TLlDesignerFunction29.SetDescription(const Value: String);
 begin
   FDescription := Value;
 end;
 
-function TLlDesignerFunction28.SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;
+function TLlDesignerFunction29.SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;
 begin
   if (hLLJob=0) then
   begin
@@ -4100,17 +4121,17 @@ begin
   result:=S_OK;
 end;
 
-procedure TLlDesignerFunction28.SetMaximumParameters(const Value: integer);
+procedure TLlDesignerFunction29.SetMaximumParameters(const Value: integer);
 begin
   FMaximumParameters := Value;
 end;
 
-procedure TLlDesignerFunction28.SetMinimumParameters(const Value: integer);
+procedure TLlDesignerFunction29.SetMinimumParameters(const Value: integer);
 begin
   FMinimumParameters := Value;
 end;
 
-function TLlDesignerFunction28.SetOption(const nOption: integer; nValue: lParam): HResult;
+function TLlDesignerFunction29.SetOption(const nOption: integer; nValue: lParam): HResult;
 begin
     case nOption of
         LLXFUNCTION_OPTION_LANGUAGE: FLanguage:=nValue;
@@ -4119,78 +4140,78 @@ begin
     result:=S_OK;
 end;
 
-procedure TLlDesignerFunction28.SetParameter1(const Value: TLlDesignerFunction28Parameter);
+procedure TLlDesignerFunction29.SetParameter1(const Value: TLlDesignerFunction29Parameter);
 begin
 
   FParameter1.ParameterType:=Value.ParameterType;
   FParameter1.ParameterDescription:=Value.ParameterDescription;
 end;
 
-procedure TLlDesignerFunction28.SetParameter2(const Value: TLlDesignerFunction28Parameter);
+procedure TLlDesignerFunction29.SetParameter2(const Value: TLlDesignerFunction29Parameter);
 begin
   FParameter2.ParameterType:=Value.ParameterType;
   FParameter2.ParameterDescription:=Value.ParameterDescription;
 end;
 
-procedure TLlDesignerFunction28.SetParameter3(const Value: TLlDesignerFunction28Parameter);
+procedure TLlDesignerFunction29.SetParameter3(const Value: TLlDesignerFunction29Parameter);
 begin
   FParameter3.ParameterType:=Value.ParameterType;
   FParameter3.ParameterDescription:=Value.ParameterDescription;
 
 end;
 
-procedure TLlDesignerFunction28.SetParameter4(const Value: TLlDesignerFunction28Parameter);
+procedure TLlDesignerFunction29.SetParameter4(const Value: TLlDesignerFunction29Parameter);
 begin
   FParameter4.ParameterType:=Value.ParameterType;
   FParameter4.ParameterDescription:=Value.ParameterDescription;
 end;
 
-procedure TLlDesignerFunction28.SetResultType(
-  const Value: TLlDesignerFunction28ParameterType);
+procedure TLlDesignerFunction29.SetResultType(
+  const Value: TLlDesignerFunction29ParameterType);
 begin
   FResultType := Value;
 end;
 
-procedure TLlDesignerFunction28.SetFunctionName(const Value: String);
+procedure TLlDesignerFunction29.SetFunctionName(const Value: String);
 begin
   FFunctionName := Value;
 end;
 
-procedure TLlDesignerFunction28.SetGroupName(const Value: String);
+procedure TLlDesignerFunction29.SetGroupName(const Value: String);
 begin
   FGroupName := Value;
 end;
 
-procedure TLlDesignerFunction28.SetMyParentComponent(const Value: TListLabel28);
+procedure TLlDesignerFunction29.SetMyParentComponent(const Value: TListLabel29);
 begin
   FParent := Value;
   FParent.DesignerFunctions.Add(self);
 end;
 
-procedure TLlDesignerFunction28.SetVisible(const Value: boolean);
+procedure TLlDesignerFunction29.SetVisible(const Value: boolean);
 begin
   FVisible := Value;
 end;
 
-procedure TLlDesignerFunction28.SetOnCheckFunctionSyntax(
+procedure TLlDesignerFunction29.SetOnCheckFunctionSyntax(
   const Value: TCheckFunctionSyntaxEvent);
 begin
   FOnCheckFunctionSyntax := Value;
 end;
 
-procedure TLlDesignerFunction28.SetOnEvaluateFunction(
+procedure TLlDesignerFunction29.SetOnEvaluateFunction(
   const Value: TEvaluateFunctionEvent);
 begin
   FOnEvaluateFunction := Value;
 end;
 
-procedure TLlDesignerFunction28.SetOnParameterAutoComplete(
+procedure TLlDesignerFunction29.SetOnParameterAutoComplete(
   const Value: TParameterAutoCompleteEvent);
 begin
   FOnParameterAutoComplete := Value;
 end;
 
-{/TLlDesignerFunction28}
+{/TLlDesignerFunction29}
 {TListLabelDesignerProperty}
 
 constructor TListLabelDesignerProperty.create;
@@ -4324,17 +4345,17 @@ begin
 end;
 
 {/TListLabelDesignerProperty}
-{TLlDesignerObject28}
+{TLlDesignerObject29}
 
-function TLlDesignerObject28._AddRef: Integer;
+function TLlDesignerObject29._AddRef: Integer;
 begin
   	Result := InterlockedIncrement(FRefCount);
-    InterlockedIncrement(l28FireDACInterfaces.g_nObjects);
+    InterlockedIncrement(l29FireDACInterfaces.g_nObjects);
 end;
 
-function TLlDesignerObject28._Release: Integer;
+function TLlDesignerObject29._Release: Integer;
 begin
-    InterlockedDecrement(l28FireDACInterfaces.g_nObjects);
+    InterlockedDecrement(l29FireDACInterfaces.g_nObjects);
 	Result := InterlockedDecrement(FRefCount);
     if Result = 0 then
     begin
@@ -4350,7 +4371,7 @@ end;
 
 
 
-function TLlDesignerObject28.AllowPageBreak: HResult;
+function TLlDesignerObject29.AllowPageBreak: HResult;
 begin
     if SupportsMultipage then
         result:=S_OK
@@ -4358,24 +4379,24 @@ begin
         result:=S_FALSE;
 end;
 
-function TLlDesignerObject28.CalcDistanceToFrame(const hDC: HDC; ptMouse: TPoint;
+function TLlDesignerObject29.CalcDistanceToFrame(const hDC: HDC; ptMouse: TPoint;
   var pnDistance: cardinal): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.CancelEditPart: HResult;
+function TLlDesignerObject29.CancelEditPart: HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.CanCreateObjectFromType(const nLLType: integer;
+function TLlDesignerObject29.CanCreateObjectFromType(const nLLType: integer;
   const sVarName: OLEString; var prcCreate: TRect): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.CanEditPart(ptMouse: TPoint;
+function TLlDesignerObject29.CanEditPart(ptMouse: TPoint;
   var phMenu: hMenu): HResult;
 
 var UniqueID: cardinal;
@@ -4431,16 +4452,16 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.ClearEditPartInfo: HResult;
+function TLlDesignerObject29.ClearEditPartInfo: HResult;
 begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.Clone(var pIObject): HResult;
-var pObject: TLlDesignerObject28;
+function TLlDesignerObject29.Clone(var pIObject): HResult;
+var pObject: TLlDesignerObject29;
 begin
     try
-      pObject := TLlDesignerObject28.CreateCopy(owner,self);
+      pObject := TLlDesignerObject29.CreateCopy(owner,self);
       if FAILED(pObject.QueryInterface(IID_LLX_IOBJECT,pIObject)) then
           begin
           pObject.Free;
@@ -4453,7 +4474,7 @@ begin
     end;
 end;
 
-constructor TLlDesignerObject28.Create(AOwner: TComponent);
+constructor TLlDesignerObject29.Create(AOwner: TComponent);
 begin
     FRefCount:=0;
     FIcon:=TIcon.Create;
@@ -4470,7 +4491,7 @@ begin
     inherited create(AOwner);
 end;
 
-constructor TLlDesignerObject28.CreateCopy(AOwner:TComponent; Base: TLlDesignerObject28);
+constructor TLlDesignerObject29.CreateCopy(AOwner:TComponent; Base: TLlDesignerObject29);
 var index: integer;
 begin
      inherited create(AOwner);
@@ -4518,7 +4539,7 @@ begin
      Properties:=TListLabelDesignerProperty.CreateCopy(Base.Properties);
 end;
 
-destructor TLlDesignerObject28.Destroy;
+destructor TLlDesignerObject29.Destroy;
 begin
     if Assigned(fParent) then
      try
@@ -4533,7 +4554,7 @@ begin
     inherited destroy;
 end;
 
-function TLlDesignerObject28.Edit(const hWnd: cmbtHWND; ptMouse: TPoint): HResult;
+function TLlDesignerObject29.Edit(const hWnd: cmbtHWND; ptMouse: TPoint): HResult;
 var ChangedFlag: boolean;
 begin
     ChangedFlag:=false;
@@ -4548,7 +4569,7 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.EditPart(const hWnd: cmbtHWND; ptMouse: TPoint;
+function TLlDesignerObject29.EditPart(const hWnd: cmbtHWND; ptMouse: TPoint;
   const nMenuID: cardinal): HResult;
 
 var
@@ -4585,14 +4606,14 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.FirstCreation(const hWndParent: cmbtHWND): HResult;
+function TLlDesignerObject29.FirstCreation(const hWndParent: cmbtHWND): HResult;
 begin
     if Assigned(FOnInitialCreation) then
         FOnInitialCreation(self, hWndParent);
     result:=E_NOTIMPL; // force edit dialog anyway
 end;
 
-function TLlDesignerObject28.ForceResetPrintState: HResult;
+function TLlDesignerObject29.ForceResetPrintState: HResult;
 begin
     FPrintState:=llxpsWaiting;
     if Assigned(FOnResetPrintState) then
@@ -4600,18 +4621,18 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.GetDescr(var pbsDescr: OLEString): HResult;
+function TLlDesignerObject29.GetDescr(var pbsDescr: OLEString): HResult;
 begin
     pbsDescr:=Description;
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.GetErrorcode: longint;
+function TLlDesignerObject29.GetErrorcode: longint;
 begin
     result:=0;
 end;
 
-function TLlDesignerObject28.GetIcon(var phIcon: HIcon): HResult;
+function TLlDesignerObject29.GetIcon(var phIcon: HIcon): HResult;
 begin
     if Assigned(Icon) then
         phIcon:=Icon.Handle
@@ -4620,19 +4641,19 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.GetMinDimensionsSCM(const bForNew: boolean;
+function TLlDesignerObject29.GetMinDimensionsSCM(const bForNew: boolean;
   var ptMinSize: Size): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.GetName(var pbsName: OLEString): HResult;
+function TLlDesignerObject29.GetName(var pbsName: OLEString): HResult;
 begin
     pbsName:=ObjectName;
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.GetOption(const nOption: integer;
+function TLlDesignerObject29.GetOption(const nOption: integer;
   var pnValue: lParam): HResult;
 begin
     case nOption of
@@ -4661,7 +4682,7 @@ begin
 
 end;
 
-function TLlDesignerObject28.GetOptionString(const sOption: OLEString;
+function TLlDesignerObject29.GetOptionString(const sOption: OLEString;
   var psValue: OLEString): HResult;
 begin
     psValue := '';
@@ -4672,48 +4693,48 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.GetParameters(pIStream: IStream): HResult;
+function TLlDesignerObject29.GetParameters(pIStream: IStream): HResult;
 begin
     Properties.SaveToStream(pIStream);
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.GetTrueRec(var prc: TRect): HResult;
+function TLlDesignerObject29.GetTrueRec(var prc: TRect): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.InObject(const hDC: HDC; ptMouse: TPoint): HResult;
+function TLlDesignerObject29.InObject(const hDC: HDC; ptMouse: TPoint): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.IsProjectSupported(const nProjType: integer;
+function TLlDesignerObject29.IsProjectSupported(const nProjType: integer;
   var pbSupported: boolean): HResult;
 begin
     pbSupported:=true;
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.IsSetFontSupported(var pbSupported: boolean): HResult;
+function TLlDesignerObject29.IsSetFontSupported(var pbSupported: boolean): HResult;
 begin
     pbSupported:=true;
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.OnDeclareChartRow: HResult;
+function TLlDesignerObject29.OnDeclareChartRow: HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.OnDragDrop(pDataObj: IDataObject;
+function TLlDesignerObject29.OnDragDrop(pDataObj: IDataObject;
   const grfKeyState: Longword; p: TPoint; var pdwEffect: Longword;
   const bQuery: boolean): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.OnMouseLButton(const hDC: HDC; ptMouse: TPoint;
+function TLlDesignerObject29.OnMouseLButton(const hDC: HDC; ptMouse: TPoint;
   const hWnd: cmbtHWND): HResult;
 var
 	Canvas: TCanvas;
@@ -4735,18 +4756,18 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.OnMouseMove(const hDC: HDC; ptMouse: TPoint;
+function TLlDesignerObject29.OnMouseMove(const hDC: HDC; ptMouse: TPoint;
   var phCrs: hCursor): HResult;
 begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.OnObject(const hDC: HDC; ptMouse: TPoint): HResult;
+function TLlDesignerObject29.OnObject(const hDC: HDC; ptMouse: TPoint): HResult;
 begin
     result:=E_NOTIMPL;
 end;
 
-function TLlDesignerObject28.PrintFinished: HResult;
+function TLlDesignerObject29.PrintFinished: HResult;
 begin
     if FPrintState=llxpsFinished then
         result:=S_OK
@@ -4754,7 +4775,7 @@ begin
         result:=S_FALSE;
 end;
 
-function TLlDesignerObject28.PrintPastFinished: HResult;
+function TLlDesignerObject29.PrintPastFinished: HResult;
 begin
     if FPrintState=llxpsPastFinished then
         result:=S_OK
@@ -4763,7 +4784,7 @@ begin
 
 end;
 
-function TLlDesignerObject28.PrintUnfinished: HResult;
+function TLlDesignerObject29.PrintUnfinished: HResult;
 begin
     if FPrintState=llxpsUnfinished then
         result:=S_OK
@@ -4772,7 +4793,7 @@ begin
 
 end;
 
-function TLlDesignerObject28.PrintWaiting: HResult;
+function TLlDesignerObject29.PrintWaiting: HResult;
 begin
     if FPrintState=llxpsWaiting then
         result:=S_OK
@@ -4780,7 +4801,7 @@ begin
         result:=S_FALSE;
 end;
 
-function TLlDesignerObject28.QueryInterface(const IID: TGUID; out Obj): HResult;
+function TLlDesignerObject29.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
 	Result := S_OK;
 	pointer(obj) := NIL;
@@ -4796,7 +4817,7 @@ begin
 
 end;
 
-function TLlDesignerObject28.ResetPrintState: HResult;
+function TLlDesignerObject29.ResetPrintState: HResult;
 begin
     if FSupportsMultipage then
     begin
@@ -4807,12 +4828,12 @@ begin
     result:=S_OK;
 end;
 
-procedure TLlDesignerObject28.SetDescription(const Value: String);
+procedure TLlDesignerObject29.SetDescription(const Value: String);
 begin
   FDescription := Value;
 end;
 
-function TLlDesignerObject28.SetFont(var pLF: LOGFONT; const nSize: cardinal;
+function TLlDesignerObject29.SetFont(var pLF: LOGFONT; const nSize: cardinal;
   const rgbColor: COLORREF): HResult;
 begin
     if (FFontHandle<>0) then DeleteObject(FFontHandle);
@@ -4822,26 +4843,26 @@ begin
     result:=S_OK;
 end;
 
-procedure TLlDesignerObject28.SetIcon(const Value: TIcon);
+procedure TLlDesignerObject29.SetIcon(const Value: TIcon);
 begin
   if not Assigned(FIcon) then FIcon:=TIcon.Create;
     FIcon.Assign(Value);
 end;
 
-procedure TLlDesignerObject28.SetSmallRibbonImage(const Value: TBitmap);
+procedure TLlDesignerObject29.SetSmallRibbonImage(const Value: TBitmap);
 begin
   if not Assigned(FSmallRibbonImage) then FSmallRibbonImage:=TBitmap.Create;
     FSmallRibbonImage.Assign(Value);
 end;
 
-procedure TLlDesignerObject28.SetLargeRibbonImage(const Value: TBitmap);
+procedure TLlDesignerObject29.SetLargeRibbonImage(const Value: TBitmap);
 begin
   if not Assigned(FLargeRibbonImage) then FLargeRibbonImage:=TBitmap.Create;
     FLargeRibbonImage.Assign(Value);
 end;
 
 
-function TLlDesignerObject28.SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;
+function TLlDesignerObject29.SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;
 begin
     if (hLLJob=0) then
     begin
@@ -4857,7 +4878,7 @@ begin
 
 end;
 
-function TLlDesignerObject28.SetNtfySink(pNtfySink: pILlXObjectNtfySink): HResult;
+function TLlDesignerObject29.SetNtfySink(pNtfySink: pILlXObjectNtfySink): HResult;
 begin
     if FILlXObjectNtfySink[0] <> nil then
         FILlXObjectNtfySink[0]:=nil;
@@ -4866,49 +4887,49 @@ begin
     result:=S_OK;
 end;
 
-procedure TLlDesignerObject28.SetObjectName(const Value: String);
+procedure TLlDesignerObject29.SetObjectName(const Value: String);
 begin
   FObjectName := Value;
 end;
 
-procedure TLlDesignerObject28.SetTooltipDescription(const Value: String);
+procedure TLlDesignerObject29.SetTooltipDescription(const Value: String);
 begin
   FTooltipDescription := Value;
 end;
 
-procedure TLlDesignerObject28.SetOnDraw(const Value: TDrawObjectEvent);
+procedure TLlDesignerObject29.SetOnDraw(const Value: TDrawObjectEvent);
 begin
   FOnDraw := Value;
 end;
 
-procedure TLlDesignerObject28.SetOnEdit(const Value: TEditObjectEvent);
+procedure TLlDesignerObject29.SetOnEdit(const Value: TEditObjectEvent);
 begin
   FOnEdit := Value;
 end;
 
-procedure TLlDesignerObject28.SetOnInitialCreation(const Value: TCreateObjectEvent);
+procedure TLlDesignerObject29.SetOnInitialCreation(const Value: TCreateObjectEvent);
 begin
   FOnInitialCreation := Value;
 end;
 
-function TLlDesignerObject28.SetOption(const nOption: integer; nValue: lParam): HResult;
+function TLlDesignerObject29.SetOption(const nOption: integer; nValue: lParam): HResult;
 begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.SetOptionString(const sOption: OLEString;
+function TLlDesignerObject29.SetOptionString(const sOption: OLEString;
   sValue: OLEString): HResult;
 begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.SetParameters(pIStream: IStream): HResult;
+function TLlDesignerObject29.SetParameters(pIStream: IStream): HResult;
 begin
     Properties.LoadFromStream(pIStream);
     result:=S_OK;
 end;
 
-function TLlDesignerObject28.Show(const hDC: HDC; var prcPaint: TRect;
+function TLlDesignerObject29.Show(const hDC: HDC; var prcPaint: TRect;
   const hExportProfJob: HPROFJOB; const hExportProfList: HPROFLIST;
   const nExportVerbosity, nDestination: integer;
   const bSelected: boolean): HResult;
@@ -4955,18 +4976,18 @@ begin
     result:=S_OK;
 end;
 
-procedure TLlDesignerObject28.SetMyParentComponent(const Value: TListLabel28);
+procedure TLlDesignerObject29.SetMyParentComponent(const Value: TListLabel29);
 begin
   fParent := Value;
   fParent.DesignerObjects.Add(self);
 end;
 
-procedure TLlDesignerObject28.SetOnClick(const Value: TClickEvent);
+procedure TLlDesignerObject29.SetOnClick(const Value: TClickEvent);
 begin
   FOnClick := Value;
 end;
 
-procedure TLlDesignerObject28.SetPopupMenu(const Value: TPopupMenu);
+procedure TLlDesignerObject29.SetPopupMenu(const Value: TPopupMenu);
 begin
   FPopupMenu := Value;
   if Value <> nil then
@@ -4975,31 +4996,31 @@ begin
   end;
 end;
 
-procedure TLlDesignerObject28.SetHint(const Value: String);
+procedure TLlDesignerObject29.SetHint(const Value: String);
 begin
   FHint := Value;
 end;
 
-procedure TLlDesignerObject28.SetOnGetVariableSizeInfo(
+procedure TLlDesignerObject29.SetOnGetVariableSizeInfo(
   const Value: TGetVariableSizeInfoEvent);
 begin
   FOnGetVariableSizeInfo := Value;
 end;
 
-procedure TLlDesignerObject28.SetSupportsMultipage(const Value: boolean);
+procedure TLlDesignerObject29.SetSupportsMultipage(const Value: boolean);
 begin
   FSupportsMultipage := Value;
 end;
 
 
-procedure TLlDesignerObject28.SetOnResetPrintState(
+procedure TLlDesignerObject29.SetOnResetPrintState(
   const Value: TResetPrintStateEvent);
 begin
   FOnResetPrintState := Value;
 end;
 
-function TLlDesignerObject28.GetVarSizeInfo(const hDC: HDC;
-  const prcSpaceAvailable: cmbTLl28x.pTRect; var pnMinHeight,
+function TLlDesignerObject29.GetVarSizeInfo(const hDC: HDC;
+  const prcSpaceAvailable: cmbTLl29x.pTRect; var pnMinHeight,
   pnIdealHeight: integer): HRESULT;
 begin
     if (prcSpaceAvailable = nil) and (FPrintState<llxpsFinished) then
@@ -5018,11 +5039,11 @@ begin
         result:=E_NOTIMPL;
 end;
 
-{/TLlDesignerObject28}
+{/TLlDesignerObject29}
 
-{ TLDesignerAction28 }
+{ TLDesignerAction29 }
 
-procedure TLDesignerAction28.AddAction;
+procedure TLDesignerAction29.AddAction;
 var
   flags: integer;
   shiftState: TShiftState;
@@ -5054,73 +5075,73 @@ begin
   FParent.Core.LlDesignerAddAction(FMenuId, flags, FMenuText, FMenuHierachy, FTooltipText, FIconId, nil);
 end;
 
-constructor TLDesignerAction28.Create(AOwner: TComponent);
+constructor TLDesignerAction29.Create(AOwner: TComponent);
 begin
     inherited create(AOwner);
 end;
 
-destructor TLDesignerAction28.Destroy;
+destructor TLDesignerAction29.Destroy;
 begin
   inherited destroy;
 end;
 
-procedure TLDesignerAction28.SetIconId(const Value: integer);
+procedure TLDesignerAction29.SetIconId(const Value: integer);
 begin
   FIconId := Value;
 end;
 
-procedure TLDesignerAction28.SetInsertionType(const Value: TLDesignerAction28InsertionType);
+procedure TLDesignerAction29.SetInsertionType(const Value: TLDesignerAction29InsertionType);
 begin
   FInsertionType := Value;
 end;
 
-procedure TLDesignerAction28.SetMenuHierachy(const Value: string);
+procedure TLDesignerAction29.SetMenuHierachy(const Value: string);
 begin
   FMenuHierachy := Value;
 end;
 
-procedure TLDesignerAction28.SetMenuId(const Value: integer);
+procedure TLDesignerAction29.SetMenuId(const Value: integer);
 begin
   FMenuId := Value;
 end;
 
-procedure TLDesignerAction28.SetMenuText(const Value: string);
+procedure TLDesignerAction29.SetMenuText(const Value: string);
 begin
   FMenuText := Value;
 end;
 
-procedure TLDesignerAction28.SetMyParentComponent(const Value: TListLabel28);
+procedure TLDesignerAction29.SetMyParentComponent(const Value: TListLabel29);
 begin
   FParent := Value;
   FParent.DesignerActions.Add(self);
 end;
 
-procedure TLDesignerAction28.SetOnExecuteAction(const Value: TExecuteActionEvent);
+procedure TLDesignerAction29.SetOnExecuteAction(const Value: TExecuteActionEvent);
 begin
   FOnExecuteAction := Value;
 end;
 
-procedure TLDesignerAction28.SetOnGetActionState(const Value: TGetActionStateEvent);
+procedure TLDesignerAction29.SetOnGetActionState(const Value: TGetActionStateEvent);
 begin
   FOnGetActionState := Value;
 end;
 
-procedure TLDesignerAction28.SetShortCut(const Value: TShortCut);
+procedure TLDesignerAction29.SetShortCut(const Value: TShortCut);
 begin
   FShortCut := Value;
 end;
 
-procedure TLDesignerAction28.SetTooltipText(const Value: string);
+procedure TLDesignerAction29.SetTooltipText(const Value: string);
 begin
   FTooltipText := Value;
 end;
 
-procedure TLDesignerAction28.SetToToolbar(const Value: boolean);
+procedure TLDesignerAction29.SetToToolbar(const Value: boolean);
 begin
   FAddToToolbar := Value;
 end;
 
-{\ TLDesignerAction28 }
+{\ TLDesignerAction29 }
 
 Function DateToJulian(ADate: TDateTime): TJulianDate;
 begin
