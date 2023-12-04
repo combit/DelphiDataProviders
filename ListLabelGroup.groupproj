@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{282878DB-8AAC-4ED8-A034-1CB834390039}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="ListLabelRuntime.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="ListLabelDesigntime.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="ListLabelRuntime">
+        <MSBuild Projects="ListLabelRuntime.dproj"/>
+    </Target>
+    <Target Name="ListLabelRuntime:Clean">
+        <MSBuild Projects="ListLabelRuntime.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ListLabelRuntime:Make">
+        <MSBuild Projects="ListLabelRuntime.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ListLabelDesigntime">
+        <MSBuild Projects="ListLabelDesigntime.dproj"/>
+    </Target>
+    <Target Name="ListLabelDesigntime:Clean">
+        <MSBuild Projects="ListLabelDesigntime.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ListLabelDesigntime:Make">
+        <MSBuild Projects="ListLabelDesigntime.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="ListLabelRuntime;ListLabelDesigntime"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="ListLabelRuntime:Clean;ListLabelDesigntime:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="ListLabelRuntime:Make;ListLabelDesigntime:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

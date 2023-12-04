@@ -1,0 +1,59 @@
+package ListLabelRuntime;
+
+{$R *.res}
+{$R *.dres}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE RELEASE}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'combit List & Label 28 Components Runtime'}
+{$LIBSUFFIX AUTO}
+{$LIBVERSION '28'}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  vcl,
+  dbrtl,
+  vclimg,
+  rtl,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon;
+
+contains
+  ListLabelDataProviderInterface in 'Sources\ListLabelDataProviderInterface.pas',
+  LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
+  LLDataProvider in 'Sources\LLDataProvider.pas',
+  ObjTree in 'Sources\ObjTree.pas',
+  LLThreads in 'Sources\LLThreads.pas',
+  LLReport_Types in 'Sources\LLReport_Types.pas',
+  ListLabel28 in 'Sources\ListLabel28.pas',
+  l28FireDACInterfaces in 'Sources\l28FireDACInterfaces.pas',
+  l28CommonInterfaces in 'Sources\l28CommonInterfaces.pas',
+  LLPreview in 'Sources\LLPreview.pas',
+  cmbtLL28x in 'Sources\cmbtLL28x.pas',
+  cmbtLS28x in 'Sources\cmbtLS28x.pas';
+
+end.
+
