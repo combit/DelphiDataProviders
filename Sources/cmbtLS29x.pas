@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2023-09-18 12:09:59] *)
+(*  [build of 2023-10-30 13:10:40] *)
 
 unit cmbtLS29x;
 

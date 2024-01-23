@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2023-09-18 15:09:17] *)
+(*  [build of 2024-01-10 21:01:53] *)
 
 unit cmbtLL29;
 
@@ -1891,7 +1891,7 @@ const
                     (* internal, R/O *)
   LL_OPTION_PROHIBIT_OLE_OBJECTS_IN_RTF = 387;
   LL_OPTION_COMPAT_ENABLE_EMF_OPTIMIZATION_IN_PDF_OBJECT = 388;
-                    (* default: false, LL28: true *)
+                    (* default: true *)
   LL_OPTION_USESIMPLEWINDOWSPENSTYLE_FRAMEDRAWING = 389;
                     (* default: false *)
   LL_OPTION_DISABLE_GDIPLUS_PATHS_IN_EMFDRAWINGS = 390;
@@ -1925,6 +1925,18 @@ const
   LL_OPTION_CHARTDLG_CONTAINERUPDATE_NEVER = 0;
   LL_OPTION_CHARTDLG_CONTAINERUPDATE_AUTO = 1;
   LL_OPTION_CHARTDLG_CONTAINERUPDATE_ALWAYS = -1;
+  LL_OPTION_INTELLISENSE_MAXNESTINGDEPTH = 405;
+                    (* default: 200 *)
+  LL_OPTION_INTELLISENSE_INNERTIMEOUT = 406;
+                    (* default: 200 *)
+  LL_OPTION_MERGE_REPORT_PARAMETERS_WITH_THE_SAME_NAME = 407;
+                    (* default: false *)
+  LL_OPTION_PERCENTAGEFORMAT_INCLUDES_NBSPACE = 408;
+                    (* default: false *)
+  LL_OPTION_INCLUDE_QUERIED_VARS_IN_USED_VARIABLES = 409;
+                    (* default: false *)
+  LL_OPTION_FORCE_LS_REPORTPARAM_VISIBILITYCHECK = 411;
+                    (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;

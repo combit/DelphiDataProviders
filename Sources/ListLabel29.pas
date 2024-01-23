@@ -6,7 +6,7 @@
  File   : ListLabel29.pas
  Module : List & Label 29
  Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ Version: 29.001
 ==================================================================================
 }
 
@@ -364,6 +364,7 @@ TPageEvent = procedure(Sender: TObject; IsDesignerPreview: boolean;
   IsPreDraw: boolean; var Canvas: TCanvas; Rect: TRect) of object;
 TNotifyProgress = procedure(Sender: TObject; Progress: integer) of object;
 TNotifyViewerBtnClicked = function(Sender: TObject; ButtonID: integer) : Integer of object;
+ TSelectMenuEvent = procedure(Sender: TObject; MenuID: integer; var EventResult: integer) of object;
 LlCore = class;
 TListLabelExportOptions = class;
 TLlExprEvaluator = class;
@@ -466,6 +467,7 @@ protected
   FOnProjectCallback: TProjectEvent;
   FOnObjectCallback: TObjectEvent;
   FOnPageCallback: TPageEvent;
+  FOnSelectMenuCallback: TSelectMenuEvent;
   FLlXFunctionList: TDesignerFunctions;
   FLlXObjectList: TDesignerObjects;
   FLlXInterface: LlXInterface;
@@ -495,6 +497,7 @@ protected
   procedure ProjectCallback(pSCP: PSCLLPROJECT);
   procedure ObjectCallback(pSCO: PSCLLOBJECT; var lResult: NativeInt);
   procedure PageCallback(pSCP: PSCLLPAGE);
+  procedure SelectMenuCallback(nMenuID: integer; var lResult: NativeInt);
   procedure NotifyProgressCallback(lParam: Integer);
   Function  NotifyViewerBtnClicked(lParam: Integer) : Integer;
   Function  JobInit(Var Jobhandle: HJob) : Boolean;
@@ -739,6 +742,7 @@ Const
 
 function NtfyCallback(nMsg: Cardinal; lParam: NativeUInt; lUserParam: NativeInt): NativeInt;
 var
+  i, menuId: integer;
   lResult: NativeInt;
 begin
   lResult := 0;
@@ -793,6 +797,19 @@ begin
           lResult:= 1
         else
           lResult:= 0;
+      end;
+      LL_CMND_SELECTMENU :
+      begin
+          for i := 0 to (TListLabel29(lUserParam)).FLlXActionList.Count - 1 do
+          begin
+          if integer(lParam) = TLDesignerAction29((TListLabel29(lUserParam)).FLlXActionList.Items[i]).FMenuId then
+          begin
+            if Assigned(TLDesignerAction29((TListLabel29(lUserParam)).FLlXActionList.Items[i]).OnExecuteAction) then
+              TLDesignerAction29((TListLabel29(lUserParam)).FLlXActionList.Items[i]).OnExecuteAction();
+            lResult:=1;
+          end;
+        end;
+          (TListLabel29(lUserParam)).SelectMenuCallback(lParam, lResult);
       end;
   end;
   Result := lResult;
@@ -1152,6 +1169,15 @@ begin
 	  RestoreDC(pSCP^._hPaintDC, -1);
     end;
   end;
+end;
+
+procedure TListLabel29.SelectMenuCallback(nMenuID: integer; var lResult: NativeInt);
+var iResult: integer;
+begin
+  iResult := 0;
+  if Assigned(FOnSelectMenuCallback) then
+    FOnSelectMenuCallback(Self, nMenuID, iResult);
+  lResult:=iResult;
 end;
 
 procedure TListLabel29.SetVarCaseSensitive(const Value: Boolean);
@@ -2157,15 +2183,11 @@ procedure TListLabel29.InitDataSource(projectFile: TString);
       internalListExt: TString;
 begin
 
-  Core.LlGetOptionString(LL_OPTIONSTR_LIST_PRJEXT, internalListExt);
-  if(StringReplace(ExtractFileExt(projectFile), '.', '', [rfReplaceAll, rfIgnoreCase]) = internalListExt) then
-    begin
-        DataProvider:=InitDataProvider(GetJobHandle,nil);
-        DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
-        LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
-        if (FDomDataProvider <> nil) then FDomDataProvider.Free;
-        FDomDataProvider:=DataProvider;
-    end;
+ 	DataProvider:=InitDataProvider(GetJobHandle,nil);
+	DataProviderIntf := TDataProviderInterfaceProxyRoot.Create(self, DataProvider);
+	LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
+    if (FDomDataProvider <> nil) then FDomDataProvider.Free;
+    FDomDataProvider:=DataProvider;
 
 end;
 
