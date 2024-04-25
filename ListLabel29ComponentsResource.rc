@@ -1,1 +1,6 @@
-TListLabel29 BITMAP "ListLabel.bmp"
+TLDesignerAction29 BITMAP "Images\\TLDesignerAction29.bmp"
+TListLabel29 BITMAP "Images\\TListLabel29.bmp"
+TLlDesignerFunction29 BITMAP "Images\\TLlDesignerFunction29.bmp"
+TLlDesignerObject29 BITMAP "Images\\TLlDesignerObject29.bmp"
+TLlPreviewControl29 BITMAP "Images\\TLlPreviewControl29.bmp"
+TLlRTFControl29 BITMAP "Images\\TLlRTFControl29.bmp"

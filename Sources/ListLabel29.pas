@@ -6,7 +6,7 @@
  File   : ListLabel29.pas
  Module : List & Label 29
  Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.001
+ Version: 29.002
 ==================================================================================
 }
 
@@ -742,7 +742,7 @@ Const
 
 function NtfyCallback(nMsg: Cardinal; lParam: NativeUInt; lUserParam: NativeInt): NativeInt;
 var
-  i, menuId: integer;
+  i: integer;
   lResult: NativeInt;
 begin
   lResult := 0;
@@ -2180,7 +2180,6 @@ end;
 procedure TListLabel29.InitDataSource(projectFile: TString);
   var DataProvider: TDataSetDataProvider;
       DataProviderIntf: TDataProviderInterfaceProxyRoot;
-      internalListExt: TString;
 begin
 
  	DataProvider:=InitDataProvider(GetJobHandle,nil);

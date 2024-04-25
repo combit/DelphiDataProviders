@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2023-10-30 13:10:40] *)
+(*  [build of 2024-02-07 20:02:53] *)
 
 unit cmbtLS29x;
 
@@ -578,6 +578,7 @@ const
                     (* reserved, internal *)
   LS_VIEWERCONTROL_NTFY_SELECTION_CHANGED = 37;
   LS_VIEWERCONTROL_QUEST_DYNAMICREPORTPARAMETERS = 38;
+  LS_VIEWERCONTROL_QUEST_IENUM_AUTHTOKENPROVIDER = 39;
   LS_MAILCONFIG_GLOBAL           = $0001;
   LS_MAILCONFIG_USER             = $0002;
   LS_MAILCONFIG_PROVIDER         = $0004;

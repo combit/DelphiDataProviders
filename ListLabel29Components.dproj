@@ -92,7 +92,6 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="ListLabel29ComponentsResource.dcr"/>
         <DCCReference Include="vcl.dcp"/>
         <DCCReference Include="DesignIde.dcp"/>
         <DCCReference Include="dbrtl.dcp"/>
@@ -117,9 +116,29 @@
         <DCCReference Include="Sources\LLPreview.pas"/>
         <DCCReference Include="Sources\cmbtLL29x.pas"/>
         <DCCReference Include="Sources\cmbtLS29x.pas"/>
-        <RcItem Include="ListLabel.bmp">
+        <RcItem Include="Images\TLDesignerAction29.bmp">
+            <ResourceType>BITMAP</ResourceType>
+            <ResourceId>TLDesignerAction29</ResourceId>
+        </RcItem>
+        <RcItem Include="Images\TListLabel29.bmp">
             <ResourceType>BITMAP</ResourceType>
             <ResourceId>TListLabel29</ResourceId>
+        </RcItem>
+        <RcItem Include="Images\TLlDesignerFunction29.bmp">
+            <ResourceType>BITMAP</ResourceType>
+            <ResourceId>TLlDesignerFunction29</ResourceId>
+        </RcItem>
+        <RcItem Include="Images\TLlDesignerObject29.bmp">
+            <ResourceType>BITMAP</ResourceType>
+            <ResourceId>TLlDesignerObject29</ResourceId>
+        </RcItem>
+        <RcItem Include="Images\TLlPreviewControl29.bmp">
+            <ResourceType>BITMAP</ResourceType>
+            <ResourceId>TLlPreviewControl29</ResourceId>
+        </RcItem>
+        <RcItem Include="Images\TLlRTFControl29.bmp">
+            <ResourceType>BITMAP</ResourceType>
+            <ResourceId>TLlRTFControl29</ResourceId>
         </RcItem>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>

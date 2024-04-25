@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-01-10 21:01:53] *)
+(*  [build of 2024-04-05 09:04:32] *)
 
 unit cmbtLL29x;
 
@@ -1937,6 +1937,20 @@ const
   LL_OPTION_INCLUDE_QUERIED_VARS_IN_USED_VARIABLES = 409;
                     (* default: false *)
   LL_OPTION_FORCE_LS_REPORTPARAM_VISIBILITYCHECK = 411;
+                    (* default: false *)
+  LL_OPTION_SUPPRESS_FUNCTION_POPUP_WITHDEFAULTVALUE = 412;
+                    (* default: false *)
+  LL_OPTION_SUPPRESS_REPORTPARAMETER_POPUP_WITHDEFAULTVALUE = 413;
+                    (* default: false *)
+  LL_OPTION_PRINTERLESS_FORCE_FIT_LAYOUT_ORIENTATION = 414;
+                    (* default: false *)
+  LL_OPTION_COMPAT_DO_NOT_REPEAT_LINKED_OBJECTS = 415;
+                    (* default: false *)
+  LL_OPTION_EVALUATEISVOLATILE   = 416;
+                    (* default: false *)
+  LL_OPTION_BITMAP_OUTOFMEMORY_FORCETHROW = 417;
+                    (* default: 0 *)
+  LL_OPTION_REPEAT_GROUPHEADER_ONLY_IF_FORCED = 418;
                     (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
@@ -4432,6 +4446,15 @@ type
 	 _nParaTypes:      cardinal;
 	 _bIncludeFields:  longbool
 	): HLLEXPR; stdcall;
+  pfnLlTokenProviderAdd  = function  
+	(_hJob:            HLLJOB;
+	 _id:              pWCHAR;
+	 _ppI:             PIUNKNOWN
+	): integer; stdcall;
+  pfnLlTokenProviderRemove= function  
+	(_hJob:            HLLJOB;
+	 _id:              pWCHAR
+	): integer; stdcall;
 
 const
    LlJobOpen: pfnLlJobOpen = NIL;
@@ -5790,6 +5813,8 @@ const
    LlStgCreateFrom: pfnLlStgCreateFrom = NIL;
    LlRemoveIdentifier: pfnLlRemoveIdentifier = NIL;
    LlExprParseEx: pfnLlExprParseEx = NIL;
+   LlTokenProviderAdd: pfnLlTokenProviderAdd = NIL;
+   LlTokenProviderRemove: pfnLlTokenProviderRemove = NIL;
 
 function  LL29xModuleName: String;
 function  LL29xLoad: integer;
@@ -7189,6 +7214,8 @@ begin
       @LlStgCreateFrom      := GetProcAddress(hDLLLL29,'LlStgCreateFrom');
       @LlRemoveIdentifier   := GetProcAddress(hDLLLL29,'LlRemoveIdentifier');
       @LlExprParseEx        := GetProcAddress(hDLLLL29,'LlExprParseEx');
+      @LlTokenProviderAdd   := GetProcAddress(hDLLLL29,'LlTokenProviderAdd');
+      @LlTokenProviderRemove := GetProcAddress(hDLLLL29,'LlTokenProviderRemove');
       end;
     end;
 end;
@@ -7820,6 +7847,8 @@ begin
       LlStgCreateFrom := NIL;
       LlRemoveIdentifier := NIL;
       LlExprParseEx := NIL;
+      LlTokenProviderAdd := NIL;
+      LlTokenProviderRemove := NIL;
       end;
     end;
 end;

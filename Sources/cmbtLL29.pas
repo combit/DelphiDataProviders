@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-01-10 21:01:53] *)
+(*  [build of 2024-04-05 09:04:32] *)
 
 unit cmbtLL29;
 
@@ -1936,6 +1936,20 @@ const
   LL_OPTION_INCLUDE_QUERIED_VARS_IN_USED_VARIABLES = 409;
                     (* default: false *)
   LL_OPTION_FORCE_LS_REPORTPARAM_VISIBILITYCHECK = 411;
+                    (* default: false *)
+  LL_OPTION_SUPPRESS_FUNCTION_POPUP_WITHDEFAULTVALUE = 412;
+                    (* default: false *)
+  LL_OPTION_SUPPRESS_REPORTPARAMETER_POPUP_WITHDEFAULTVALUE = 413;
+                    (* default: false *)
+  LL_OPTION_PRINTERLESS_FORCE_FIT_LAYOUT_ORIENTATION = 414;
+                    (* default: false *)
+  LL_OPTION_COMPAT_DO_NOT_REPEAT_LINKED_OBJECTS = 415;
+                    (* default: false *)
+  LL_OPTION_EVALUATEISVOLATILE   = 416;
+                    (* default: false *)
+  LL_OPTION_BITMAP_OUTOFMEMORY_FORCETHROW = 417;
+                    (* default: 0 *)
+  LL_OPTION_REPEAT_GROUPHEADER_ONLY_IF_FORCED = 418;
                     (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
@@ -6902,6 +6916,17 @@ function   LlExprParseEx
 	 bIncludeFields:                 longbool
 	): HLLEXPR; stdcall;
 
+function   LlTokenProviderAdd
+	(hJob:                           HLLJOB;
+	 id:                             pWCHAR;
+	 ppI:                            PIUNKNOWN
+	): integer; stdcall;
+
+function   LlTokenProviderRemove
+	(hJob:                           HLLJOB;
+	 id:                             pWCHAR
+	): integer; stdcall;
+
 
 implementation
 
@@ -10654,6 +10679,16 @@ implementation
     function   LlExprParseEx;                  external LibNameLL29DLL index 393;
    {$else}
     function   LlExprParseEx;                  external LibNameLL29DLL name 'LlExprParseEx';
+  {$endif}
+  {$ifdef CMLL29_LINK_INDEXED}
+    function   LlTokenProviderAdd;             external LibNameLL29DLL index 394;
+   {$else}
+    function   LlTokenProviderAdd;             external LibNameLL29DLL name 'LlTokenProviderAdd';
+  {$endif}
+  {$ifdef CMLL29_LINK_INDEXED}
+    function   LlTokenProviderRemove;          external LibNameLL29DLL index 395;
+   {$else}
+    function   LlTokenProviderRemove;          external LibNameLL29DLL name 'LlTokenProviderRemove';
   {$endif}
 
 begin

@@ -6,7 +6,7 @@
  File   : LLDataSetDataProvider.pas
  Module : List & Label 29
  Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ Version: 29.001
 ==================================================================================
 }
 
@@ -780,8 +780,15 @@ begin
                       FFieldType:=LL_DRAWING_HICON;
                       FHandle:=PicContainer.Icon.Handle;
                     end;
-                  end;
+                  end else
+                  Begin
+                     // Table was empty .... analyzing not possible -> set do default Image
+                     wic := TWICImage.Create;
+                     FFieldType := LL_DRAWING_HBITMAP;
+                     FHandle:= 0;
+                  End;
                 end;
+
               finally
                 if Assigned(wic) then
                 begin

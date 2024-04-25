@@ -1,7 +1,6 @@
 package ListLabel29Components;
 
 {$R *.res}
-{$R 'ListLabel29ComponentsResource.dcr'}
 {$R *.dres}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
