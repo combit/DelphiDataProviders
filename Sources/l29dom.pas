@@ -6,7 +6,7 @@
   File   : l29dom.pas
   Module : List & Label 29 DOM
   Descr. : Implementation file for the List & Label 29 DOM
-  Version: 29.000
+  Version: 29.001
   ==================================================================================
 }
 
@@ -212,6 +212,7 @@ type
   TLlDOMPropertyChartLabelCoordinate = class;
   TLlDOMPropertyChartLabel = class;
   TLlDOMPropertyDevice = class;
+  TLlDOMPropertyDefaultValues = class;
   TLlDOMPropertyPaper = class;
   TLlDOMPropertyLayout = class;
   TLlDOMPropertySortOrders = class;
@@ -252,7 +253,7 @@ type
   TLlDOMGaugeType = (gtRound, gtLinear, gtLinearHorizontal);
   TLlDOMSourceContentsType = (sctText, sctBoolean, sctNumeric, sctDate);
   TLlDOMControlType = (ctrlText, ctrlDate, ctrlBoolYesNo, ctrlBoolTrueFalse);
-  TLlDOMSourceType = (stChoice, stDatabase, stText);
+  TLlDOMSourceType = (stDatabase , stChoice , stText);
   TLlDOMReportParameterValueType = (vtDouble = 1, vtDate = 2, vtString = 4, vtBool = 8, vtDrawing = 10, vtBarcode = 20 );
 
 
@@ -692,10 +693,22 @@ type
     function Add(domObj: TLlDOMReportParameter): integer;
   public
     property Items[index: integer]: TLlDOMReportParameter read GetItems
-      write SetItems; default;
+    write SetItems; default;
     constructor Create(hDomObj: TLlDOMItem);
     destructor Destroy; override;
     function NewItem(index: integer): TLlDOMItem;
+  end;
+
+  TLlDOMPropertyDefaultValues = class(TLlDOMItem)
+  private
+    function GetAll: TString;
+    procedure SetAll(const value: TString);
+    function GetData: TString;
+    procedure SetData(const value: TString);
+  public
+    property All: TString read GetAll write SetAll;
+    property Data: TString read GetData write SetData;
+    destructor Destroy; override;
   end;
 
   TLlDOMPropertyProjectParameterBase = class(TLlDOMItem)
@@ -5352,6 +5365,7 @@ end;
   TLlDOMReportParameter = class(TLlDOMItem)
   private
     fSource: TLlDOMReportParameterSource;
+    fDefaultValues : TLlDOMPropertyDefaultValues;
     function GetCurrentContentsAsObject: OleVariant;
 	  procedure SetCurrentContentsAsObject(const value: OleVariant);
     procedure SetCurrentContents(const value: TString);
@@ -5362,8 +5376,8 @@ end;
     procedure SetAllowMultipleValues(const value: TString);
     function GetAllowNull: TString;
     procedure SetAllowNull(const value: TString);
-    function GetDefaultValue: TString;
-    procedure SetDefaultValue(const value: TString);
+    function GetDefaultValues:  TLlDOMPropertyDefaultValues;
+
     function GetId: TString;
     function GetIdentifier: TString;
     procedure SetIdentifier(const value: TString);
@@ -5385,7 +5399,7 @@ end;
     property AllowMultipleValues: TString read GetAllowMultipleValues
       write SetAllowMultipleValues;
     property AllowNull: TString read GetAllowNull write SetAllowNull;
-    property DefaultValue: TString read GetDefaultValue write SetDefaultValue;
+    property DefaultValues:  TLlDOMPropertyDefaultValues read GetDefaultValues;
     property Id: TString read GetId; // readOnly
     property ParentId: TString read GetParentId write SetParentId;
     property Identifier: TString read GetIdentifier write SetIdentifier;
@@ -22838,15 +22852,6 @@ begin
   SetProperty('AllowNull', value);
 end;
 
-function TLlDOMReportParameter.GetDefaultValue: TString;
-begin
-  result := GetProperty('DefaultValue');
-end;
-
-procedure TLlDOMReportParameter.SetDefaultValue(const value: TString);
-begin
-  SetProperty('DefaultValue', value);
-end;
 
 function TLlDOMReportParameter.GetId: TString;
 begin
@@ -22909,6 +22914,24 @@ begin
     result := fSource;
   end;
 end;
+
+function TLlDOMReportParameter.GetDefaultValues: TLlDOMPropertyDefaultValues;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fDefaultValues <> nil then
+  begin
+    result := fDefaultValues
+  end
+  else
+  begin
+    baseObj := GetObject('DefaultValues');
+    fDefaultValues := TLlDOMPropertyDefaultValues.Create(baseObj);
+    baseObj.Free;
+    result := fDefaultValues;
+  end;
+end;
+
 
 function TLlDOMReportParameter.GetVisible: TString;
 begin
@@ -23030,20 +23053,7 @@ end;
 procedure TLlDOMReportParameterSource.SetSourceType
   (const value: TLlDOMSourceType);
 begin
-  case SourceType of
-    stDatabase:
-      begin
-        SetProperty('SourceType', '0');
-      end;
-    stChoice:
-      begin
-        SetProperty('SourceType', '1');
-      end;
-    stText:
-      begin
-        SetProperty('SourceType', '2');
-      end;
-  end;
+  SetProperty('SourceType', IntToStr(Ord(value)));
 end;
 
 function TLlDOMReportParameterSource.GetSourceContentsType
@@ -23077,6 +23087,32 @@ begin
 end;
 { / Report Parameter functions/procedures }
 
+{ TLlDOMPropertyDefaultValues }
+
+destructor TLlDOMPropertyDefaultValues.Destroy;
+begin
+
+end;
+
+function TLlDOMPropertyDefaultValues.GetAll: TString;
+begin
+         result := GetProperty('All');
+end;
+
+procedure TLlDOMPropertyDefaultValues.SetAll(const value: TString);
+begin
+  SetProperty('All', value);
+end;
+function TLlDOMPropertyDefaultValues.GetData: TString;
+begin
+         result := GetProperty('Data');
+end;
+
+procedure TLlDOMPropertyDefaultValues.SetData(const value: TString);
+begin
+  SetProperty('Data', value);
+end;
+{ / TLlDOMPropertyDefaultValues }
 { TLlDOMReportParameterList }
 
 function TLlDOMReportParameterList.Add(domObj: TLlDOMReportParameter): integer;

@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL29.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-04-05 09:04:32] *)
+(*  [build of 2024-07-17 16:07:02] *)
 
 unit cmbtLL29;
 
@@ -675,6 +675,8 @@ const
                     (* lParam = &scLlCombinationPrintStep, return 0 on OK, 1 to reset the page number, 2 to reset the page number and total pages or error code on error *)
   LL_NTFY_LOADERROR_DATABASESTRUCTURE = 116;
                     (* lParam = @scLlNtfyDatabaseError *)
+  LL_NTFY_KEEP_FILE              = 117;
+                    (* lParam = (LPCWSTR)filename of file to be kept until the end of the (print) job *)
   LL_PROJECT_LABEL               = 1;
                     (* new names... *)
   LL_PROJECT_LIST                = 2;
@@ -1951,6 +1953,12 @@ const
                     (* default: 0 *)
   LL_OPTION_REPEAT_GROUPHEADER_ONLY_IF_FORCED = 418;
                     (* default: false *)
+  LL_OPTION_COMPAT_SHOWMAILPROVIDER = 419;
+                    (* default: false *)
+  LL_OPTION_COMPAT_ALLOW_BASELEVEL_CROSSTABS = 420;
+                    (* default: false *)
+  LL_OPTION_AUTODEFINE_PATCH     = 421;
+                    (* default: 0 *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;

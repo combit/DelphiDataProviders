@@ -6,7 +6,7 @@
  File   : LLDataProvider.pas
  Module : List & Label 29
  Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ Version: 29.001
 ==================================================================================
 }
 
@@ -353,6 +353,13 @@ begin
   ColumnList := Row.Columns;
   ColumnList.OwnsObjects := True;
   AsVariables:= (TListLabel29(Parent).DataController.DataMember = Row.TableName) and (TListLabel29(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
+
+   if ((TListLabel29(Parent).AutoProjectType) <> TLlProject.ptList) then
+    begin
+    if Assigned(TListLabel29(Parent).OnAutoDefineNewPage) then
+      TListLabel29(Parent).OnAutoDefineNewPage(self, false);
+    end;
+
 
   for Column in ColumnList do
   begin
