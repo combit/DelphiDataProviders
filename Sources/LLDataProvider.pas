@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : LLDataProvider.pas
- Module : List & Label 29
- Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.001
+ Module : List & Label 30
+ Descr. : Implementation file for the List & Label 30 VCL-Component
+ Version: 30.000
 ==================================================================================
 }
 
@@ -130,7 +130,7 @@ type
   end;
 
 implementation
-  uses  sysutils, ListLabel29;
+  uses  sysutils, ListLabel30;
 { TDataProviderRoot }
 
 constructor TDataProviderInterfaceProxyRoot.Create(ListLabel: TComponent; AProvider: TListLabelDataProvider);
@@ -352,12 +352,12 @@ var Column: TListLabelTableColumn;
 begin
   ColumnList := Row.Columns;
   ColumnList.OwnsObjects := True;
-  AsVariables:= (TListLabel29(Parent).DataController.DataMember = Row.TableName) and (TListLabel29(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
+  AsVariables:= (TListLabel30(Parent).DataController.DataMember = Row.TableName) and (TListLabel30(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
 
-   if ((TListLabel29(Parent).AutoProjectType) <> TLlProject.ptList) then
+   if ((TListLabel30(Parent).AutoProjectType) <> TLlProject.ptList) then
     begin
-    if Assigned(TListLabel29(Parent).OnAutoDefineNewPage) then
-      TListLabel29(Parent).OnAutoDefineNewPage(self, false);
+    if Assigned(TListLabel30(Parent).OnAutoDefineNewPage) then
+      TListLabel30(Parent).OnAutoDefineNewPage(self, false);
     end;
 
 
@@ -366,16 +366,16 @@ begin
      if Column.ImgHandle > 0 Then
      begin
       if AsVariables then
-          TListLabel29(Parent).Core.LlDefineVariableExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+          TListLabel30(Parent).Core.LlDefineVariableExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
         else
-          TListLabel29(Parent).Core.LlDefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+          TListLabel30(Parent).Core.LlDefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
      end
      else
      begin
       if AsVariables then
-        TListLabel29(Parent).Core.LlDefineVariableExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType)
+        TListLabel30(Parent).Core.LlDefineVariableExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType)
       else
-        TListLabel29(Parent).Core.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
+        TListLabel30(Parent).Core.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
      end;
    end;
   ColumnList.Clear;

@@ -1,4 +1,4 @@
-package ListLabel29Components;
+package ListLabel30Components;
 
 {$R *.res}
 {$R *.dres}
@@ -26,7 +26,7 @@ package ListLabel29Components;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'combit List & Label 29 Components'}
+{$DESCRIPTION 'combit List & Label 30 Components'}
 {$IMPLICITBUILD ON}
 
 requires
@@ -51,15 +51,15 @@ contains
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
   {$ifdef win32}
-   LL29Report_Reg in 'Sources\LL29Report_Reg.pas',
+   LL30Report_Reg in 'Sources\LL30Report_Reg.pas',
   {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
-  ListLabel29 in 'Sources\ListLabel29.pas',
-  l29FireDACInterfaces in 'Sources\l29FireDACInterfaces.pas',
-  l29CommonInterfaces in 'Sources\l29CommonInterfaces.pas',
+  ListLabel30 in 'Sources\ListLabel30.pas',
+  l30FireDACInterfaces in 'Sources\l30FireDACInterfaces.pas',
+  l30CommonInterfaces in 'Sources\l30CommonInterfaces.pas',
   LLPreview in 'Sources\LLPreview.pas',
-  cmbtLL29x in 'Sources\cmbtLL29x.pas',
-  cmbtLS29x in 'Sources\cmbtLS29x.pas';
+  cmbtLL30x in 'Sources\cmbtLL30x.pas',
+  cmbtLS30x in 'Sources\cmbtLS30x.pas';
 
 end.
 

@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : LLDataSetDataProvider.pas
- Module : List & Label 29
- Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.001
+ Module : List & Label 30
+ Descr. : Implementation file for the List & Label 30 VCL-Component
+ Version: 30.000
 ==================================================================================
 }
 
@@ -184,7 +184,7 @@ const
     '{\f0\fswiss\fcharset0 Arial;}}\viewkind4\uc1\pard\f0\fs20\par}';
 
 implementation
-uses Sysutils, cmbtll29x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
+uses Sysutils, cmbtll30x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
 
 Constructor TDataSetDescription.Create(ADataset: TDataSet; AKeyField: String; ASortDescription: String; AFilter: String  );
 Begin

@@ -5,8 +5,8 @@
 ----------------------------------------------------------------------------------
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
- Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ Descr. : Implementation file for the List & Label 30 VCL-Component
+ Version: 30.000
 ==================================================================================
 }
 
@@ -15,7 +15,7 @@ unit LLReport_Types;
 interface
 {$WEAKPACKAGEUNIT ON}
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll29x, Dialogs, System.UITypes;
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll30x, Dialogs, System.UITypes;
 
 Type
 
@@ -187,7 +187,34 @@ Type
                       ExportMailXmapiSuppressLogonFailure,
                       ExportMailXmapiDeleteAfterSend,
                       ExportMailSignatureName,
-                      JsonIndent);
+                      JsonIndent,
+                      DocxAuthor,
+                      DocxTitle,
+                      DocxKeywords,
+                      DocxSubject,
+                      XhtmlEnableAccessibility,
+                      XhtmlFixedHeader,
+                      XlsAutoFormula,
+                      XlsProtectionProtectSheets,
+                      XlsProtectionProtectSheetsPassword,
+                      XlsProtectionProtectSheetsMode,
+                      XlsHeaderContent,
+                      XlsHeaderMargin,
+                      XlsFooterContent,
+                      XlsFooterMargin,
+                      ExportMailGraphAuthType,
+                      ExportMailGraphClientId,
+                      ExportMailGraphTenantId,
+                      ExportMailGraphScope,
+                      ExportMailGraphRedirectUri,
+                      ExportMailGraphSecretClientKeyId,
+                      ExportMailGraphSecretClientKeyValue,
+                      ExportMailGraphUserName,
+                      ExportMailGraphUserObjectId,
+                      ExportMailGraphUserPassword,
+                      ExportMailGraphBearerToken,
+                      ExportMailSmtpOAuth2BearerToken
+                      );
 
    TLlExportTarget = (Pdf,
                       Html,
@@ -212,8 +239,7 @@ Type
                       Tty,
                       Preview,
                       Pptx,
-                      Json,
-                      unknown);
+                      Json);
 
   TLlAutoBoxType = (btNormalMeter,
                     btBridgeMeter,
@@ -234,9 +260,10 @@ Type
                   pmMultipleJobs,
                   pmKeepJob);
 
-  TLlProject = (ptLabel,
-                ptList,
-                ptCard);
+  TLlProject = (ptUnknown = 0,
+                ptLabel = LL_PROJECT_LABEL,
+                ptList = LL_PROJECT_LIST,
+                ptCard = LL_PROJECT_CARD);
 
   TLlUnits = (uMillimeter_1_1000,
               uMillimeter_1_100,
@@ -270,7 +297,7 @@ Type
                  //lAlbanian,
                  //lBasque,
                  //lBulgarian,
-                 //lByelorussion,
+                 //lByelorussian,
                  //lCatalan,
                  lChinese,
                  //lCroatian,
@@ -291,12 +318,12 @@ Type
                  lJapanese,
                  //lKorean,
                  //lLatvian,
-                 //lLizhuanian,
+                 //lLithuanian,
                  //lNorwegian,
                  //lPolish,
                  lPortuguese,
                  //lRomanian,
-                 lRussian,
+                 //lRussian,
                  lSlovak,
                  //lSlovenian,
                  //lSerbian,
@@ -306,7 +333,9 @@ Type
                  //lTurkish,
                  //lUkrainian,
                  //lSerbianLatin,
-                 //lChineseTraditional
+                 //lChineseTraditional,
+                 //lPortugueseBrazilian,
+                 //lSpanishColombia
                  );
 
  TLlAutoMasterMode = (mmNone,
@@ -453,7 +482,20 @@ Type
         ImprovedTableLineAnchoring = 236, // LL_OPTION_IMPROVED_TABLELINEANCHORING
         SaveProjectInUtf8 = 178, // LL_OPTION_SAVE_PROJECT_IN_UTF8 (178) /* BOOL, default 0 (meaning: project is saved as UNICODE if A API is not used) */
         Printerless = 375,
-		UseSimpleWindowsPenStyleFrameDrawing = 389); // LL_OPTION_USESIMPLEWINDOWSPENSTYLE_FRAMEDRAWING (389) /* default: false */
+		UseSimpleWindowsPenStyleFrameDrawing = 389, // LL_OPTION_USESIMPLEWINDOWSPENSTYLE_FRAMEDRAWING (389) /* default: false */
+		UseSvg2Bmp = LL_OPTION_USE_SVG2BMP,
+		MultiSectionPrintMerge = LL_OPTION_MULTISECTIONPRINT_MERGE
+	); 
+
+  TExportEnumHelper = class
+  public
+
+    class function GetExportOptionString(const exportOption: TLlExportOption): string; static;
+    class function GetTargetFromString(const target: string): TLlExportTarget; static;
+    class function GetExtensionFromExportTarget(exportTarget: TLlExportTarget): string; static;
+    class function GetString(exportTarget: TLlExportTarget): string; static;
+
+  end;
 
   TEnumTranslator = class
     public
@@ -608,7 +650,544 @@ Resourcestring
   rsDetailSourceAlreadyExists = 'Eine Detail-Source mit dem Namen %s existiert bereits.';
 
 implementation
+
 uses TypInfo, SysUtils;
+
+//==============================================================================
+//  TExportEnumHelper
+//==============================================================================
+
+class function TExportEnumHelper.GetExportOptionString(const exportOption: TLlExportOption): string;
+begin
+
+  case TLlExportOption(exportOption) of
+      ExportFile:
+                          result:= 'Export.File';
+      ExportPath:
+                          result:= 'Export.Path';
+      ExportAllInOneFile:
+                          result:= 'Export.AllInOneFile';
+      ExportTarget:
+                          result:= 'Export.Target';
+      ExportQuiet:
+                          result:= 'Export.Quiet';
+      ExportShowResult:
+                          result:= 'Export.ShowResult';
+      ExportShowResultAvailable:
+                          result:= 'Export.ShowResultAvailable';
+      ExportSendAsMail:
+                          result:= 'Export.SendAsMail';
+      ExportSendAsMailAvailable:
+                          result:= 'Export.SendAsMailAvailable';
+      ExportMailBody:
+                          result:= 'Export.Mail.Body';
+      ExportMailHtmlBody:
+                          result:= 'Export.Mail.Body:text/html';
+      ExportMailSecureConnection:
+                          result:= 'Export.Mail.SecureConnection';
+      ExportMailAttachmentList:
+                          result:= 'Export.Mail.AttachmentList';
+      ExportMailSmtpServerTimeOut:
+                          result:= 'Export.Mail.SMTP.ServerTimeOut';
+      ExportMailSmtpServerAddress:
+                          result:= 'Export.Mail.SMTP.ServerAddress';
+      ExportMailSmtpServerPort:
+                          result:= 'Export.Mail.SMTP.ServerPort';
+      ExportMailSmtpUser:
+                          result:= 'Export.Mail.SMTP.User';
+      ExportMailSmtpPassword:
+                          result:= 'Export.Mail.SMTP.Password';
+      ExportMailSmtpProxyType:
+                          result:= 'Export.Mail.SMTP.ProxyType';
+      ExportMailSmtpProxyAddress:
+                          result:= 'Export.Mail.SMTP.ProxyAddress';
+      ExportMailSmtpProxyPort:
+                          result:= 'Export.Mail.SMTP.ProxyPort';
+      ExportMailSmtpProxyUser:
+                          result:= 'Export.Mail.SMTP.ProxyUser';
+      ExportMailSmtpProxyPassword:
+                          result:= 'Export.Mail.SMTP.ProxyPassword';
+      ExportMailSmtpSenderAddress:
+                          result:= 'Export.Mail.SMTP.SenderAddress';
+      ExportMailSmtpSenderName:
+                          result:= 'Export.Mail.SMTP.SenderName';
+      ExportMailSmtpReplyTo:
+                          result:= 'Export.Mail.SMTP.ReplyTo';
+      ExportMailSmtpFrom:
+                          result:= 'Export.Mail.SMTP.From';
+      ExportMailSmtpPopBeforeSmtp:
+                          result:= 'Export.Mail.SMTP.POPBeforeSMTP';
+      ExportMailSmtpServerUser:
+                          result:= 'Export.Mail.SMTP.ServerUser';
+      ExportMailSmtpServerPassword:
+                          result:= 'Export.Mail.SMTP.ServerPassword';
+      ExportMailTo:
+                          result:= 'Export.Mail.To';
+      ExportMailCc:
+                          result:= 'Export.Mail.CC';
+      ExportMailBcc:
+                          result:= 'Export.Mail.BCC';
+      ExportMailProvider:
+                          result:= 'Export.Mail.Provider';
+      ExportMailSubject:
+                          result:= 'Export.Mail.Subject';
+      ExportMailShowDialog:
+                          result:= 'Export.Mail.ShowDialog';
+      ExportMailSendResultAs:
+                          result:= 'Export.Mail.SendResultAs';
+      ExportSaveAsZip:
+                          result:= 'Export.SaveAsZIP';
+      ExportSaveAsZipAvailable:
+                          result:= 'Export.SaveAsZIPAvailable';
+      ExportZipFile:
+                          result:= 'Export.ZIPFile';
+      ExportZipPath:
+                          result:= 'Export.ZIPPath';
+      ExportOnlyTableData:
+                          result:= 'Export.OnlyTableData';
+      ExportInfinitePage:
+                          result:= 'Export.InfinitePage';
+      ExportSignResult:
+                          result:= 'Export.SignResult';
+      ExportSignResultAvailable:
+                          result:= 'Export.SignResultAvailable';
+      ExportSignatureProvider:
+                          result:= 'Export.SignatureProvider';
+      ExportSignatureProviderOption:
+                          result:= 'Export.SignatureProvider.Option';
+      ExportSignatureFormat:
+                          result:= 'Export.SignatureFormat';
+      PictureJpegEncoding:
+                          result:= 'Picture.JpegEncoding';
+      PictureFormat:
+                          result:= 'Picture.Format';
+      PictureJpegQuality:
+                          result:= 'Picture.JPEGQuality';
+      PictureBitsPerPixel:
+                          result:= 'Picture.BitsPerPixel';
+      PictureCropFile:
+                          result:= 'Picture.CropFile';
+      PictureCropFrameWidth:
+                          result:= 'Picture.CropFrameWidth';
+      UsePosFrame:
+                          result:= 'UsePosFrame';
+      VerbosityRectangle:
+                          result:= 'Verbosity.Rectangle';
+      VerbosityBarcode:
+                          result:= 'Verbosity.Barcode';
+      VerbosityDrawing:
+                          result:= 'Verbosity.Drawing';
+      VerbosityEllipse:
+                          result:= 'Verbosity.Ellipse';
+      VerbosityLine:
+                          result:= 'Verbosity.Line';
+      VerbosityText:
+                          result:= 'Verbosity.Text';
+      VerbosityTextFrames:
+                          result:= 'Verbosity.Text.Frames';
+      VerbosityRtf:
+                          result:= 'Verbosity.RTF';
+      VerbosityRtfFrames:
+                          result:= 'Verbosity.RTF.Frames';
+      VerbosityTable:
+                          result:= 'Verbosity.Table';
+      VerbosityTableCell:
+                          result:= 'Verbosity.Table.Cell';
+      VerbosityTableFrames:
+                          result:= 'Verbosity.Table.Frames';
+      VerbosityLLXObject:
+                          result:= 'Verbosity.LLXObject';
+      VerbosityLLXObjectHtmlObject:
+                          result:= 'Verbosity.LLXObject.HTMLObj';
+      HtmlTitle:
+                          result:= 'HTML.Title';
+      HtmlFormHeader:
+                          result:= 'HTML.FormHeader';
+      HtmlFormFooter:
+                          result:= 'HTML.FormFooter';
+      LayouterPercentaged:
+                          result:= 'Layouter.Percentaged';
+      LayouterFixedPageHeight:
+                          result:= 'Layouter.FixedPageHeight';
+      PdfTitle:
+                          result:= 'PDF.Title';
+      PdfSubject:
+                          result:= 'PDF.Subject';
+      PdfKeywords:
+                          result:= 'PDF.Keywords';
+      PdfAuthor:
+                          result:= 'PDF.Author';
+      PdfCreator:
+                          result:= 'PDF.Creator';
+      PdfEncryptionEncryptFile:
+                          result:= 'PDF.Encryption.EncryptFile';
+      PdfEncryptionEnablePrinting:
+                          result:= 'PDF.Encryption.EnablePrinting';
+      PdfEncryptionEnableChanging:
+                          result:= 'PDF.Encryption.EnableChanging';
+      PdfEncryptionEnableCopying:
+                          result:= 'PDF.Encryption.EnableCopying';
+      PdfEncryptionEnableFillingForms:
+                          result:= 'PDF.Encryption.EnableFillingForms';
+      PdfEncryptionEnableAnnotating:
+                          result:= 'PDF.Encryption.EnableAnnotating';
+      PdfEncryptionLevel:
+                          result:= 'PDF.Encryption.Level';
+      PdfOwnerPassword:
+                          result:= 'PDF.OwnerPassword';
+      PdfUserPassword:
+                          result:= 'PDF.UserPassword';
+      PdfExcludedFonts:
+                          result:= 'PDF.ExcludedFonts';
+      PdfCompressStreamMethod:
+                          result:= 'PDF.CompressStreamMethod';
+      PdfFileAttachments:
+                          result:= 'PDF.FileAttachments';
+      PdfConformance:
+                          result:= 'PDF.Conformance';
+      PdfUseSimpleFrames:
+                          result:= 'PDF.UseSimpleFrames';
+      PdfZUGFeRDXmlPath:
+                          result:= 'PDF.ZUGFeRDXmlPath';
+      PdfZUGFeRDConformanceLevel:
+                          result:= 'PDF.ZUGFeRDConformanceLevel';
+      PdfZUGFeRDVersion:
+                          result:= 'PDF.ZUGFeRDVersion';
+      Resolution:
+                          result:= 'Resolution';
+      TxtFrameChar:
+                          result:= 'TXT.FrameChar';
+      TxtSeparatorChar:
+                          result:= 'TXT.SeparatorChar';
+      TxtIgnoreGroupLines:
+                          result:= 'TXT.IgnoreGroupLines';
+      TxtIgnoreHeaderFooterLines:
+                          result:= 'TXT.IgnoreHeaderFooterLines';
+      TxtCharset:
+                          result:= 'TXT.Charset';
+      TtyEmulation:
+                          result:= 'TTY.Emulation';
+      TtyDestination:
+                          result:= 'TTY.Destination';
+      TtyDefaultFilename:
+                          result:= 'TTY.DefaultFilename';
+      TtyAdvanceAfterPrint:
+                          result:= 'TTY.AdvanceAfterPrint';
+      TiffCompressionType:
+                          result:= 'TIFF.CompressionType';
+      TiffCompressionQuality:
+                          result:= 'TIFF.CompressionQuality';
+      XlsFontScalingPercentage:
+                          result:= 'XLS.FontScalingPercentage';
+      XlsPrintingZoom:
+                          result:= 'XLS.PrintingZoom';
+      XlsIgnoreGroupLines:
+                          result:= 'XLS.IgnoreGroupLines';
+      XlsIgnoreHeaderFooterLines:
+                          result:= 'XLS.IgnoreHeaderFooterLines';
+      XlsIgnoreLineWrapForDataOnlyExport:
+                          result:= 'XLS.IgnoreLinewrapForDataOnlyExport';
+      XlsConvertNumeric:
+                          result:= 'XLS.ConvertNumeric';
+      XlsAllPagesOneSheet:
+                          result:= 'XLS.AllPagesOneSheet';
+      XlsWorksheetName:
+                          result:= 'XLS.WorksheetName';
+      XlsAutoFit:
+                          result:= 'XLS.AutoFit';
+      XmlTitle:
+                          result:= 'XML.Title';
+      XhtmlUseAdvancedCss:
+                          result:= 'XHTML.UseAdvancedCSS';
+      XhtmlToolbarType:
+                          result:= 'XHTML.ToolbarType';
+      XhtmlTitle:
+                          result:= 'XHTML.Title';
+      XhtmlUseSeparateCss:
+                          result:= 'XHTML.UseSeparateCSS';
+      JqmTitle:
+                          result:= 'JQM.Title';
+      JqmCDN:
+                          result:= 'JQM.CDN';
+      JqmListDataFilter:
+                          result:= 'JQM.ListDataFilter';
+      JqmUseDividerLines:
+                          result:= 'JQM.UseDividerLines';
+      JqmBaseTheme:
+                          result:= 'JQM.BaseTheme';
+      JqmHeaderTheme:
+                          result:= 'JQM.HeaderTheme';
+      JqmDividerTheme:
+                          result:= 'JQM.DividerTheme';
+      JqmColumnMode:
+                          result:= 'JQM.ColumnMode';
+      DocxFontScalingPercentage:
+                          result:= 'DOCX.FontScalingPercentage';
+      DocxAllPagesOneFile:
+                          result:= 'DOCX.AllPagesOneFile';
+      DocxCellScalingPercentageWidth:
+                          result:= 'DOCX.CellScalingPercentageWidth';
+      DocxCellScalingPercentageHeight:
+                          result:= 'DOCX.CellScalingPercentageHeight';
+      DocxFloatingTableMode:
+                          result:= 'DOCX.FloatingTableMode';
+      SvgTitle:
+                          result:= 'SVG.Title';
+      XlsFileFormat:
+                          result:= 'XLS.FileFormat';
+      PptxFontScalingPercentage:
+                          result:= 'PPTX.FontScalingPercentage';
+      PptxAnimation:
+                          result:= 'PPTX.Animation';
+      ExportMailPop3SocketTimeout:
+                          result:= 'Export.Mail.POP3.SocketTimeout';
+      ExportMailPop3SenderDomain:
+                          result:= 'Export.Mail.POP3.SenderDomain';
+      ExportMailPop3ServerPort:
+                          result:= 'Export.Mail.POP3.ServerPort';
+      ExportMailPop3ServerAddress:
+                          result:= 'Export.Mail.POP3.ServerAddress';
+      ExportMailPop3ServerUser:
+                          result:= 'Export.Mail.POP3.ServerUser';
+      ExportMailPop3ServerPassword:
+                          result:= 'Export.Mail.POP3.ServerPassword';
+      ExportMailPop3ProxyAddress:
+                          result:= 'Export.Mail.POP3.ProxyAddress';
+      ExportMailPop3ProxyPort:
+                          result:= 'Export.Mail.POP3.ProxyPort';
+      ExportMailPop3ProxyUser:
+                          result:= 'Export.Mail.POP3.ProxyUser';
+      ExportMailPop3ProxyPassword:
+                          result:= 'Export.Mail.POP3.ProxyPassword';
+      ExportMailXmapiServerUser:
+                          result:= 'Export.Mail.XMAPI.ServerUser';
+      ExportMailXmapiServerPassword:
+                          result:= 'Export.Mail.XMAPI.ServerPassword';
+      ExportMailXmapiSuppressLogonFailure:
+                          result:= 'Export.Mail.XMAPI.SuppressLogonFailure';
+      ExportMailXmapiDeleteAfterSend:
+                          result:= 'Export.Mail.XMAPI.DeleteAfterSend';
+      ExportMailSignatureName:
+                          result:= 'Export.Mail.SignatureName';
+      JsonIndent:
+                          result:= 'JSON.Indent';
+      DocxAuthor:
+                          result := 'DOCX.Author';
+      DocxTitle:
+                          result := 'DOCX.Title';
+      DocxKeywords:
+                          result := 'DOCX.Keywords';
+      DocxSubject:
+                          result := 'DOCX.Subject';
+      XhtmlFixedHeader:
+                          result := 'XHTML.FixedHeader';
+      XhtmlEnableAccessibility:
+                          result := 'XHTML.EnableAccessibility';
+      XlsAutoFormula:
+                          result := 'XLS.AutoFormula';
+      XlsProtectionProtectSheets:
+                          result := 'XLS.Protection.ProtectSheets';
+      XlsProtectionProtectSheetsPassword:
+                          result := 'XLS.Protection.ProtectSheetsPassword';
+      XlsProtectionProtectSheetsMode:
+                          result := 'XLS.Protection.ProtectSheetsMode';
+      XlsHeaderContent:
+                          result := 'XLS.HeaderContent';
+      XlsHeaderMargin:
+                          result := 'XLS.HeaderMargin';
+      XlsFooterContent:
+                          result := 'XLS.FooterContent';
+      XlsFooterMargin:
+                          result := 'XLS.FooterMargin';
+      ExportMailGraphAuthType:
+                          result := 'Export.Mail.Graph.AuthType';
+      ExportMailGraphClientId:
+                          result := 'Export.Mail.Graph.ClientId';
+      ExportMailGraphTenantId:
+                          result := 'Export.Mail.Graph.TenantId';
+      ExportMailGraphScope:
+                          result := 'Export.Mail.Graph.Scope';
+      ExportMailGraphRedirectUri:
+                          result := 'Export.Mail.Graph.RedirectUri';
+      ExportMailGraphSecretClientKeyId:
+                          result := 'Export.Mail.Graph.SecretClientKeyId';
+      ExportMailGraphSecretClientKeyValue:
+                          result := 'Export.Mail.Graph.SecretClientKeyValue';
+      ExportMailGraphUserName:
+                          result := 'Export.Mail.Graph.UserName';
+      ExportMailGraphUserObjectId:
+                          result := 'Export.Mail.Graph.UserObjectId';
+      ExportMailGraphUserPassword:
+                          result := 'Export.Mail.Graph.UserPassword';
+      ExportMailGraphBearerToken:
+                          result := 'Export.Mail.Graph.BearerToken';
+      ExportMailSmtpOAuth2BearerToken:
+                          result := 'Export.Mail.SMTP.OAUTH2.BearerToken';
+    else
+                          result:= '';
+    end;
+
+end;
+
+class function TExportEnumHelper.GetTargetFromString(const target: string): TLlExportTarget;
+begin
+
+  if UpperCase(target) = 'HTML5' then
+    Result := TLlExportTarget.Pdf
+  else if UpperCase(target) = 'PDF' then
+    Result := TLlExportTarget.Pdf
+  else if UpperCase(target) = 'HTML' then
+    Result := TLlExportTarget.Html
+  else if UpperCase(target) = 'RTF' then
+    Result := TLlExportTarget.Rtf
+  else if UpperCase(target) = 'PICTURE_BMP' then
+    Result := TLlExportTarget.Bitmap
+  else if UpperCase(target) = 'PICTURE_EMF' then
+    Result := TLlExportTarget.MetaFile
+  else if UpperCase(target) = 'PICTURE_TIFF' then
+    Result := TLlExportTarget.Tiff
+  else if UpperCase(target) = 'PICTURE_MULTITIFF' then
+    Result := TLlExportTarget.MultiTiff
+  else if UpperCase(target) = 'PICTURE_JPEG' then
+    Result := TLlExportTarget.Jpeg
+  else if UpperCase(target) = 'PICTURE_PNG' then
+    Result := TLlExportTarget.Png
+  else if UpperCase(target) = 'XLS' then
+    Result := TLlExportTarget.Xls
+  else if UpperCase(target) = 'XLSX' then
+    Result := TLlExportTarget.Xlsx
+  else if UpperCase(target) = 'DOCX' then
+    Result := TLlExportTarget.Docx
+  else if UpperCase(target) = 'XPS' then
+    Result := TLlExportTarget.Xps
+  else if UpperCase(target) = 'MHTML' then
+    Result := TLlExportTarget.Mhtml
+  else if UpperCase(target) = 'XHTML' then
+    Result := TLlExportTarget.Xhtml
+  else if UpperCase(target) = 'SVG' then
+    Result := TLlExportTarget.Svg
+  else if UpperCase(target) = 'JQM' then
+    Result := TLlExportTarget.Jqm
+  else if UpperCase(target) = 'XML' then
+    Result := TLlExportTarget.Xml
+  else if UpperCase(target) = 'TXT' then
+    Result := TLlExportTarget.Text
+  else if UpperCase(target) = 'TXT_LAYOUT' then
+    Result := TLlExportTarget.TextLayout
+  else if UpperCase(target) = 'TTY' then
+    Result := TLlExportTarget.Tty
+  else if UpperCase(target) = 'PRV' then
+    Result := TLlExportTarget.Preview
+  else if UpperCase(target) = 'PPTX' then
+    Result := TLlExportTarget.Pptx
+  else if UpperCase(target) = 'JSON' then
+    Result := TLlExportTarget.Json
+  else
+    raise Exception.Create(target + ' is an unknown export target');
+
+end;
+
+class function TExportEnumHelper.GetExtensionFromExportTarget(exportTarget: TLlExportTarget): string;
+begin
+  case exportTarget of
+    TLlExportTarget.Pdf:
+      Result := 'pdf';
+    TLlExportTarget.Html, TLlExportTarget.Xhtml, TLlExportTarget.Jqm:
+      Result := 'htm';
+    TLlExportTarget.Rtf:
+      Result := 'rtf';
+    TLlExportTarget.Bitmap:
+      Result := 'bmp';
+    TLlExportTarget.MetaFile:
+      Result := 'emf';
+    TLlExportTarget.Tiff, TLlExportTarget.MultiTiff:
+      Result := 'tif';
+    TLlExportTarget.Jpeg:
+      Result := 'jpg';
+    TLlExportTarget.Png:
+      Result := 'png';
+    TLlExportTarget.Xls:
+      Result := 'xls';
+    TLlExportTarget.Xlsx:
+      Result := 'xlsx';
+    TLlExportTarget.Docx:
+      Result := 'docx';
+    TLlExportTarget.Xps:
+      Result := 'xps';
+    TLlExportTarget.Mhtml:
+      Result := 'mhtml';
+    TLlExportTarget.Xml:
+      Result := 'xml';
+    TLlExportTarget.Text, TLlExportTarget.TextLayout:
+      Result := 'txt';
+    TLlExportTarget.Tty:
+      Result := 'tty';
+    TLlExportTarget.Preview:
+      Result := 'll';
+    TLlExportTarget.Svg:
+      Result := 'svg';
+    TLlExportTarget.Pptx:
+      Result := 'pptx';
+    TLlExportTarget.Json:
+      Result := 'json';
+    else
+      Result := '';
+  end;
+end;
+
+class function TExportEnumHelper.GetString(exportTarget: TLlExportTarget): string;
+begin
+  case exportTarget of
+    TLlExportTarget.Pdf:
+      Result := 'PDF';
+    TLlExportTarget.Html:
+      Result := 'HTML';
+    TLlExportTarget.Rtf:
+      Result := 'RTF';
+    TLlExportTarget.Bitmap:
+      Result := 'PICTURE_BMP';
+    TLlExportTarget.MetaFile:
+      Result := 'PICTURE_EMF';
+    TLlExportTarget.Tiff:
+      Result := 'PICTURE_TIFF';
+    TLlExportTarget.MultiTiff:
+      Result := 'PICTURE_MULTITIFF';
+    TLlExportTarget.Jpeg:
+      Result := 'PICTURE_JPEG';
+    TLlExportTarget.Png:
+      Result := 'PICTURE_PNG';
+    TLlExportTarget.Xls, TLlExportTarget.Xlsx:
+      Result := 'XLS';
+    TLlExportTarget.Docx:
+      Result := 'DOCX';
+    TLlExportTarget.Xps:
+      Result := 'XPS';
+    TLlExportTarget.Mhtml:
+      Result := 'MHTML';
+    TLlExportTarget.Xhtml:
+      Result := 'XHTML';
+    TLlExportTarget.Jqm:
+      Result := 'JQM';
+    TLlExportTarget.Xml:
+      Result := 'XML';
+    TLlExportTarget.Text:
+      Result := 'TXT';
+    TLlExportTarget.TextLayout:
+      Result := 'TXT_LAYOUT';
+    TLlExportTarget.Tty:
+      Result := 'TTY';
+    TLlExportTarget.Preview:
+      Result := 'PRV';
+    TLlExportTarget.Svg:
+      Result := 'SVG';
+    TLlExportTarget.Pptx:
+      Result := 'PPTX';
+    TLlExportTarget.Json:
+      Result := 'JSON';
+    else
+      Result := '';
+  end;
+end;
 
 //==============================================================================
 //  TEnumTranslater
@@ -779,7 +1358,7 @@ begin
     //TLlLanguage.lAlbanian: Result := CMBTLANG_ALBANIAN;
     //TLlLanguage.lBasque: Result := CMBTLANG_BASQUE;
     //TLlLanguage.lBulgarian: Result := CMBTLANG_BULGARIAN;
-    //TLlLanguage.lByelorussion: Result := CMBTLANG_BYELORUSSIAN;
+    //TLlLanguage.lByelorussian: Result := CMBTLANG_BYELORUSSIAN;
     //TLlLanguage.lCatalan: Result := CMBTLANG_CATALAN;
     TLlLanguage.lChinese: Result := CMBTLANG_CHINESE;
     //TLlLanguage.lCroatian: Result := CMBTLANG_CROATIAN;
@@ -800,12 +1379,12 @@ begin
     TLlLanguage.lJapanese: Result := CMBTLANG_JAPANESE;
     //TLlLanguage.lKorean: Result := CMBTLANG_KOREAN;
     //TLlLanguage.lLatvian: Result := CMBTLANG_LATVIAN;
-    //TLlLanguage.lLizhuanian: Result := CMBTLANG_LITHUANIAN;
+    //TLlLanguage.lLithuanian: Result := CMBTLANG_LITHUANIAN;
     //TLlLanguage.lNorwegian: Result := CMBTLANG_NORWEGIAN;
     //TLlLanguage.lPolish: Result := CMBTLANG_POLISH;
     TLlLanguage.lPortuguese: Result := CMBTLANG_PORTUGUESE;
     //TLlLanguage.lRomanian: Result := CMBTLANG_ROMANIAN;
-    TLlLanguage.lRussian: Result := CMBTLANG_RUSSIAN;
+    //TLlLanguage.lRussian: Result := CMBTLANG_RUSSIAN;
     TLlLanguage.lSlovak: Result := CMBTLANG_SLOVAK;
     //TLlLanguage.lSlovenian: Result := CMBTLANG_SLOVENIAN;
     //TLlLanguage.lSerbian: Result := CMBTLANG_SERBIAN;
@@ -816,6 +1395,8 @@ begin
     //TLlLanguage.lUkrainian: Result := CMBTLANG_UKRAINIAN;
     //TLlLanguage.lSerbianLatin: Result := CMBTLANG_SERBIAN_LATIN;
     //TLlLanguage.lChineseTraditional: Result := CMBTLANG_CHINESE_TRADITIONAL;
+    //TLlLanguage.lPortugueseBrazilian: Result := CMBTLANG_PORTUGUESE_BRAZILIAN;
+    //TLlLanguage.lSpanishColombia: Result := CMBTLANG_SPANISH_COLOMBIA;
   end;
 
 end;

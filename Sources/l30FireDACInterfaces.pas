@@ -3,14 +3,14 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : L29FireDACInterfaces.pas
- Module : List & Label 29 FireDAC Interface definitions
- Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ File   : L30FireDACInterfaces.pas
+ Module : List & Label 30 FireDAC Interface definitions
+ Descr. : Implementation file for the List & Label 30 VCL-Component
+ Version: 30.000
 ==================================================================================
 }
 
-unit l29FireDACInterfaces;
+unit l30FireDACInterfaces;
 
 
 interface
@@ -21,7 +21,7 @@ uses
     activex,
     graphics,
     classes
-    ,cmbtll29x;
+    ,cmbtll30x;
 
 
 const
@@ -214,7 +214,7 @@ end;
 
 implementation
 
-uses ListLabel29;
+uses ListLabel30;
 constructor LlXInterface.Create(ObjList: TList; FctList: TList);
 begin
     inherited create;
@@ -347,7 +347,7 @@ end;
 
 function LlXEnumObjects.Next(nCount: cardinal; var Obj: pILlXObject; pnDone: PLongint): HResult;
 var
-    pObject: TLlDesignerObject29;
+    pObject: TLlDesignerObject30;
     pObj: ILlXObject;
 begin
     Obj[0] := NIL;
@@ -355,7 +355,7 @@ begin
     pnDone^:=0;
     if m_nIndex <= FObjList.Count-1 then
     	begin
-          pObject := TLlDesignerObject29(FObjList[m_nIndex]);
+          pObject := TLlDesignerObject30(FObjList[m_nIndex]);
           if FAILED(pObject.QueryInterface(IID_LLX_IOBJECT,pObj)) then
               begin
               pObject.Free;
@@ -445,7 +445,7 @@ end;
 
 function LlXEnumFunctions.Next(nCount: cardinal; var Obj: pILlXFunction; pnDone: PLongint): HResult;
 var
-    pFunction: TLlDesignerFunction29;
+    pFunction: TLlDesignerFunction30;
     pObj: ILlXFunction;
 begin
     Obj[0] := NIL;
@@ -453,7 +453,7 @@ begin
     pnDone^:=0;
     if m_nIndex <= FFctList.Count-1 then
     	begin
-          pFunction := TLlDesignerFunction29(FFctList[m_nIndex]);
+          pFunction := TLlDesignerFunction30(FFctList[m_nIndex]);
           if FAILED(pFunction.QueryInterface(IID_LLX_IFUNCTION,pObj)) then
               begin
               pFunction.Free;

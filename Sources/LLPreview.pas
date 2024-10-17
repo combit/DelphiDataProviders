@@ -5,8 +5,8 @@
 ----------------------------------------------------------------------------------
  File   : LLPreview.pas
  Module : LLPreview.pas
- Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ Descr. : Implementation file for the List & Label 30 VCL-Component
+ Version: 30.000
 ==================================================================================
 }
 
@@ -17,7 +17,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, WinApi.Windows, Vcl.Graphics, Vcl.Controls,
-  cmbtLL29x, ListLabel29, LLReport_Types, l29CommonInterfaces, l29FireDACInterfaces;
+  cmbtLL30x, ListLabel30, LLReport_Types, l30CommonInterfaces, l30FireDACInterfaces;
 
 const
   IDM_PRV_ZOOMMUL2=100;
@@ -128,7 +128,7 @@ type
   TLlRTFTextMode = (tmRTF, tmPlain);
   TLlRTFContentMode = (cmRaw, cmEvaluated);
   TLlRTFPrintState = (psPending, psFinished);
-  TLlPreviewControl29 = class;
+  TLlPreviewControl30 = class;
 
   TLlPreviewButtons=class(TPersistent)
   private
@@ -145,7 +145,7 @@ type
     FZoomTimes2: TButtonState;
     FZoomRevert: TButtonState;
     FZoomReset: TButtonState;
-    FParentComponent: TLlPreviewControl29;
+    FParentComponent: TLlPreviewControl30;
     FPageCombo: TButtonState;
     FZoomCombo: TButtonState;
     FSearchStart: TButtonState;
@@ -175,7 +175,7 @@ type
 
     procedure SetSlideShowMode(const Value: TButtonState);
   public
-    constructor create(AParent: TLlPreviewControl29);
+    constructor create(AParent: TLlPreviewControl30);
   published
     property GotoFirst: TButtonState read FGotoFirst write SetGotoFirst;
     property GotoPrev: TButtonState read FGotoPrev write SetGotoPrev;
@@ -208,11 +208,11 @@ TLlPreviewPageStyle = class(TPersistent)
   private
   fDropShadow: TDropShadowType;
   fShowPageNumbers: boolean;
-  fParentComponent: TLlPreviewControl29;
+  fParentComponent: TLlPreviewControl30;
   procedure SetDropShadow (const value: TDropShadowType);
   procedure SetShowPageNumbers (const value: boolean);
   public
-  constructor create(AParent: TLlPreviewControl29);
+  constructor create(AParent: TLlPreviewControl30);
   published
   property DropShadow: TDropShadowType read fDropShadow write SetDropShadow;
   property ShowPageNumbers : boolean read fShowPageNumbers write SetShowPageNumbers;
@@ -221,7 +221,7 @@ end;
 
 TLlPreviewSelectionFrame = class(TPersistent)
 private
-  fParentComponent: TLlPreviewControl29;
+  fParentComponent: TLlPreviewControl30;
   fFrameMarginHeight: integer;
   fFrameMarginWidth: integer;
   fFrameRoundedCorner: integer;
@@ -240,7 +240,7 @@ private
   procedure SetFillColorHighlighted (const value: TColor);
 
 public
-  constructor create(AParent: TLlPreviewControl29);
+  constructor create(AParent: TLlPreviewControl30);
 
 published
   property MarginHeight: integer read fFrameMarginHeight write SetFrameMarginHeight;
@@ -253,7 +253,7 @@ published
   property FrameType: TSelectedPageFrameType read fSelectedPageFrameType write SetSelectedPageFrameType;
 
 end;
-  TLlPreviewControl29 = class(TCustomControl)
+  TLlPreviewControl30 = class(TCustomControl)
   private
     FPreviewPageStyle: TLlPreviewPageStyle;
     fPreviewSelectionFrame:TLlPreviewSelectionFrame;
@@ -312,7 +312,7 @@ end;
     procedure SetSlideShowMode;
     procedure RefreshToolbar;
     procedure SetOptionString(Option: TString; Value: TString);
-    procedure Attach(FParentComponent: TListLabel29; nFlags: Cardinal);
+    procedure Attach(FParentComponent: TListLabel30; nFlags: Cardinal);
     procedure Detach;
     procedure SearchFirst(SearchString: TString; CaseSensitive: Boolean);
     procedure SearchNext;
@@ -347,7 +347,7 @@ function StgsysNtfyCallback(nMsg: cardinal; lParam: NativeUInt; lUserParam: Nati
 
 implementation
 
-uses cmbtLS29x;
+uses cmbtLS30x;
 
 
 function StgsysNtfyCallback(nMsg: cardinal; lParam: NativeUInt; lUserParam: NativeInt): NativeInt;
@@ -362,20 +362,20 @@ begin
   case nMsg of
     LS_VIEWERCONTROL_QUEST_BTNSTATE:
       begin
-          TLlPreviewControl29(lUserParam).QuestButtonState(lParam,lResult);
+          TLlPreviewControl30(lUserParam).QuestButtonState(lParam,lResult);
       end;
 
     LS_VIEWERCONTROL_NTFY_PAGELOADED:
       begin
-          if Assigned(TLlPreviewControl29(lUserParam).OnPageChanged) then
-                  TLlPreviewControl29(lUserParam).OnPageChanged(TLlPreviewControl29(lUserParam),lParam);
+          if Assigned(TLlPreviewControl30(lUserParam).OnPageChanged) then
+                  TLlPreviewControl30(lUserParam).OnPageChanged(TLlPreviewControl30(lUserParam),lParam);
       end;
 
     LS_VIEWERCONTROL_NTFY_BTNPRESSED:
       begin
-          If Assigned(TLlPreviewControl29(lUserParam).OnButtonClicked) then
+          If Assigned(TLlPreviewControl30(lUserParam).OnButtonClicked) then
           begin
-            TLlPreviewControl29(lUserParam).OnButtonClicked(TLlPreviewControl29(lUserParam),lParam, IsHandled);
+            TLlPreviewControl30(lUserParam).OnButtonClicked(TLlPreviewControl30(lUserParam),lParam, IsHandled);
             if IsHandled=true then lResult:=1;
           end;
       end;
@@ -434,13 +434,13 @@ end;
     Buffer: PTChar;
     length: integer;
   begin
-    length := cmbtLS29x.LlStgsysGetPageOptionString(FHandle, FPageIndex,
+    length := cmbtLS30x.LlStgsysGetPageOptionString(FHandle, FPageIndex,
       OptionIndex, nil, 0);
     if length>0 then
     begin
       GetMem(Buffer, length * sizeof(TChar));
       Buffer^ := #0;
-      cmbtLS29x.LlStgsysGetPageOptionString(FHandle, FPageIndex, OptionIndex, Buffer, length);
+      cmbtLS30x.LlStgsysGetPageOptionString(FHandle, FPageIndex, OptionIndex, Buffer, length);
       Result := TString(Buffer);
       FreeMem(Buffer);
     end
@@ -452,7 +452,7 @@ end;
 
   function TLlPreviewPage.GetOptionValue(OptionIndex: integer): integer;
   begin
-    Result := cmbtLS29x.LlStgsysGetPageOptionValue(FHandle, FPageIndex, OptionIndex);
+    Result := cmbtLS30x.LlStgsysGetPageOptionValue(FHandle, FPageIndex, OptionIndex);
   end;
 
   function TLlPreviewPage.GetOrientation: integer;
@@ -522,13 +522,13 @@ end;
 
   procedure TLlPreviewPage.SetJobName(const Value: TString);
   begin
-    cmbtLS29x.LlStgsysSetPageOptionString(FHandle, FPageIndex,
+    cmbtLS30x.LlStgsysSetPageOptionString(FHandle, FPageIndex,
       LS_OPTION_JOBNAME, PTChar(Value));
   end;
 
   procedure TLlPreviewPage.SetUserValue(Value: TString);
   begin
-    cmbtLS29x.LlStgsysSetPageOptionString(FHandle, FPageIndex,
+    cmbtLS30x.LlStgsysSetPageOptionString(FHandle, FPageIndex,
       LS_OPTION_USER, PTChar(Value));
   end;
 
@@ -614,7 +614,7 @@ constructor TLlPreviewFile.Create(FileName: TString; ReadOnly: boolean; Language
 
 { TLlPreviewButtons }
 
-constructor TLlPreviewButtons.create(AParent: TLlPreviewControl29);
+constructor TLlPreviewButtons.create(AParent: TLlPreviewControl30);
 begin
   inherited create;
   FParentComponent:=AParent;
@@ -762,7 +762,7 @@ end;
 
 {PreviewPageStyle}
 
-constructor TLlPreviewPageStyle.create(AParent: TLlPreviewControl29);
+constructor TLlPreviewPageStyle.create(AParent: TLlPreviewControl30);
 begin
   inherited create;
   fParentComponent:= AParent;
@@ -783,7 +783,7 @@ end;
 
 {TLlPreviewSelectFrame}
 
-constructor TLlPreviewSelectionFrame.create(AParent: TLlPreviewControl29);
+constructor TLlPreviewSelectionFrame.create(AParent: TLlPreviewControl30);
 begin
   inherited create;
   fParentComponent:= AParent;
@@ -838,13 +838,13 @@ begin
     SendMessage(fParentComponent.Handle,LS_VIEWERCONTROL_SET_OPTION, LS_OPTION_PAGEITEM_SELECTED_ITEM_FRAME_FILLCOLORHIGHLIGHTED_ARGB, FillColorHighlighted or NativeInt($FF000000));
 end;
 
-{ TLlPreviewControl29 }
+{ TLlPreviewControl30 }
 
-constructor TLlPreviewControl29.Create(AOwner: TComponent);
+constructor TLlPreviewControl30.Create(AOwner: TComponent);
 begin
     inherited create(AOwner);
-    LS29xLoad();
-    LL29xLoad();
+    LS30xLoad();
+    LL30xLoad();
     FNotifyProc := TFarProc(@StgsysNtfyCallback);
     FInitializing:=true;
     ShowToolbar:=true;
@@ -859,13 +859,13 @@ begin
     SelectionFrame:= TLlPreviewSelectionFrame.create(self);
 end;
 
-procedure TLlPreviewControl29.CreateParams(var Params: TCreateParams);
+procedure TLlPreviewControl30.CreateParams(var Params: TCreateParams);
 begin
     inherited CreateParams(Params);
     Params.ExStyle:=Params.ExStyle or WS_EX_CLIENTEDGE;
 end;
 
-procedure TLlPreviewControl29.CreateWindowHandle(
+procedure TLlPreviewControl30.CreateWindowHandle(
   const Params: TCreateParams);
 begin
     if not (csDesigning in ComponentState) then
@@ -883,7 +883,7 @@ begin
     inherited CreateWindowHandle(Params);
 end;
 
-procedure TLlPreviewControl29.CreateWnd;
+procedure TLlPreviewControl30.CreateWnd;
 begin
     inherited CreateWnd;
     SendMessage(handle,LS_VIEWERCONTROL_SET_OPTION, LS_OPTION_USERDATA, lparam(self));
@@ -896,14 +896,14 @@ begin
     end;
 end;
 
-procedure TLlPreviewControl29.DestroyWindowHandle;
+procedure TLlPreviewControl30.DestroyWindowHandle;
 begin
     if IsWindow(handle) then
         inherited DestroyWindowHandle;
 end;
 
 
-procedure TLlPreviewControl29.Detach;
+procedure TLlPreviewControl30.Detach;
 var
  CurrentInputFileName: TString;
 begin
@@ -917,17 +917,17 @@ begin
   {$endif}
 end;
 
-destructor TLlPreviewControl29.Destroy;
+destructor TLlPreviewControl30.Destroy;
 begin
     ToolbarButtons.Free;
     PageStyle.Free;
     SelectionFrame.Free;
-    LS29xUnload;
-    LL29xUnload;
+    LS30xUnload;
+    LL30xUnload;
     inherited destroy;
 end;
 
-function TLlPreviewControl29.GetActualButtonState(ButtonID: integer):integer;
+function TLlPreviewControl30.GetActualButtonState(ButtonID: integer):integer;
 begin
     if ShowToolbar then
         result:=SendMessage(handle, LS_VIEWERCONTROL_GET_TOOLBARBUTTONSTATE, ButtonID,0)
@@ -936,7 +936,7 @@ begin
 
 end;
 
-function TLlPreviewControl29.GetOptionString(Option: TString): TString;
+function TLlPreviewControl30.GetOptionString(Option: TString): TString;
 var Size: integer;
     Buffer: PTChar;
 begin
@@ -952,32 +952,32 @@ begin
     else
         result:='';
 end;
-procedure TLlPreviewControl29.SetPreviewPageStyle(const Value: TLlPreviewPageStyle);
+procedure TLlPreviewControl30.SetPreviewPageStyle(const Value: TLlPreviewPageStyle);
 begin
   FPreviewPageStyle:= Value;
 end;
 
-procedure TLlPreviewControl29.SetPreviewSelectionFrame(const Value: TLlPreviewSelectionFrame);
+procedure TLlPreviewControl30.SetPreviewSelectionFrame(const Value: TLlPreviewSelectionFrame);
 begin
   fPreviewSelectionFrame:= Value;
 end;
 
-function TLlPreviewControl29.GetCurrentPage: integer;
+function TLlPreviewControl30.GetCurrentPage: integer;
 begin
      result:=SendMessage(handle, LS_VIEWERCONTROL_GET_PAGE, 0, 0);
 end;
 
-function TLlPreviewControl29.GetPageCount: integer;
+function TLlPreviewControl30.GetPageCount: integer;
 begin
      result:=SendMessage(handle, LS_VIEWERCONTROL_GET_PAGECOUNT, 0, 0);
 end;
 
-procedure TLlPreviewControl29.GotoFirst;
+procedure TLlPreviewControl30.GotoFirst;
 begin
     SendMessage(handle,LS_VIEWERCONTROL_SET_PAGE, 0, 0);
 end;
 
-procedure TLlPreviewControl29.GotoLast;
+procedure TLlPreviewControl30.GotoLast;
 var
     Pages: integer;
 begin
@@ -985,7 +985,7 @@ begin
     SendMessage(handle,LS_VIEWERCONTROL_SET_PAGE, Pages-1, 0);
 end;
 
-procedure TLlPreviewControl29.GotoNext;
+procedure TLlPreviewControl30.GotoNext;
 var
     CurrentPage: integer;
 begin
@@ -993,13 +993,13 @@ begin
     SendMessage(handle,LS_VIEWERCONTROL_SET_PAGE, CurrentPage+1, 0);
 end;
 
-procedure TLlPreviewControl29.SaveAs;
+procedure TLlPreviewControl30.SaveAs;
 begin
     SendMessage(handle,LS_VIEWERCONTROL_SAVE_TO_FILE, 0, 0);
 end;
 
 
-procedure TLlPreviewControl29.GotoPrevious;
+procedure TLlPreviewControl30.GotoPrevious;
 
 var
     CurrentPage: integer;
@@ -1009,21 +1009,21 @@ begin
         SendMessage(handle,LS_VIEWERCONTROL_SET_PAGE, CurrentPage-1, 0);
 end;
 
-function TLlPreviewControl29.PrintAllPages(ShowPrintOptions: boolean): integer;
+function TLlPreviewControl30.PrintAllPages(ShowPrintOptions: boolean): integer;
 var Value: integer;
 begin
     if ShowPrintOptions then Value:=1 else Value:=0;
    Result:= SendMessage(handle,LS_VIEWERCONTROL_PRINT_ALL, Value, 0);
 end;
 
-function TLlPreviewControl29.PrintCurrentPage(ShowPrintOptions: boolean): integer;
+function TLlPreviewControl30.PrintCurrentPage(ShowPrintOptions: boolean): integer;
 var Value: integer;
 begin
     if ShowPrintOptions then Value:=1 else Value:=0;
     Result:= SendMessage(handle,LS_VIEWERCONTROL_PRINT_CURRENT, Value, 0);
 end;
 
-function TLlPreviewControl29.PWideToString(pw: PWideChar): AnsiString;
+function TLlPreviewControl30.PWideToString(pw: PWideChar): AnsiString;
 var
   buffer : PAnsiChar;
   iLen : integer;
@@ -1035,7 +1035,7 @@ begin
   FreeMem(buffer);
 end;
 
-procedure TLlPreviewControl29.QuestButtonState(ButtonID: integer;
+procedure TLlPreviewControl30.QuestButtonState(ButtonID: integer;
   var Result: NativeInt);
 begin
     case ButtonID of
@@ -1067,7 +1067,7 @@ begin
 
 end;
 
-procedure TLlPreviewControl29.RefreshOptions;
+procedure TLlPreviewControl30.RefreshOptions;
 begin
     SetFileName(InputFileName);
     SetShowToolbar(FShowToolbar);
@@ -1076,13 +1076,13 @@ begin
     SetSaveAsFilePath(FSaveAsFilePath);
 end;
 
-procedure TLlPreviewControl29.RefreshToolbar;
+procedure TLlPreviewControl30.RefreshToolbar;
 begin
     if not FInitializing then
         SendMessage(handle, LS_VIEWERCONTROL_NTFY_TOOLBARUPDATE, 0, 0);
 end;
 
-procedure TLlPreviewControl29.SetBackgroundColor(const Value: TColor);
+procedure TLlPreviewControl30.SetBackgroundColor(const Value: TColor);
 begin
   FBackgroundColor := Value;
   if not FInitializing then
@@ -1091,12 +1091,12 @@ begin
   end;
 end;
 
-procedure TLlPreviewControl29.SetCloseMode(const Value: TCloseMode);
+procedure TLlPreviewControl30.SetCloseMode(const Value: TCloseMode);
 begin
   FCloseMode := Value;
 end;
 
-procedure TLlPreviewControl29.SetFileName(const Value: TString);
+procedure TLlPreviewControl30.SetFileName(const Value: TString);
 begin
   if not (csDesigning in ComponentState) then
   begin
@@ -1109,23 +1109,23 @@ begin
   FFileName := Value;
 end;
 
-procedure TLlPreviewControl29.SetLanguage(const Value: TLlLanguage);
+procedure TLlPreviewControl30.SetLanguage(const Value: TLlLanguage);
 begin
   SendMessage(handle, LS_VIEWERCONTROL_SET_OPTION, LS_OPTION_LANGUAGE, TEnumTranslator.TranslateLanguage(value));
   FLanguage := Value;
 end;
 
-procedure TLlPreviewControl29.SetOptionString(Option, Value: TString);
+procedure TLlPreviewControl30.SetOptionString(Option, Value: TString);
 begin
   SendMessage(handle, LS_VIEWERCONTROL_SET_OPTIONSTR, NativeUInt(PTChar(Option)), NativeInt(PTChar(Value)));
 end;
 
-procedure TLlPreviewControl29.SetSlideShowMode;
+procedure TLlPreviewControl30.SetSlideShowMode;
 begin
   SendMessage(handle, LS_VIEWERCONTROL_SET_THEATERMODE, 1, 1);
 end;
 
-procedure TLlPreviewControl29.SetSaveAsFilePath(const Value: TString);
+procedure TLlPreviewControl30.SetSaveAsFilePath(const Value: TString);
 begin
   FSaveAsFilePath := Value;
   if not (csDesigning in ComponentState) then
@@ -1135,7 +1135,7 @@ begin
   end;
 end;
 
-function TLlPreviewControl29.GetSaveAsFilePath: TString;
+function TLlPreviewControl30.GetSaveAsFilePath: TString;
 var Buffer: PTChar;
 begin
 
@@ -1159,7 +1159,7 @@ begin
 
 end;
 
-procedure TLlPreviewControl29.SetShowToolbar(const Value: boolean);
+procedure TLlPreviewControl30.SetShowToolbar(const Value: boolean);
 var IntValue: integer;
 begin
   FShowToolbar := Value;
@@ -1170,7 +1170,7 @@ begin
   end;
 end;
 
-procedure TLlPreviewControl29.SetShowUnprintableArea(const Value: boolean);
+procedure TLlPreviewControl30.SetShowUnprintableArea(const Value: boolean);
 var IntValue: integer;
 begin
   FShowUnprintableArea:=Value;
@@ -1181,39 +1181,39 @@ begin
   end;
 end;
 
-procedure TLlPreviewControl29.SetToolbarButtons(
+procedure TLlPreviewControl30.SetToolbarButtons(
   const Value: TLlPreviewButtons);
 begin
   FToolbarButtons := Value;
 end;
 
-procedure TLlPreviewControl29.SetZoom(Percentage: integer);
+procedure TLlPreviewControl30.SetZoom(Percentage: integer);
 begin
     SendMessage(handle,LS_VIEWERCONTROL_SET_ZOOM, Percentage, 0);
 end;
 
 
-procedure TLlPreviewControl29.ZoomReset;
+procedure TLlPreviewControl30.ZoomReset;
 begin
     SendMessage(handle,LS_VIEWERCONTROL_RESET_ZOOM, 0, 0);
 end;
 
-procedure TLlPreviewControl29.ZoomRevert;
+procedure TLlPreviewControl30.ZoomRevert;
 begin
     SendMessage(handle,LS_VIEWERCONTROL_POP_ZOOM, 0, 0);
 end;
 
-procedure TLlPreviewControl29.SelectSlideshowTransition;
+procedure TLlPreviewControl30.SelectSlideshowTransition;
 begin
     SendMessage(handle,LS_VIEWERCONTROL_SELECT_THEATERXFORM , 0, 0);
 end;
 
-procedure TLlPreviewControl29.ZoomTimes2;
+procedure TLlPreviewControl30.ZoomTimes2;
 begin
     SendMessage(handle,LS_VIEWERCONTROL_SET_ZOOM_TWICE, 0, 0);
 end;
 
-procedure TLlPreviewControl29.Attach(FParentComponent: TListLabel29;
+procedure TLlPreviewControl30.Attach(FParentComponent: TListLabel30;
   nFlags: Cardinal);
 begin
   InputFilename := '';
@@ -1221,7 +1221,7 @@ begin
   LlAssociatePreviewControl(FhLlJob, Self.Handle, nFlags);
 end;
 
-procedure TLlPreviewControl29.SearchFirst(SearchString: TString; CaseSensitive: Boolean);
+procedure TLlPreviewControl30.SearchFirst(SearchString: TString; CaseSensitive: Boolean);
 var wParam: NativeUInt;
 begin
   if CaseSensitive = True then
@@ -1238,12 +1238,12 @@ begin
    NativeInt(PTChar(SearchString)));
 end;
 
-procedure TLlPreviewControl29.SearchNext;
+procedure TLlPreviewControl30.SearchNext;
 begin
   SendMessage(handle, $400 + 29 (*LS_VIEWERCONTROL_SEARCH*), 1 (*LS_VCITEM_SEARCH_NEXT*), 0);
 end;
 
-function TLlPreviewControl29.CanClose: boolean;
+function TLlPreviewControl30.CanClose: boolean;
 begin
     if SendMessage(handle,LS_VIEWERCONTROL_QUERY_ENDSESSION, 0, 0)=1 then
         result:=true
@@ -1251,13 +1251,13 @@ begin
         result:=false;
 end;
 
-procedure TLlPreviewControl29.SetOnButtonClicked(
+procedure TLlPreviewControl30.SetOnButtonClicked(
   const Value: TButtonClickedEvent);
 begin
   FOnButtonClicked := Value;
 end;
 
-procedure TLlPreviewControl29.SetShowThumbnails(const Value: boolean);
+procedure TLlPreviewControl30.SetShowThumbnails(const Value: boolean);
 var IntValue: integer;
 begin
   FShowThumbnails:=Value;

@@ -3,21 +3,21 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : LL29Report_Reg.pas
- Module : List & Label 29
- Descr. : Implementation file for the List & Label 29 VCL-Component
- Version: 29.000
+ File   : LL30Report_Reg.pas
+ Module : List & Label 30
+ Descr. : Implementation file for the List & Label 30 VCL-Component
+ Version: 30.000
 ==================================================================================
 }
 
-unit LL29Report_Reg;
+unit LL30Report_Reg;
 {$define UNICODE}
 
 interface
 
 uses Forms, Dialogs, Classes, DesignIntf, DesignEditors;
 type
-  TListLabel29Loader = class(TComponentEditor)
+  TListLabel30Loader = class(TComponentEditor)
   public
     procedure Edit; override;
     function  GetVerbCount: Integer; Override;
@@ -43,14 +43,14 @@ type
   procedure Register;
 
 implementation
-uses StrEdit, ListLabel29, LLReport_Types, LLObjectEditor, Typinfo, DB, LLPreview;
+uses StrEdit, ListLabel30, LLReport_Types, LLObjectEditor, Typinfo, DB, LLPreview;
 
 procedure Register;
 begin
 
-  RegisterComponentEditor(TListLabel29, TListLabel29Loader);
-  RegisterComponents('combit', [TListLabel29, TLlPreviewControl29, TLlDesignerObject29, TLlDesignerFunction29, TLDesignerAction29, TLlRTFControl29]);
-  RegisterPropertyEditor(TypeInfo(TDetailSourceList),TListLabel29, 'DetailSources',        TDetailsSourcesPropertyEditor);
+  RegisterComponentEditor(TListLabel30, TListLabel30Loader);
+  RegisterComponents('combit', [TListLabel30, TLlPreviewControl30, TLlDesignerObject30, TLlDesignerFunction30, TLDesignerAction30, TLlRTFControl30]);
+  RegisterPropertyEditor(TypeInfo(TDetailSourceList),TListLabel30, 'DetailSources',        TDetailsSourcesPropertyEditor);
   RegisterPropertyEditor(TypeInfo(TDetailSourceList),TLLDataController, 'DetailSources',TDetailsSourcesPropertyEditor);
 
 end;
@@ -58,21 +58,21 @@ end;
 {- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -}
 {                         TLLDesignerLoader                         }
 {- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -}
-procedure TListLabel29Loader.Edit;
+procedure TListLabel30Loader.Edit;
 begin
-    ExecuteDetailSourcesEditor( TListLabel29(Component).Name + '.DetailSources',
+    ExecuteDetailSourcesEditor( TListLabel30(Component).Name + '.DetailSources',
                                 Designer,
                                 'DetailSources',
-                                TListLabel29(Component).DataController.DetailSources);
+                                TListLabel30(Component).DataController.DetailSources);
 end;
 
 
-function  TListLabel29Loader.GetVerbCount: Integer;
+function  TListLabel30Loader.GetVerbCount: Integer;
 begin
    GetVerbCount:=inherited GetVerbCount+1;
 end;
 
-function  TListLabel29Loader.GetVerb(Index: Integer): string;
+function  TListLabel30Loader.GetVerb(Index: Integer): string;
 begin
    Case Index of
       0: GetVerb:='Edit data structure...';
@@ -80,7 +80,7 @@ begin
    end;
 end;
 
-procedure TListLabel29Loader.ExecuteVerb(Index: Integer);
+procedure TListLabel30Loader.ExecuteVerb(Index: Integer);
 begin
    Case Index of
       0: self.Edit;

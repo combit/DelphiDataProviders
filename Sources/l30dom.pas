@@ -3,14 +3,16 @@
   Copyright © combit GmbH, Konstanz
 
   ----------------------------------------------------------------------------------
-  File   : l29dom.pas
-  Module : List & Label 29 DOM
-  Descr. : Implementation file for the List & Label 29 DOM
-  Version: 29.001
+
+  File   : l30dom.pas
+  Module : List & Label 30 DOM
+  Descr. : Implementation file for the List & Label 30 DOM
+  Version: 30.000
+
   ==================================================================================
 }
 
-unit l29dom;
+unit l30dom;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
@@ -26,7 +28,7 @@ unit l29dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l29CommonInterfaces,cmbtll29x
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l30CommonInterfaces,cmbtll30x
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -253,8 +255,74 @@ type
   TLlDOMGaugeType = (gtRound, gtLinear, gtLinearHorizontal);
   TLlDOMSourceContentsType = (sctText, sctBoolean, sctNumeric, sctDate);
   TLlDOMControlType = (ctrlText, ctrlDate, ctrlBoolYesNo, ctrlBoolTrueFalse);
-  TLlDOMSourceType = (stDatabase , stChoice , stText);
+  TLlDOMSourceType = (stDatabase, stChoice, stText);
+
   TLlDOMReportParameterValueType = (vtDouble = 1, vtDate = 2, vtString = 4, vtBool = 8, vtDrawing = 10, vtBarcode = 20 );
+
+  TLlDOMBarcodeType = (
+    btBarcode = $40000000,
+    btEAN13 = $40000000,
+    btEAN8 = $40000001,
+    btUPCA = $40000002,
+    btUPCE = $40000003,
+    btCode3of9 = $40000004,
+    btCode2of5_Industrial = $40000005,
+    btCode2of5_Interleaved = $40000006,
+    btCode2of5_Datalogic = $40000007,
+    btCode2of5_Matrix = $40000008,
+    btPostnet = $40000009,
+    btFIM = $4000000A,
+    btCodabar = $4000000B,
+    btEAN128 = $4000000C,
+    btCODE128 = $4000000D,
+    btDP_Leitcode = $4000000E,
+    btDP_Identcode = $4000000F,
+    btGerman_Parcel = $40000010,
+    btCode93 = $40000011,
+    btMSI = $40000012,
+    btCode11 = $40000013,
+    btMSI_10_CD = $40000014,
+    btMSI_10_10 = $40000015,
+    btMSI_11_10 = $40000016,
+    btMSI_10_Plain = $40000017,
+    btPDF417 = $40000040,
+    btMaxicode = $40000041,
+    btMaxicode_UPS = $40000042,
+    btEAN14 = $40000018,
+    btUCC14 = $40000019,
+    btCode39 = $4000001A,
+    btCode39_CRC43 = $4000001B,
+    btPZN = $4000001C,
+    btCode39_Ext = $4000001D,
+    btDatamatrix = $40000044,
+    btAztec = $40000045,
+    btJapanese_Postal = $4000001E,
+    btRm4SCC = $4000001F,
+    btRm4SCC_CRC = $40000020,
+    btSCC = $40000021,
+    btISBN = $40000022,
+    btQRCode = $40000046,
+    btGS1 = $40000023,
+    btGS1Truncated = $40000024,
+    btGS1Stacked = $40000025,
+    btGS1StackedOmni = $40000026,
+    btGS1Limited = $40000027,
+    btGS1Expanded = $40000028,
+    btIntelligentMail = $40000029,
+    btPZN8 = $4000002A,
+    btCode128_Full = $4000002B,
+    btEAN128_Full = $4000002C,
+    btGS1_128 = $4000000C,
+    btGTIN13 = $40000000,
+    btGTIN14 = $40000018,
+    btGTIN8 = $40000001,
+    btMicroPDF417 = $40000048,
+    btPremiumAddress = $40000047,
+    btEPC = $40000049,
+    btDesignQRCode = $40000050,
+    btCodablockF = $4000002D,
+    btPharmacode = $4000002E
+    );
 
 
   TLlDOMHorizontalLinkType = class(TObject)
@@ -1866,15 +1934,15 @@ type
     procedure SetMode(const value: TString);
     function GetText: TString;
     procedure SetText(const value: TString);
-    function GetBarcodeType: TString;
-    procedure SetBarcodeType(const value: TString);
+    function GetBarcodeType: TLlDOMBarcodeType;
+    procedure SetBarcodeType(const value: TLlDOMBarcodeType);
     function GetVariable: TString;
     procedure SetVariable(const value: TString);
   public
     property Formula: TString read GetFormula write SetFormula;
     property Mode: TString read GetMode write SetMode;
     property Text: TString read GetText write SetText;
-    property BarcodeType: TString read GetBarcodeType write SetBarcodeType;
+    property BarcodeType: TLlDOMBarcodeType read GetBarcodeType write SetBarcodeType;
     property Variable: TString read GetVariable write SetVariable;
   end;
 
@@ -1966,7 +2034,57 @@ public
   property FNC1Mode: TString read GetFNC1Mode write SetFNC1Mode;
 end;
 
+TLlDOMPropertyEPCBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  function GetAmount: TString;
+  function GetHint: TString;
+  function GetPurpose: TString;
+  function GetRecipientBIC: TString;
+  function GetRecipientIBAN: TString;
+  function GetRecipientName: TString;
+  function GetReference: TString;
+  function GetUsage: TString;
+  procedure SetAmount(const value: TString);
+  procedure SetHint(const value: TString);
+  procedure SetPurpose(const value: TString);
+  procedure SetRecipientBIC(const value: TString);
+  procedure SetRecipientIBAN(const value: TString);
+  procedure SetRecipientName(const value: TString);
+  procedure SetReference(const value: TString);
+  procedure SetUsage(const value: TString);
 
+public
+  property Amount: TString read GetAmount write SetAmount;
+  property Hint: TString read GetHint write SetHint;
+  property Purpose: TString read GetPurpose write SetPurpose;
+  property RecipientBIC: TString read GetRecipientBIC write SetRecipientBIC;
+  property RecipientIBAN: TString read GetRecipientIBAN write SetRecipientIBAN;
+  property RecipientName: TString read GetRecipientName write SetRecipientName;
+  property Reference: TString read GetReference write SetReference;
+  property Usage: TString read GetUsage write SetUsage;
+
+end;
+
+TLlDOMPropertyDesignQRBarcodeSource = class(TLlDOMPropertyBarcodeSource)
+private
+  fImage : TLlDOMPropertyDrawingContents;
+  fImageArea : TLlDOMPropertyReservedSpace;
+  function GetErrorCorrection: TString;
+  function GetImage: TLlDOMPropertyDrawingContents;
+  function GetRoundingPercentage: TString;
+  function GetSizePercentage: TString;
+  function GetImageArea: TLlDOMPropertyReservedSpace;
+  procedure SetErrorCorrection(const value: TString);
+  procedure SetRoundingPercentage(const value: TString);
+  procedure SetSizePercentage(const value: TString);
+
+public
+  property ErrorCorrection: TString read GetErrorCorrection write SetErrorCorrection;
+  property Image: TLlDOMPropertyDrawingContents read GetImage;
+  property RoundingPercentage: TString read GetRoundingPercentage write SetRoundingPercentage;
+  property SizePercentage: TString read GetSizePercentage write SetSizePercentage;
+  property SizeImageArea: TLlDOMPropertyReservedSpace read GetImageArea;
+end;
 
 
 TLlDOMPropertyInputButtonActionBase = class(TLlDOMItem)
@@ -5389,6 +5507,8 @@ end;
     procedure SetTooltip(const value: TString);
     function GetVisible: TString;
     procedure SetVisible(const value: TString);
+    function GetImmediateRendering: TString;
+    procedure SetImmediateRendering(const value: TString);
     function GetSource: TLlDOMReportParameterSource;
     function GetControlType: TLlDOMControlType;
     procedure SetControlType(const value: TLlDOMControlType);
@@ -5406,6 +5526,7 @@ end;
     property Prompt: TString read GetPrompt write SetPrompt;
     property Tooltip: TString read GetTooltip write SetTooltip;
     property Visible: TString read GetVisible write SetVisible;
+    property ImmediateRendering: TString read GetImmediateRendering write SetImmediateRendering;
     property Source: TLlDOMReportParameterSource read GetSource;
     property ControlType: TLlDOMControlType read GetControlType
       write SetControlType;
@@ -6117,8 +6238,8 @@ end;
     fFont: TLlDOMPropertyFont;
     fMatchDevicePixel: TLlDOMPropertyMatchDevicePixel;
     fSource: TLlDOMPropertyTableFieldBarCodeSource;
-    function GetBarcodeType: TString;
-    procedure SetBarcodeType(const value: TString);
+    function GetBarcodeType: TLlDOMBarcodeType;
+    procedure SetBarcodeType(const value: TLlDOMBarcodeType);
     function GetBarcodeSource: TLlDOMPropertyTableFieldBarCodeSource;
     function GetAlignmentVertical: TString;
     procedure SetAlignmentVertical(const value: TString);
@@ -6142,7 +6263,7 @@ end;
     function GetMatchDevicePixel: TLlDOMPropertyMatchDevicePixel;
   public
     property Source: TLlDOMPropertyTableFieldBarCodeSource read GetBarcodeSource;
-    property BarcodeType: TString read GetBarcodeType write SetBarcodeType;
+    property BarcodeType: TLlDOMBarcodeType read GetBarcodeType write SetBarcodeType;
     property AlignmentVertical: TString read GetAlignmentVertical
       write SetAlignmentVertical;
     property BarColor: TString read GetBarColor write SetBarColor;
@@ -6337,6 +6458,59 @@ public
   property FNC1Mode: TString read GetFNC1Mode write SetFNC1Mode;
 end;
 {/TLDOMPropertyTableFieldQRBarcodeSource}
+
+TLlDOMPropertyTableFieldEPCBarcodeSource = class(TLlDOMPropertyTableFieldBarcodeSource)
+private
+  function GetAmount: TString;
+  function GetHint: TString;
+  function GetPurpose: TString;
+  function GetRecipientBIC: TString;
+  function GetRecipientIBAN: TString;
+  function GetRecipientName: TString;
+  function GetReference: TString;
+  function GetUsage: TString;
+  procedure SetAmount(const value: TString);
+  procedure SetHint(const value: TString);
+  procedure SetPurpose(const value: TString);
+  procedure SetRecipientBIC(const value: TString);
+  procedure SetRecipientIBAN(const value: TString);
+  procedure SetRecipientName(const value: TString);
+  procedure SetReference(const value: TString);
+  procedure SetUsage(const value: TString);
+
+public
+  property Amount: TString read GetAmount write SetAmount;
+  property Hint: TString read GetHint write SetHint;
+  property Purpose: TString read GetPurpose write SetPurpose;
+  property RecipientBIC: TString read GetRecipientBIC write SetRecipientBIC;
+  property RecipientIBAN: TString read GetRecipientIBAN write SetRecipientIBAN;
+  property RecipientName: TString read GetRecipientName write SetRecipientName;
+  property Reference: TString read GetReference write SetReference;
+  property Usage: TString read GetUsage write SetUsage;
+
+end;
+
+TLlDOMPropertyTableFieldDesignQRBarcodeSource = class(TLlDOMPropertyTableFieldBarcodeSource)
+private
+  fImage : TLlDOMPropertyDrawingContents;
+  fImageArea : TLlDOMPropertyReservedSpace;
+  function GetErrorCorrection: TString;
+  function GetImage: TLlDOMPropertyDrawingContents;
+  function GetRoundingPercentage: TString;
+  function GetSizePercentage: TString;
+  function GetImageArea: TLlDOMPropertyReservedSpace;
+  procedure SetErrorCorrection(const value: TString);
+  procedure SetRoundingPercentage(const value: TString);
+  procedure SetSizePercentage(const value: TString);
+
+public
+  property ErrorCorrection: TString read GetErrorCorrection write SetErrorCorrection;
+  property Image: TLlDOMPropertyDrawingContents read GetImage;
+  property RoundingPercentage: TString read GetRoundingPercentage write SetRoundingPercentage;
+  property SizePercentage: TString read GetSizePercentage write SetSizePercentage;
+  property SizeImageArea: TLlDOMPropertyReservedSpace read GetImageArea;
+end;
+
 
 {TLlDOMPropertyTableFieldAztecBarcodeSource}
 TLlDOMPropertyTableFieldAztecBarcodeSource = class(TLlDOMPropertyTableFieldBarCodeSource)
@@ -7917,7 +8091,7 @@ end;
 constructor TLlDOMProjectBase.Create(hTheParentComponent: ILlDomParent);
 begin
   inherited Create();
-  LL29xLoad();
+  LL30xLoad();
   fhParentComponent := hTheParentComponent;
   projectLoaded := False;
 end;
@@ -7940,7 +8114,7 @@ begin
     fRegionList.Free;
   if Assigned(fProjectTemplateList) then
     fProjectTemplateList.Free;
-  LL29xUnload();
+  LL30xUnload();
   inherited;
 end;
 
@@ -10835,21 +11009,15 @@ function TLlDOMObjectBarcode.GetBarcodeSource: TLlDOMPropertyBarcodeSource;
 var
   baseObj: TLlDOMItem;
 begin
-  if fSource <> nil then
-  begin
-    result := fSource
-  end
-  else
   begin
     baseObj := GetObject('Source');
+    fSource.Free;
     fSource := TLlDOMPropertyBarcodeSource.Create(baseObj);
     baseObj.Free;
 	  fSource :=TLlDOMHelper.SafeBarcodeSourceCast(fSource);
     result := fSource;
   end;
 end;
-
-
 
 function TLlDOMObjectBarcode.GetBarColor: TString;
 begin
@@ -11007,9 +11175,9 @@ end;
 
 { TBarcodeSource }
 
-function TLlDOMPropertyBarcodeSource.GetBarcodeType: TString;
+function TLlDOMPropertyBarcodeSource.GetBarcodeType: TLlDOMBarcodeType;
 begin
-  result := GetProperty('BarcodeType');
+  result := TLlDOMBarcodeType(StrToInt(GetProperty('BarcodeType'))+Ord(btBarcode));
 end;
 
 function TLlDOMPropertyBarcodeSource.GetFormula: TString;
@@ -11033,9 +11201,9 @@ begin
   result := GetProperty('Variable');
 end;
 
-procedure TLlDOMPropertyBarcodeSource.SetBarcodeType(const value: TString);
+procedure TLlDOMPropertyBarcodeSource.SetBarcodeType(const value: TLlDOMBarcodeType);
 begin
-  SetProperty('BarcodeType', value);
+  SetProperty('BarcodeType',IntToStr(Ord(value) - Ord(btBarcode)));
 end;
 
 procedure TLlDOMPropertyBarcodeSource.SetFormula(const value: TString);
@@ -11262,6 +11430,308 @@ begin
 end;
 
 {/TLlDOMPropertyQRBarcodeSource}
+
+{TLlDOMPropertyEPCBarcodeSource}
+function TLlDOMPropertyEPCBarcodeSource.GetAmount: TString;
+begin
+  result:= GetProperty('EPC.Amount');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetAmount(const value: TString);
+begin
+  SetProperty('EPC.Amount', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetHint: TString;
+begin
+  result:= GetProperty('EPC.Hint');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetHint(const value: TString);
+begin
+  SetProperty('EPC.Hint', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetPurpose: TString;
+begin
+  result:= GetProperty('EPC.Purpose');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetPurpose(const value: TString);
+begin
+  SetProperty('EPC.Purpose', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetRecipientBIC: TString;
+begin
+  result:= GetProperty('EPC.RecipientBIC');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetRecipientBIC(const value: TString);
+begin
+  SetProperty('EPC.RecipientBIC', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetRecipientIBAN: TString;
+begin
+  result:= GetProperty('EPC.RecipientIBAN');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetRecipientIBAN(const value: TString);
+begin
+  SetProperty('EPC.RecipientIBAN', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetRecipientName: TString;
+begin
+  result:= GetProperty('EPC.RecipientName');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetRecipientName(const value: TString);
+begin
+  SetProperty('EPC.RecipientName', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetReference: TString;
+begin
+  result:= GetProperty('EPC.Reference');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetReference(const value: TString);
+begin
+  SetProperty('EPC.Reference', value);
+end;
+
+function TLlDOMPropertyEPCBarcodeSource.GetUsage: TString;
+begin
+  result:= GetProperty('EPC.Usage');
+end;
+
+procedure TLlDOMPropertyEPCBarcodeSource.SetUsage(const value: TString);
+begin
+  SetProperty('EPC.Usage', value);
+end;
+{/TLlDOMPropertyEPCBarcodeSource}
+
+{TLlDOMPropertyTableFieldEPCBarcodeSource}
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetAmount: TString;
+begin
+  result:= GetProperty('EPC.Amount');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetAmount(const value: TString);
+begin
+  SetProperty('EPC.Amount', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetHint: TString;
+begin
+  result:= GetProperty('EPC.Hint');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetHint(const value: TString);
+begin
+  SetProperty('EPC.Hint', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetPurpose: TString;
+begin
+  result:= GetProperty('EPC.Purpose');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetPurpose(const value: TString);
+begin
+  SetProperty('EPC.Purpose', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetRecipientBIC: TString;
+begin
+  result:= GetProperty('EPC.RecipientBIC');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetRecipientBIC(const value: TString);
+begin
+  SetProperty('EPC.RecipientBIC', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetRecipientIBAN: TString;
+begin
+  result:= GetProperty('EPC.RecipientIBAN');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetRecipientIBAN(const value: TString);
+begin
+  SetProperty('EPC.RecipientIBAN', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetRecipientName: TString;
+begin
+  result:= GetProperty('EPC.RecipientName');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetRecipientName(const value: TString);
+begin
+  SetProperty('EPC.RecipientName', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetReference: TString;
+begin
+  result:= GetProperty('EPC.Reference');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetReference(const value: TString);
+begin
+  SetProperty('EPC.Reference', value);
+end;
+
+function TLlDOMPropertyTableFieldEPCBarcodeSource.GetUsage: TString;
+begin
+  result:= GetProperty('EPC.Usage');
+end;
+
+procedure TLlDOMPropertyTableFieldEPCBarcodeSource.SetUsage(const value: TString);
+begin
+  SetProperty('EPC.Usage', value);
+end;
+{/TLlDOMPropertyTableFieldEPCBarcodeSource}
+
+{TLlDOMPropertyDesignQRBarcodeSource}
+function TLlDOMPropertyDesignQRBarcodeSource.GetErrorCorrection: TString;
+begin
+  result:= GetProperty('DesignQR.ErrorCorrection');
+end;
+
+function TLlDOMPropertyDesignQRBarcodeSource.GetRoundingPercentage: TString;
+begin
+  result:= GetProperty('DesignQR.RoundingPercentage');
+end;
+
+procedure TLlDOMPropertyDesignQRBarcodeSource.SetErrorCorrection(const value: TString);
+begin
+  SetProperty('DesignQR.ErrorCorrection', value);
+end;
+
+procedure TLlDOMPropertyDesignQRBarcodeSource.SetRoundingPercentage(const value: TString);
+begin
+  SetProperty('DesignQR.RoundingPercentage', value);
+end;
+
+function TLlDOMPropertyDesignQRBarcodeSource.GetSizePercentage: TString;
+begin
+  result:= GetProperty('DesignQR.SizePercentage');
+end;
+
+procedure TLlDOMPropertyDesignQRBarcodeSource.SetSizePercentage(const value: TString);
+begin
+  SetProperty('DesignQR.SizePercentage', value);
+end;
+
+function TLlDOMPropertyDesignQRBarcodeSource.GetImage: TLlDOMPropertyDrawingContents;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fImage <> nil then
+  begin
+    result := fImage
+  end
+  else
+  begin
+    baseObj := GetObject('DesignQR.Image');
+    fImage := TLlDOMPropertyDrawingContents.Create(baseObj);
+    baseObj.Free;
+    result := fImage;
+  end;
+end;
+
+function TLlDOMPropertyDesignQRBarcodeSource.GetImageArea: TLlDOMPropertyReservedSpace;
+var
+  baseObj: TLlDOMItem;
+begin
+
+
+  if fImageArea <> nil then
+  begin
+    result := fImageArea
+  end
+  else
+  begin
+    baseObj := GetObject('DesignQR.ImageArea');
+    fImageArea := TLlDOMPropertyReservedSpace.Create(baseObj);
+    baseObj.Free;
+    result := fImageArea;
+  end;
+end;
+
+{/TLlDOMPropertyDesignQRBarcodeSource}
+
+{TLlDOMPropertyTableFieldDesignQRBarcodeSource}
+function TLlDOMPropertyTableFieldDesignQRBarcodeSource.GetErrorCorrection: TString;
+begin
+  result:= GetProperty('DesignQR.ErrorCorrection');
+end;
+
+function TLlDOMPropertyTableFieldDesignQRBarcodeSource.GetRoundingPercentage: TString;
+begin
+  result:= GetProperty('DesignQR.RoundingPercentage');
+end;
+
+procedure TLlDOMPropertyTableFieldDesignQRBarcodeSource.SetErrorCorrection(const value: TString);
+begin
+  SetProperty('DesignQR.ErrorCorrection', value);
+end;
+
+procedure TLlDOMPropertyTableFieldDesignQRBarcodeSource.SetRoundingPercentage(const value: TString);
+begin
+  SetProperty('DesignQR.RoundingPercentage', value);
+end;
+
+function TLlDOMPropertyTableFieldDesignQRBarcodeSource.GetSizePercentage: TString;
+begin
+  result:= GetProperty('DesignQR.SizePercentage');
+end;
+
+procedure TLlDOMPropertyTableFieldDesignQRBarcodeSource.SetSizePercentage(const value: TString);
+begin
+  SetProperty('DesignQR.SizePercentage', value);
+end;
+
+function TLlDOMPropertyTableFieldDesignQRBarcodeSource.GetImage: TLlDOMPropertyDrawingContents;
+var
+  baseObj: TLlDOMItem;
+begin
+  if fImage <> nil then
+  begin
+    result := fImage
+  end
+  else
+  begin
+    baseObj := GetObject('DesignQR.Image');
+    fImage := TLlDOMPropertyDrawingContents.Create(baseObj);
+    baseObj.Free;
+    result := fImage;
+  end;
+end;
+
+function TLlDOMPropertyTableFieldDesignQRBarcodeSource.GetImageArea: TLlDOMPropertyReservedSpace;
+var
+  baseObj: TLlDOMItem;
+begin
+
+
+  if fImageArea <> nil then
+  begin
+    result := fImageArea
+  end
+  else
+  begin
+    baseObj := GetObject('DesignQR.ImageArea');
+    fImageArea := TLlDOMPropertyReservedSpace.Create(baseObj);
+    baseObj.Free;
+    result := fImageArea;
+  end;
+end;
+
+{/TLlDOMPropertyTableFieldDesignQRBarcodeSource}
 
 { TLlDOMObjectRTF }
 
@@ -17947,14 +18417,14 @@ begin
   end;
 end;
 
-function TLlDOMTableFieldBarcode.GetBarcodeType: TString;
+function TLlDOMTableFieldBarcode.GetBarcodeType: TLlDOMBarcodeType;
 begin
-  result:=  GetProperty('BarcodeType');
+   result := TLlDOMBarcodeType(StrToInt(GetProperty('BarcodeType'))+Ord(btBarcode));
 end;
 
-procedure TLlDOMTableFieldBarcode.SetBarcodeType(const value: TString);
+procedure TLlDOMTableFieldBarcode.SetBarcodeType(const value: TLlDOMBarcodeType);
 begin
-  SetProperty('BarcodeType', value);
+  SetProperty('BarcodeType',IntToStr(Ord(value) - Ord(btBarcode)));
 end;
 
 constructor TLlDOMTableFieldBarcode.Create(list: TLlDOMTableLineFieldList);
@@ -18979,40 +19449,60 @@ end;
 
 class function TLlDOMHelper.SafeBarcodeSourceCast
         (input: TLlDOMPropertyBarcodeSource):TLlDOMPropertyBarcodeSource;
-        var barcodeType: TString;
+        var barcodeType: TLlDomBarcodeType;
 begin
-barcodeType := input.BarcodeType;
+barcodeType := TLlDomBarcodeType(input.BarcodeType);
 
-  if barcodeType ='PDF417' then
-    begin
-      result := TLlDOMPropertyPDF417BarcodeSource.Create(input);
-    end
-      else if barcodeType ='Maxicode' then
-    begin
-      result := TLlDOMPropertyMaxicodeBarcodeSource.Create(input);
-    end
-      else if barcodeType ='Datamatrix' then
-    begin
-      result := TLlDOMPropertyDatamatrixBarcodeSource.Create(input);
-    end
-      else if barcodeType ='Aztec' then
-    begin
-      result := TLlDOMPropertyAztecBarcodeSource.Create(input);
-    end
-      else if barcodeType ='QRCode' then
-    begin
-      result := TLlDOMPropertyQRBarcodeSource.Create(input);
-    end
-      else if barcodeType ='MicroPDF417' then
-    begin
-      result := TLlDOMPropertyMicroPDF417BarcodeSource.Create(input);
-    end
-      else if barcodeType ='PremiumAddress' then
-    begin
-      result := TLlDOMPropertyPremiumAddressBarcodeSource.Create(input);
-    end
+  case barcodeType of
+    btPDF417:
+      begin
+        result := TLlDOMPropertyPDF417BarcodeSource.Create(input);
+      end;
+
+    btMaxicode:
+      begin
+        result := TLlDOMPropertyMaxicodeBarcodeSource.Create(input);
+      end;
+
+    btDatamatrix:
+      begin
+        result := TLlDOMPropertyDatamatrixBarcodeSource.Create(input);
+      end;
+
+    btAztec:
+      begin
+        result := TLlDOMPropertyAztecBarcodeSource.Create(input);
+      end;
+
+    btEPC:
+      begin
+        result := TLlDOMPropertyEPCBarcodeSource.Create(input);
+      end;
+
+    btQRCode:
+      begin
+        result := TLlDOMPropertyQRBarcodeSource.Create(input);
+      end;
+
+    btDesignQRCode:
+      begin
+        result := TLlDOMPropertyDesignQRBarcodeSource.Create(input);
+      end;
+
+    btMicroPDF417:
+      begin
+        result := TLlDOMPropertyMicroPDF417BarcodeSource.Create(input);
+      end;
+
+    btPremiumAddress:
+      begin
+        result := TLlDOMPropertyPremiumAddressBarcodeSource.Create(input);
+      end;
+
     else
     result := input;
+  end;
+
 
    if result <> input then
     begin
@@ -19025,46 +19515,67 @@ end;
 
 class function TLlDOMHelper.SafeTableFielBarcodeSourceCast
         (source: TLlDOMPropertyTableFieldBarCodeSource; input: TLlDOMTableFieldBarcode):TLlDOMPropertyTableFieldBarCodeSource;
-        var barcodeType: TString;
+         var barcodeType: TLlDomBarcodeType;
 begin
-barcodeType := input.BarcodeType;
+barcodeType := TLlDomBarcodeType(input.BarcodeType);
 
-  if barcodeType ='PDF417' then
-    begin
-      result := TLlDOMPropertyTableFieldPDF417BarcodeSource.Create(input);
-    end
-      else if barcodeType ='Maxicode' then
-    begin
-      result := TLlDOMPropertyTableFieldMaxicodeBarcodeSource.Create(input);
-    end
-      else if barcodeType ='Datamatrix' then
-    begin
-      result := TLlDOMPropertyTableFieldDatamatrixBarcodeSource.Create(input);
-    end
-      else if barcodeType ='Aztec' then
-    begin
-      result := TLlDOMPropertyTableFieldAztecBarcodeSource.Create(input);
-    end
-      else if barcodeType ='QRCode' then
-    begin
-      result := TLDOMPropertyTableFieldQRBarcodeSource.Create(input);
-    end
-      else if barcodeType ='MicroPDF417' then
-    begin
-      result := TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.Create(input);
-    end
-      else if barcodeType ='PremiumAddress' then
-    begin
-      result := TLlDOMPropertyTableFieldPremiumAddressBarcodeSource.Create(input);
-    end
+   case barcodeType of
+    btPDF417:
+      begin
+        result := TLlDOMPropertyTableFieldPDF417BarcodeSource.Create(input);
+      end;
+
+    btMaxicode:
+      begin
+        result := TLlDOMPropertyTableFieldMaxicodeBarcodeSource.Create(input);
+      end;
+
+    btDatamatrix:
+      begin
+        result := TLlDOMPropertyTableFieldDatamatrixBarcodeSource.Create(input);
+      end;
+
+    btAztec:
+      begin
+        result := TLlDOMPropertyTableFieldAztecBarcodeSource.Create(input);
+      end;
+
+    btEPC:
+      begin
+        result := TLlDOMPropertyTableFieldEPCBarcodeSource.Create(input);
+      end;
+
+    btQRCode:
+      begin
+        result := TLDOMPropertyTableFieldQRBarcodeSource.Create(input);
+      end;
+
+    btDesignQRCode:
+      begin
+        result := TLlDOMPropertyTableFieldDesignQRBarcodeSource.Create(input);
+      end;
+
+    btMicroPDF417:
+      begin
+        result := TLlDOMPropertyTableFieldMicroPDF417BarcodeSource.Create(input);
+      end;
+
+    btPremiumAddress:
+      begin
+        result := TLlDOMPropertyTableFieldPremiumAddressBarcodeSource.Create(input);
+      end;
+
     else
     result := source;
+  end;
+
 
    if result <> source then
     begin
       input.Free;
       // input:=nil;
     end;
+
 
 end;
 
@@ -22943,6 +23454,16 @@ begin
   SetProperty('Visible', value);
 end;
 
+function TLlDOMReportParameter.GetImmediateRendering: TString;
+begin
+  result := GetProperty('ImmediateRendering');
+end;
+
+procedure TLlDOMReportParameter.SetImmediateRendering(const value: TString);
+begin
+  SetProperty('ImmediateRendering', value);
+end;
+
 function TLlDOMReportParameter.GetControlType: TLlDOMControlType;
 begin
   result := TLlDOMControlType(StrToInt(GetProperty('ControlType')));
@@ -23053,7 +23574,7 @@ end;
 procedure TLlDOMReportParameterSource.SetSourceType
   (const value: TLlDOMSourceType);
 begin
-  SetProperty('SourceType', IntToStr(Ord(value)));
+     SetProperty('SourceType', IntToStr(Ord(value)));
 end;
 
 function TLlDOMReportParameterSource.GetSourceContentsType
@@ -31839,7 +32360,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl29x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl30x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -31855,7 +32376,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl29x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl30x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;
