@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS30.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-09-18 22:09:15] *)
+(*  [build of 2024-12-11 10:12:49] *)
 
 unit cmbtLS30x;
 

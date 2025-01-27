@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL30.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-09-18 22:09:05] *)
+(*  [build of 2024-12-11 10:12:38] *)
 
 unit cmbtLL30;
 
@@ -853,6 +853,13 @@ const
   LL_PDF                         = $00400000;
   LL_INPUTOBJECT                 = $00200000;
                     (* internal use only *)
+  LL_INPUTOBJECT_EDIT            = $00200000;
+  LL_INPUTOBJECT_CHECKBOX        = $00200001;
+  LL_INPUTOBJECT_COMBOBOX        = $00200002;
+  LL_INPUTOBJECT_BUTTON          = $00200003;
+  LL_INPUTOBJECT_RADIOGROUP      = $00200004;
+  LL_INPUTOBJECT_LISTBOX         = $00200005;
+  LL_INPUTOBJECT_TYPEMASK        = $000000ff;
   LL_LLXOBJECT                   = $00100000;
                     (* internal use only *)
   LL_SUBTABLELIST                = $00080000;
@@ -1969,6 +1976,10 @@ const
   LL_OPTION_CHARTLEGEND_ALLOWMIXEDLINETYPESYMBOLS = 425;
                     (* default: false *)
   LL_OPTION_USEDIDENTIFIERS_SCANFORFILENAMES = 426;
+                    (* default: false *)
+  LL_OPTION_ALLOW_TIME_IN_REPORTPARAMETER = 427;
+                    (* default: false  *)
+  LL_OPTION_COMPAT_NUMERIC_SIGN_ONLY_IS_ZERO = 428;
                     (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)

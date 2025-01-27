@@ -6,7 +6,7 @@
  File   : ListLabel30.pas
  Module : List & Label 30
  Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Version: 30.001
 ==================================================================================
 }
 
@@ -2597,9 +2597,11 @@ Begin
   Row := RowEnumerator.Current;
   Columns := Row.Columns;
 
-  if Assigned(FOnAutoDefineNewLine) then
-    OnAutoDefineNewLine(self, not FIsPrinting);
-
+   if ((AutoProjectType) = TLlProject.ptList) then
+    begin
+      if Assigned(FOnAutoDefineNewLine) then
+        OnAutoDefineNewLine(self, not FIsPrinting);
+    end;
 
   for Column in Columns do
   Begin
@@ -2891,8 +2893,10 @@ begin
             First;
           end;
 
-          if Assigned(FOnAutoDefineNewPage) then
-            OnAutoDefineNewPage(self, True);
+
+			  if Assigned(FOnAutoDefineNewPage) then
+				OnAutoDefineNewPage(self, True);
+
 
           if not(CheckError(LLPrintWithBoxStart(CurrentJobHandle, LlProjectType, PChar(ProjectFilename), TEnumTranslator.TranslatePrintMode(Destination),
             TEnumTranslator.TranslateAutoBoxType(BoxType), WindowHandle, PChar(FAutoDialogTitle)))) = CE_OK then
@@ -2942,12 +2946,12 @@ begin
             CheckError(LLPreviewSetTempPath(CurrentJobHandle, temp));
           end;
 
-          if Assigned(FOnAutoDefineNewPage) then
+          if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = TLlProject.ptList) then
             OnAutoDefineNewPage(self, False);
 
           while (LlPrint(CurrentJobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_LASTPAGE)) do
           begin
-            if Assigned(FOnAutoDefineNewPage) then
+          if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = TLlProject.ptList) then
               OnAutoDefineNewPage(self, False);
           end;
 
@@ -3025,7 +3029,7 @@ begin
             end;
         FIsPrinting := true;
 
-        if Assigned(FOnAutoDefineNewPage) then
+        if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = TLlProject.ptList) then
           OnAutoDefineNewPage(self, False);
 
         LlPrintSetOptionString(JobHandle,LL_PRNOPTSTR_EXPORT, PChar(ExportFormat));
@@ -3069,7 +3073,7 @@ begin
 
         while (LlPrint(JobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(JobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(JobHandle, LL_PRNOPT_LASTPAGE)) do
         begin
-          if Assigned(FOnAutoDefineNewPage) then
+          if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = TLlProject.ptList) then
             OnAutoDefineNewPage(self, False);
         end;
         LlPrintEnd(JobHandle,0);
@@ -3212,12 +3216,12 @@ begin
             end;
         FIsPrinting := true;
 
-        if Assigned(FOnAutoDefineNewPage) then
+        if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = ptList) then
           OnAutoDefineNewPage(self, False);
 
         while (LlPrint(JobHandle) = LL_WRN_REPEAT_DATA) and (LlPrintGetOption(JobHandle, LL_PRNOPT_PAGEINDEX) < LlPrintGetOption(JobHandle, LL_PRNOPT_LASTPAGE)) do
         begin
-          if Assigned(FOnAutoDefineNewPage) then
+          if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = ptList) then
             OnAutoDefineNewPage(self, False);
         end;
         LlPrintEnd(JobHandle,0);
