@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL30.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-12-11 10:12:38] *)
+(*  [build of 2025-05-02 22:05:50] *)
 
 unit cmbtLL30;
 
@@ -1732,6 +1732,7 @@ const
                     (* default: LL_TREEVIEWFILTER_IN_ALL_TREES *)
   LL_TREEVIEWFILTER_IN_VARTREE   = $0001;
   LL_TREEVIEWFILTER_IN_FCTWIZARD_VARTREE = $0002;
+  LL_TREEVIEWFILTER_IN_TABLESTRUCTWIN = $0004;
   LL_TREEVIEWFILTER_IN_ALL_TREES = $ffff;
   LL_OPTION_COMPAT_ALLOW_INVALID_CHARS_IN_SINGLEFIELDFORMULA = 319;
                     (* default: FALSE *)
@@ -1981,6 +1982,30 @@ const
                     (* default: false  *)
   LL_OPTION_COMPAT_NUMERIC_SIGN_ONLY_IS_ZERO = 428;
                     (* default: false *)
+  LL_OPTION_PROHIBIT_DESIGNER_CACHING_TEXTOBJECTS = 429;
+                    (* default: false *)
+  LL_OPTION_COMPAT_SET_FIRST_USER_DEFINE_PAPER_INDEX_TO_DMPAPER_USER = 430;
+                    (* default: false *)
+  LL_OPTION_USE_SVG2EMF_OOPS     = 431;
+                    (* default: false *)
+  LL_OPTION_ENABLE_NESTEDTABLE_IN_FOOTERLINES = 432;
+                    (* default: false  *)
+  LL_OPTION_DISABLEPRINT_MENU    = 434;
+                    (* default: 0 *)
+  LL_OPTION_DISABLEPRINT_MENU_PRINT = $01;
+                    (* disable menu item  *)
+  LL_OPTION_DISABLEPRINT_MENU_PRINTQUICK = $02;
+                    (* disable menu item  *)
+  LL_OPTION_DISABLEPRINT_MENU_PAGE1 = $04;
+                    (* disable menu item  *)
+  LL_OPTION_DISABLEPRINT_MENU_PAGEN = $08;
+                    (* disable menu item  *)
+  LL_OPTION_DISABLEPRINT_MENU_DUMMY = $10;
+                    (* disable menu item  *)
+  LL_OPTION_DISABLEPRINT_MENU_PREVIEW = $20;
+                    (* disable menu item  *)
+  LL_OPTION_DISABLEPRINT_MENU_ALL = $FF;
+                    (* disable menu item (mask all)  *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
