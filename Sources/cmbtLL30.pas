@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL30.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2025-05-02 22:05:50] *)
+(*  [build of 2025-08-19 22:08:14] *)
 
 unit cmbtLL30;
 
@@ -68,6 +68,7 @@ type
   _PCDEVMODE                     = ^TDEVICEMODE;
   _PCDEVMODEA                    = ^TDEVICEMODEA;
   _PCDEVMODEW                    = ^TDEVICEMODEW;
+  _PBSTR                         = PBStr;
   PSCLLCOLUMN                    = ^scLlColumn;
   CTL_GUID                       = tGUID;
   CTL_PGUID                      = ^tGUID;
@@ -455,7 +456,7 @@ const
   LL_JOBOPENFLAG_ONLYEXACTLANGUAGE = $00002000;
                     (* do not look for '@@' LNG file *)
   LL_JOBHANDLE_FLAG_NOTHREADCHECK = $40000000;
-  LL_JOBHANDLE_IDMASK            = $00000fff;
+  LL_JOBHANDLE_IDMASK            = $0fffffff;
   LL_DEBUG_CMBTLL                = $0001;
                     (* debug CMBTLLnn.DLL *)
   LL_DEBUG_CMBTDWG               = $0002;
@@ -1561,7 +1562,11 @@ const
                     (* default: LL_TEMPFILESTRATEGY_SPEED *)
   LL_TEMPFILESTRATEGY_SPEED      = 0;
   LL_TEMPFILESTRATEGY_SIZE       = 1;
+                    (*  % files are set empty (length 0 bytes) before allowing to re-use them *)
   LL_TEMPFILESTRATEGY_SECURITY   = 2;
+                    (*  % file contents are being overwritten before setting the file empty *)
+  LL_TEMPFILESTRATEGY_DELETE     = 3;
+                    (*  % files are deleted after use, no caching of filenames *)
   LL_OPTION_RTF_WHITE_BACKGROUND_IS_TRANSPARENT = 239;
                     (* default: TRUE (!) *)
   LL_OPTION_NO_DOTTED_LINE_ON_SECONDARY_AXIS = 240;
@@ -2006,6 +2011,10 @@ const
                     (* disable menu item  *)
   LL_OPTION_DISABLEPRINT_MENU_ALL = $FF;
                     (* disable menu item (mask all)  *)
+  LL_OPTION_RIBBON_FORCEENABLED  = 435;
+                    (* default: false *)
+  LL_OPTION_COMPAT_ALLOW_SUBTABLECOLUMNS = 436;
+                    (* default: false *)
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
@@ -2388,7 +2397,6 @@ const
                     (* body only *)
   LL_GETCHARTOBJECTCOUNT_CHARTCOLUMNS_FOOTERS = 4;
   LL_VARIANTFLAG_NEUTRAL         = $00000000;
-  LL_VARIANTFLAG_USE_JULIAN_DATE = $00000001;
   LL_GRIPT_DIM_SCM               = 1;
   LL_GRIPT_DIM_PERC              = 2;
   LL_PARAMETERFLAG_PUBLIC        = $00000000;
@@ -2502,6 +2510,7 @@ const
   LLJOBOPENCOPYEXFLAG_NO_COPY_DBSTRUCTS = $0002;
   LLJOBOPENCOPYEXFLAG_NO_COPY_XLATTABLES = $0004;
   LLJOBOPENCOPYEXFLAG_NO_COPY_LLXPARAMETERS = $0008;
+  LLJOBOPENCOPYEXFLAG_FORCE_COPY_EXPORTLIMITATIONS = $8000;
   LL_DOM_CURRENT_OBJECT_LEVEL_OBJECT = 0;
   LL_DOM_CURRENT_OBJECT_LEVEL_CONTAINERITEM = 1;
   LL_DOM_CURRENT_OBJECT_LEVEL_FIELD = 2;
@@ -5961,6 +5970,12 @@ function   LlDomGetPropertyCount
 	 pnCount:                        _LPINTJAVADUMMY
 	): integer; stdcall;
 
+function   LlDomGetPropertyBSTR
+	(hDOMObj:                        HLLDOMOBJ;
+	 pszName:                        pWCHAR;
+	 pbsValue:                       _PBSTR
+	): integer; stdcall;
+
 function   LlAssociatePreviewControl
 	(hLlJob:                         HLLJOB;
 	 hWndControl:                    HWND;
@@ -6597,6 +6612,12 @@ function   LlInplaceDesignerInteraction
 	 lParam:                         lParam
 	): integer; stdcall;
 
+function   LlUtilsExtractResourcefiles
+	(pszREType:                      pWCHAR;
+	 pszPath:                        pWCHAR;
+	 pbsFileList:                    _PBSTR
+	): integer; stdcall;
+
 function   LlUtilsAddResourcefilesHGLOBAL
 	(pszName:                        pWCHAR;
 	 hData:                          tHandle;
@@ -6938,17 +6959,6 @@ function   LlExprParseQueryDelayedDefine
 function   LlExprTypeMask
 	(hLlJob:                         HLLJOB;
 	 lpExpr:                         HLLEXPR
-	): integer; stdcall;
-
-function   LlStgTestJobCmpEmbeddedStorages2
-	(hJob:                           HLLTESTJOB;
-	 pvErrors:                       PVARIANT;
-	 pvarListOfProblematicStorages:  PVARIANT
-	): integer; stdcall;
-
-function   LlStgTestJobAddResultJobs
-	(hJob:                           HLLTESTJOB;
-	 const pvarListOfProblematicStorages:                               PCVARIANT
 	): integer; stdcall;
 
 function   LlStgCreateFrom
@@ -9953,6 +9963,11 @@ implementation
     function   LlDomGetPropertyCount;          external LibNameLL30DLL name 'LlDomGetPropertyCount';
   {$endif}
   {$ifdef CMLL30_LINK_INDEXED}
+    function   LlDomGetPropertyBSTR;           external LibNameLL30DLL index 217;
+   {$else}
+    function   LlDomGetPropertyBSTR;           external LibNameLL30DLL name 'LlDomGetPropertyBSTR';
+  {$endif}
+  {$ifdef CMLL30_LINK_INDEXED}
     function   LlAssociatePreviewControl;      external LibNameLL30DLL index 218;
    {$else}
     function   LlAssociatePreviewControl;      external LibNameLL30DLL name 'LlAssociatePreviewControl';
@@ -10455,6 +10470,11 @@ implementation
     function   LlInplaceDesignerInteraction;   external LibNameLL30DLL name 'LlInplaceDesignerInteraction';
   {$endif}
   {$ifdef CMLL30_LINK_INDEXED}
+    function   LlUtilsExtractResourcefiles;    external LibNameLL30DLL index 271;
+   {$else}
+    function   LlUtilsExtractResourcefiles;    external LibNameLL30DLL name 'LlUtilsExtractResourcefiles';
+  {$endif}
+  {$ifdef CMLL30_LINK_INDEXED}
     function   LlUtilsAddResourcefilesHGLOBAL; external LibNameLL30DLL index 272;
    {$else}
     function   LlUtilsAddResourcefilesHGLOBAL; external LibNameLL30DLL name 'LlUtilsAddResourcefilesHGLOBAL';
@@ -10726,16 +10746,6 @@ implementation
     function   LlExprTypeMask;                 external LibNameLL30DLL index 345;
    {$else}
     function   LlExprTypeMask;                 external LibNameLL30DLL name 'LlExprTypeMask';
-  {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestJobCmpEmbeddedStorages2;   external LibNameLL30DLL index 367;
-   {$else}
-    function   LlStgTestJobCmpEmbeddedStorages2;   external LibNameLL30DLL name 'LlStgTestJobCmpEmbeddedStorages2';
-  {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestJobAddResultJobs;      external LibNameLL30DLL index 349;
-   {$else}
-    function   LlStgTestJobAddResultJobs;      external LibNameLL30DLL name 'LlStgTestJobAddResultJobs';
   {$endif}
   {$ifdef CMLL30_LINK_INDEXED}
     function   LlStgCreateFrom;                external LibNameLL30DLL index 391;
