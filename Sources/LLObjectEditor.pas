@@ -4,9 +4,9 @@
 
 ----------------------------------------------------------------------------------
  File   : LLObjectEditor.pas
- Module : List & Label 30
- Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Module : List & Label 31
+ Descr. : Implementation file for the List & Label 31 VCL-Component
+ Version: 31.000
 ==================================================================================
 }
 

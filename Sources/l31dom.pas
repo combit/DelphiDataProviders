@@ -4,15 +4,15 @@
 
   ----------------------------------------------------------------------------------
 
-  File   : l30dom.pas
-  Module : List & Label 30 DOM
-  Descr. : Implementation file for the List & Label 30 DOM
-  Version: 30.000
+  File   : l31dom.pas
+  Module : List & Label 31 DOM
+  Descr. : Implementation file for the List & Label 31 DOM
+  Version: 31.000
 
   ==================================================================================
 }
 
-unit l30dom;
+unit l31dom;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
@@ -28,7 +28,7 @@ unit l30dom;
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l30CommonInterfaces,cmbtll30x
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l31CommonInterfaces,cmbtll31x
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -7703,6 +7703,8 @@ TLlDOMPropertyMatchDevicePixel = class(TLlDOMItem)
     function GetFilling: TLlDOMPropertyFilling;
     function GetSubItemList: TLlDOMSubItemCoreList;
     function GetDefaultColumns: TLlDOMPropertyDefaultColumns;
+    function GetAllowPageBreak: TString;
+    procedure SetAllowPageBreak(const value: TString);
   public
     property DefaultColumns: TLlDOMPropertyDefaultColumns
       read GetDefaultColumns;
@@ -7710,6 +7712,8 @@ TLlDOMPropertyMatchDevicePixel = class(TLlDOMItem)
     property DefaultFont: TLlDOMPropertyDefaultFont read GetDefaultFont;
     property Filling: TLlDOMPropertyFilling read GetFilling;
     property Frame: TLlDOMPropertyFrame read GetFrame;
+     property AllowPageBreak: TString read GetAllowPageBreak
+      write SetAllowPageBreak;
     constructor Create(list: TLlDOMObjectList); overload;
     constructor Create(list: TLlDOMObjectList; index: integer); overload;
     destructor Destroy; override;
@@ -8091,7 +8095,7 @@ end;
 constructor TLlDOMProjectBase.Create(hTheParentComponent: ILlDomParent);
 begin
   inherited Create();
-  LL30xLoad();
+  LL31xLoad();
   fhParentComponent := hTheParentComponent;
   projectLoaded := False;
 end;
@@ -8114,7 +8118,7 @@ begin
     fRegionList.Free;
   if Assigned(fProjectTemplateList) then
     fProjectTemplateList.Free;
-  LL30xUnload();
+  LL31xUnload();
   inherited;
 end;
 
@@ -13631,6 +13635,16 @@ begin
   fSubItemList.Free;
   fFrame.Free;
   inherited;
+end;
+
+procedure TLlDOMObjectReportContainer.SetAllowPageBreak(const value: TString);
+begin
+  SetProperty('AllowPageBreak', value);
+end;
+
+function TLlDOMObjectReportContainer.GetAllowPageBreak: TString;
+begin
+  result := GetProperty('AllowPageBreak');
 end;
 
 function TLlDOMObjectReportContainer.GetDefaultColumns
@@ -32360,7 +32374,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl30x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl31x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -32376,7 +32390,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl30x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl31x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;

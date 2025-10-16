@@ -5,8 +5,8 @@
 ----------------------------------------------------------------------------------
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
- Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Descr. : Implementation file for the List & Label 31 VCL-Component
+ Version: 31.000
 ==================================================================================
 }
 
@@ -15,7 +15,7 @@ unit LLReport_Types;
 interface
 {$WEAKPACKAGEUNIT ON}
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll30x, Dialogs, System.UITypes;
+  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll31x, Dialogs, System.UITypes;
 
 Type
 

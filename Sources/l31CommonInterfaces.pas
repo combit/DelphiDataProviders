@@ -3,13 +3,13 @@
  Copyright © combit GmbH, Konstanz
 
 ----------------------------------------------------------------------------------
- File   : l30CommonInterfaces.pas
- Module : List & Label 30 Interface definitions
- Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ File   : l31CommonInterfaces.pas
+ Module : List & Label 31 Interface definitions
+ Descr. : Implementation file for the List & Label 31 VCL-Component
+ Version: 31.000
 ==================================================================================
 }
-unit l30CommonInterfaces;
+unit l31CommonInterfaces;
 
 interface
 {$WEAKPACKAGEUNIT ON}

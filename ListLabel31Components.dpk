@@ -1,4 +1,4 @@
-package ListLabel30Components;
+package ListLabel31Components;
 
 {$R *.res}
 {$R *.dres}
@@ -26,7 +26,7 @@ package ListLabel30Components;
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'combit List & Label 30 Components'}
+{$DESCRIPTION 'combit List & Label 31 Components'}
 {$IMPLICITBUILD ON}
 
 requires
@@ -51,15 +51,17 @@ contains
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
   {$ifdef win32}
-   LL30Report_Reg in 'Sources\LL30Report_Reg.pas',
+   LL31Report_Reg in 'Sources\LL31Report_Reg.pas',
   {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
-  ListLabel30 in 'Sources\ListLabel30.pas',
-  l30FireDACInterfaces in 'Sources\l30FireDACInterfaces.pas',
-  l30CommonInterfaces in 'Sources\l30CommonInterfaces.pas',
+  ListLabel31 in 'Sources\ListLabel31.pas',
+  l31FireDACInterfaces in 'Sources\l31FireDACInterfaces.pas',
+  l31CommonInterfaces in 'Sources\l31CommonInterfaces.pas',
   LLPreview in 'Sources\LLPreview.pas',
-  cmbtLL30x in 'Sources\cmbtLL30x.pas',
-  cmbtLS30x in 'Sources\cmbtLS30x.pas';
+  cmbtLL31x in 'Sources\cmbtLL31x.pas',
+  cmbtLS31x in 'Sources\cmbtLS31x.pas',
+  LlCoreRepository in 'Sources\LlCoreRepository.pas',
+  LlRepository in 'Sources\LlRepository.pas';
 
 end.
 

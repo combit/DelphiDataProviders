@@ -1,8 +1,8 @@
-(* Pascal/Delphi constants and function definitions for LL30.DLL *)
+(* Pascal/Delphi constants and function definitions for LL31.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2025-08-19 22:08:14] *)
+(*  [build of 2025-09-22 23:09:32] *)
 
-unit cmbtLL30;
+unit cmbtLL31;
 
 {$if CompilerVersion > 12}
 {$define ADOAVAILABLE}
@@ -75,6 +75,7 @@ type
   PIUNKNOWN                      = ^IUnknown;
   PPIUNKNOWN                     = ^PIUNKNOWN;
   _LPINTJAVADUMMY                = ^integer;
+  _PISTREAM                      = ^IStream;
   _PUINT8                        = ^byte;
   _PCUINT8                       = ^byte;
   HLLTESTJOB                     = pChar;
@@ -672,8 +673,9 @@ const
                     (* lParam = &scLLNtfyProjectLoadEx, called before a project is loaded. SetErrortext to abort loading. *)
   LL_NTFY_JOBWILLCHANGE          = 114;
                     (* internal *)
+  LL_COMBINATIONPRINTSTEP_SKIP   = $100;
   LL_NTFY_COMBINATIONPRINTSTEP   = 115;
-                    (* lParam = &scLlCombinationPrintStep, return 0 on OK, 1 to reset the page number, 2 to reset the page number and total pages or error code on error *)
+                    (* lParam = &scLlCombinationPrintStep, return 0 on OK, 1 to reset the page number, 2 to reset the page number, and total pages, LL_COMBINATIONPRINTSTEP_SKIP to skip the project, or error code on error *)
   LL_NTFY_LOADERROR_DATABASESTRUCTURE = 116;
                     (* lParam = @scLlNtfyDatabaseError *)
   LL_NTFY_KEEP_FILE              = 117;
@@ -1994,7 +1996,9 @@ const
   LL_OPTION_USE_SVG2EMF_OOPS     = 431;
                     (* default: false *)
   LL_OPTION_ENABLE_NESTEDTABLE_IN_FOOTERLINES = 432;
-                    (* default: false  *)
+                    (* default: false *)
+  LL_OPTION_ENABLE_EUDC          = 433;
+                    (* default: false *)
   LL_OPTION_DISABLEPRINT_MENU    = 434;
                     (* default: 0 *)
   LL_OPTION_DISABLEPRINT_MENU_PRINT = $01;
@@ -2432,6 +2436,11 @@ const
   LL_PRJOPEN_FLG_NOOBJECTLOAD    = $02000000;
   LL_PRJOPEN_FLG_RESERVED        = $01000000;
                     (* internal use *)
+  LL_PRJOPEN_RP_MASK             = $00f00000;
+  LL_PRJOPEN_RP_DEFAULT          = $00000000;
+                    (* default *)
+  LL_PRJOPEN_RP_NO_ITEMS_FROM_REFERENCED_PROJECTS = $00100000;
+                    (* no loading of templates *)
   LL_ASSOCIATEPREVIEWCONTROLFLAG_DELETE_ON_CLOSE = $0001;
   LL_ASSOCIATEPREVIEWCONTROLFLAG_HANDLE_IS_ATTACHINFO = $0002;
   LL_ASSOCIATEPREVIEWCONTROLFLAG_PRV_REPLACE = $0000;
@@ -2490,13 +2499,6 @@ const
   LL_ADDTABLEOPT_1TO1_RELATION_ONLY = $00000004;
   LL_INPLACEDESIGNERINTERACTION_QUERY_CANCLOSE = 1;
                     (* wParam = 0, lParam = &BOOL *)
-  LL_JOBSTATEFLAG_VARLIST        = $00000001;
-  LL_JOBSTATEFLAG_FIELDLIST      = $00000002;
-  LL_JOBSTATEFLAG_CHARTFIELDLIST = $00000004;
-  LL_JOBSTATEFLAG_DATABASESTRUCT = $00000008;
-  LL_JOBSTATEFLAG_DICTIONARIES   = $00000010;
-  LL_JOBSTATEFLAG_JOBSETTINGS    = $00000020;
-  LL_JOBSTATEFLAG_ALL            = $0000003F;
   LL_EXPRXLATRESULT_OPTIMAL      = $00000000;
   LL_EXPRXLATRESULT_PARTIAL      = $00000001;
   LL_EXPRXLATRESULT_FAIL         = $00000002;
@@ -6296,6 +6298,62 @@ function   LlJobOpenCopy
   {$endif}
 
   {$ifdef UNICODE}
+    function   LlConvertStreamToStringA
+	(pStream:                        _PISTREAM;
+	 pszBuffer:                      pCHAR;
+	 nBufSize:                       cardinal;
+	 bWithCompression:               longbool
+	): integer; stdcall;
+   {$else}
+    function   LlConvertStreamToString
+	(pStream:                        _PISTREAM;
+	 pszBuffer:                      pCHAR;
+	 nBufSize:                       cardinal;
+	 bWithCompression:               longbool
+	): integer; stdcall;
+  {$endif}
+
+  {$ifdef UNICODE}
+    function   LlConvertStreamToString
+	(pStream:                        _PISTREAM;
+	 pszBuffer:                      pWCHAR;
+	 nBufSize:                       cardinal;
+	 bWithCompression:               longbool
+	): integer; stdcall;
+   {$else}
+    function   LlConvertStreamToStringW
+	(pStream:                        _PISTREAM;
+	 pszBuffer:                      pWCHAR;
+	 nBufSize:                       cardinal;
+	 bWithCompression:               longbool
+	): integer; stdcall;
+  {$endif}
+
+  {$ifdef UNICODE}
+    function   LlConvertStringToStreamA
+	(pszText:                        pCHAR;
+	 pStream:                        _PISTREAM
+	): integer; stdcall;
+   {$else}
+    function   LlConvertStringToStream
+	(pszText:                        pCHAR;
+	 pStream:                        _PISTREAM
+	): integer; stdcall;
+  {$endif}
+
+  {$ifdef UNICODE}
+    function   LlConvertStringToStream
+	(pszText:                        pWCHAR;
+	 pStream:                        _PISTREAM
+	): integer; stdcall;
+   {$else}
+    function   LlConvertStringToStreamW
+	(pszText:                        pWCHAR;
+	 pStream:                        _PISTREAM
+	): integer; stdcall;
+  {$endif}
+
+  {$ifdef UNICODE}
     function   LlDbAddTableRelationExA
 	(hJob:                           HLLJOB;
 	 pszTableID:                     pCHAR;
@@ -6611,29 +6669,6 @@ function   LlInplaceDesignerInteraction
 	 wParam:                         lParam;
 	 lParam:                         lParam
 	): integer; stdcall;
-
-function   LlUtilsExtractResourcefiles
-	(pszREType:                      pWCHAR;
-	 pszPath:                        pWCHAR;
-	 pbsFileList:                    _PBSTR
-	): integer; stdcall;
-
-function   LlUtilsAddResourcefilesHGLOBAL
-	(pszName:                        pWCHAR;
-	 hData:                          tHandle;
-	 bPacked:                        longbool
-	): integer; stdcall;
-
-function   LlUtilsGetResourceString
-	(hLlJob:                         HLLJOB;
-	 nResourceID:                    integer;
-	 pszBuffer:                      pWCHAR;
-	 nBufSize:                       cardinal
-	): integer; stdcall;
-
-procedure  LlGDILockEnter; stdcall;
-
-procedure  LlGDILockLeave; stdcall;
 
   {$ifdef UNICODE}
     function   LlGetProjectDescriptionA
@@ -6961,6 +6996,17 @@ function   LlExprTypeMask
 	 lpExpr:                         HLLEXPR
 	): integer; stdcall;
 
+function   LlStgTestJobCmpEmbeddedStorages2
+	(hJob:                           HLLTESTJOB;
+	 pvErrors:                       PVARIANT;
+	 pvarListOfProblematicStorages:  PVARIANT
+	): integer; stdcall;
+
+function   LlStgTestJobAddResultJobs
+	(hJob:                           HLLTESTJOB;
+	 const pvarListOfProblematicStorages:                               PCVARIANT
+	): integer; stdcall;
+
 function   LlStgCreateFrom
 	(hJob:                           HLLJOB;
 	 nLCID:                          cardinal;
@@ -7009,3778 +7055,3827 @@ function   LlGetIdentifierHelpText
 	 nBufSize:                       cardinal
 	): integer; stdcall;
 
+function   LlRepositoryEditorDialog
+	(hLlJob:                         HLLJOB;
+	 hWnd:                           HWND;
+	 pszTitle:                       pWCHAR;
+	 nFlags:                         cardinal
+	): integer; stdcall;
+
 
 implementation
 
   {$ifdef WIN64}
-    const LibNameLL30DLL = 'CXLL30.DLL';
+    const LibNameLL31DLL = 'CXLL31.DLL';
    {$else}
-    const LibNameLL30DLL = 'CMLL30.DLL';
+    const LibNameLL31DLL = 'CMLL31.DLL';
   {$endif}
 
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlJobOpen;                      external LibNameLL30DLL index 10;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlJobOpen;                      external LibNameLL31DLL index 10;
    {$else}
-    function   LlJobOpen;                      external LibNameLL30DLL name 'LlJobOpen';
+    function   LlJobOpen;                      external LibNameLL31DLL name 'LlJobOpen';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlJobOpenLCID;                  external LibNameLL30DLL index 12;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlJobOpenLCID;                  external LibNameLL31DLL index 12;
    {$else}
-    function   LlJobOpenLCID;                  external LibNameLL30DLL name 'LlJobOpenLCID';
+    function   LlJobOpenLCID;                  external LibNameLL31DLL name 'LlJobOpenLCID';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlJobClose;                     external LibNameLL30DLL index 11;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlJobClose;                     external LibNameLL31DLL index 11;
    {$else}
-    procedure  LlJobClose;                     external LibNameLL30DLL name 'LlJobClose';
+    procedure  LlJobClose;                     external LibNameLL31DLL name 'LlJobClose';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlSetDebug;                     external LibNameLL30DLL index 13;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlSetDebug;                     external LibNameLL31DLL index 13;
    {$else}
-    procedure  LlSetDebug;                     external LibNameLL30DLL name 'LlSetDebug';
+    procedure  LlSetDebug;                     external LibNameLL31DLL name 'LlSetDebug';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetVersion;                   external LibNameLL30DLL index 14;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetVersion;                   external LibNameLL31DLL index 14;
    {$else}
-    function   LlGetVersion;                   external LibNameLL30DLL name 'LlGetVersion';
+    function   LlGetVersion;                   external LibNameLL31DLL name 'LlGetVersion';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetNotificationMessage;       external LibNameLL30DLL index 15;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetNotificationMessage;       external LibNameLL31DLL index 15;
    {$else}
-    function   LlGetNotificationMessage;       external LibNameLL30DLL name 'LlGetNotificationMessage';
+    function   LlGetNotificationMessage;       external LibNameLL31DLL name 'LlGetNotificationMessage';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlSetNotificationMessage;       external LibNameLL30DLL index 16;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlSetNotificationMessage;       external LibNameLL31DLL index 16;
    {$else}
-    function   LlSetNotificationMessage;       external LibNameLL30DLL name 'LlSetNotificationMessage';
+    function   LlSetNotificationMessage;       external LibNameLL31DLL name 'LlSetNotificationMessage';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlSetNotificationCallback;      external LibNameLL30DLL index 17;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlSetNotificationCallback;      external LibNameLL31DLL index 17;
    {$else}
-    function   LlSetNotificationCallback;      external LibNameLL30DLL name 'LlSetNotificationCallback';
+    function   LlSetNotificationCallback;      external LibNameLL31DLL name 'LlSetNotificationCallback';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldA;                 external LibNameLL30DLL index 18;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldA;                 external LibNameLL31DLL index 18;
      {$else}
-      function   LlDefineFieldA;                 external LibNameLL30DLL name 'LlDefineFieldA';
+      function   LlDefineFieldA;                 external LibNameLL31DLL name 'LlDefineFieldA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineField;                  external LibNameLL30DLL index 18;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineField;                  external LibNameLL31DLL index 18;
      {$else}
-      function   LlDefineField;                  external LibNameLL30DLL name 'LlDefineFieldA';
+      function   LlDefineField;                  external LibNameLL31DLL name 'LlDefineFieldA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineField;                  external LibNameLL30DLL index 118;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineField;                  external LibNameLL31DLL index 118;
      {$else}
-      function   LlDefineField;                  external LibNameLL30DLL name 'LlDefineFieldW';
+      function   LlDefineField;                  external LibNameLL31DLL name 'LlDefineFieldW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldW;                 external LibNameLL30DLL index 118;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldW;                 external LibNameLL31DLL index 118;
      {$else}
-      function   LlDefineFieldW;                 external LibNameLL30DLL name 'LlDefineFieldW';
+      function   LlDefineFieldW;                 external LibNameLL31DLL name 'LlDefineFieldW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExtA;              external LibNameLL30DLL index 19;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExtA;              external LibNameLL31DLL index 19;
      {$else}
-      function   LlDefineFieldExtA;              external LibNameLL30DLL name 'LlDefineFieldExtA';
+      function   LlDefineFieldExtA;              external LibNameLL31DLL name 'LlDefineFieldExtA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExt;               external LibNameLL30DLL index 19;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExt;               external LibNameLL31DLL index 19;
      {$else}
-      function   LlDefineFieldExt;               external LibNameLL30DLL name 'LlDefineFieldExtA';
+      function   LlDefineFieldExt;               external LibNameLL31DLL name 'LlDefineFieldExtA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExt;               external LibNameLL30DLL index 119;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExt;               external LibNameLL31DLL index 119;
      {$else}
-      function   LlDefineFieldExt;               external LibNameLL30DLL name 'LlDefineFieldExtW';
+      function   LlDefineFieldExt;               external LibNameLL31DLL name 'LlDefineFieldExtW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExtW;              external LibNameLL30DLL index 119;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExtW;              external LibNameLL31DLL index 119;
      {$else}
-      function   LlDefineFieldExtW;              external LibNameLL30DLL name 'LlDefineFieldExtW';
+      function   LlDefineFieldExtW;              external LibNameLL31DLL name 'LlDefineFieldExtW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExtHandleA;        external LibNameLL30DLL index 20;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExtHandleA;        external LibNameLL31DLL index 20;
      {$else}
-      function   LlDefineFieldExtHandleA;        external LibNameLL30DLL name 'LlDefineFieldExtHandleA';
+      function   LlDefineFieldExtHandleA;        external LibNameLL31DLL name 'LlDefineFieldExtHandleA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExtHandle;         external LibNameLL30DLL index 20;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExtHandle;         external LibNameLL31DLL index 20;
      {$else}
-      function   LlDefineFieldExtHandle;         external LibNameLL30DLL name 'LlDefineFieldExtHandleA';
+      function   LlDefineFieldExtHandle;         external LibNameLL31DLL name 'LlDefineFieldExtHandleA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExtHandle;         external LibNameLL30DLL index 120;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExtHandle;         external LibNameLL31DLL index 120;
      {$else}
-      function   LlDefineFieldExtHandle;         external LibNameLL30DLL name 'LlDefineFieldExtHandleW';
+      function   LlDefineFieldExtHandle;         external LibNameLL31DLL name 'LlDefineFieldExtHandleW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldExtHandleW;        external LibNameLL30DLL index 120;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldExtHandleW;        external LibNameLL31DLL index 120;
      {$else}
-      function   LlDefineFieldExtHandleW;        external LibNameLL30DLL name 'LlDefineFieldExtHandleW';
+      function   LlDefineFieldExtHandleW;        external LibNameLL31DLL name 'LlDefineFieldExtHandleW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlDefineFieldStart;             external LibNameLL30DLL index 21;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlDefineFieldStart;             external LibNameLL31DLL index 21;
    {$else}
-    procedure  LlDefineFieldStart;             external LibNameLL30DLL name 'LlDefineFieldStart';
+    procedure  LlDefineFieldStart;             external LibNameLL31DLL name 'LlDefineFieldStart';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableA;              external LibNameLL30DLL index 22;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableA;              external LibNameLL31DLL index 22;
      {$else}
-      function   LlDefineVariableA;              external LibNameLL30DLL name 'LlDefineVariableA';
+      function   LlDefineVariableA;              external LibNameLL31DLL name 'LlDefineVariableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariable;               external LibNameLL30DLL index 22;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariable;               external LibNameLL31DLL index 22;
      {$else}
-      function   LlDefineVariable;               external LibNameLL30DLL name 'LlDefineVariableA';
+      function   LlDefineVariable;               external LibNameLL31DLL name 'LlDefineVariableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariable;               external LibNameLL30DLL index 122;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariable;               external LibNameLL31DLL index 122;
      {$else}
-      function   LlDefineVariable;               external LibNameLL30DLL name 'LlDefineVariableW';
+      function   LlDefineVariable;               external LibNameLL31DLL name 'LlDefineVariableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableW;              external LibNameLL30DLL index 122;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableW;              external LibNameLL31DLL index 122;
      {$else}
-      function   LlDefineVariableW;              external LibNameLL30DLL name 'LlDefineVariableW';
+      function   LlDefineVariableW;              external LibNameLL31DLL name 'LlDefineVariableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExtA;           external LibNameLL30DLL index 23;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExtA;           external LibNameLL31DLL index 23;
      {$else}
-      function   LlDefineVariableExtA;           external LibNameLL30DLL name 'LlDefineVariableExtA';
+      function   LlDefineVariableExtA;           external LibNameLL31DLL name 'LlDefineVariableExtA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExt;            external LibNameLL30DLL index 23;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExt;            external LibNameLL31DLL index 23;
      {$else}
-      function   LlDefineVariableExt;            external LibNameLL30DLL name 'LlDefineVariableExtA';
+      function   LlDefineVariableExt;            external LibNameLL31DLL name 'LlDefineVariableExtA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExt;            external LibNameLL30DLL index 123;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExt;            external LibNameLL31DLL index 123;
      {$else}
-      function   LlDefineVariableExt;            external LibNameLL30DLL name 'LlDefineVariableExtW';
+      function   LlDefineVariableExt;            external LibNameLL31DLL name 'LlDefineVariableExtW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExtW;           external LibNameLL30DLL index 123;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExtW;           external LibNameLL31DLL index 123;
      {$else}
-      function   LlDefineVariableExtW;           external LibNameLL30DLL name 'LlDefineVariableExtW';
+      function   LlDefineVariableExtW;           external LibNameLL31DLL name 'LlDefineVariableExtW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExtHandleA;     external LibNameLL30DLL index 24;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExtHandleA;     external LibNameLL31DLL index 24;
      {$else}
-      function   LlDefineVariableExtHandleA;     external LibNameLL30DLL name 'LlDefineVariableExtHandleA';
+      function   LlDefineVariableExtHandleA;     external LibNameLL31DLL name 'LlDefineVariableExtHandleA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExtHandle;      external LibNameLL30DLL index 24;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExtHandle;      external LibNameLL31DLL index 24;
      {$else}
-      function   LlDefineVariableExtHandle;      external LibNameLL30DLL name 'LlDefineVariableExtHandleA';
+      function   LlDefineVariableExtHandle;      external LibNameLL31DLL name 'LlDefineVariableExtHandleA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExtHandle;      external LibNameLL30DLL index 124;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExtHandle;      external LibNameLL31DLL index 124;
      {$else}
-      function   LlDefineVariableExtHandle;      external LibNameLL30DLL name 'LlDefineVariableExtHandleW';
+      function   LlDefineVariableExtHandle;      external LibNameLL31DLL name 'LlDefineVariableExtHandleW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableExtHandleW;     external LibNameLL30DLL index 124;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableExtHandleW;     external LibNameLL31DLL index 124;
      {$else}
-      function   LlDefineVariableExtHandleW;     external LibNameLL30DLL name 'LlDefineVariableExtHandleW';
+      function   LlDefineVariableExtHandleW;     external LibNameLL31DLL name 'LlDefineVariableExtHandleW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableNameA;          external LibNameLL30DLL index 25;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableNameA;          external LibNameLL31DLL index 25;
      {$else}
-      function   LlDefineVariableNameA;          external LibNameLL30DLL name 'LlDefineVariableNameA';
+      function   LlDefineVariableNameA;          external LibNameLL31DLL name 'LlDefineVariableNameA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableName;           external LibNameLL30DLL index 25;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableName;           external LibNameLL31DLL index 25;
      {$else}
-      function   LlDefineVariableName;           external LibNameLL30DLL name 'LlDefineVariableNameA';
+      function   LlDefineVariableName;           external LibNameLL31DLL name 'LlDefineVariableNameA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableName;           external LibNameLL30DLL index 125;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableName;           external LibNameLL31DLL index 125;
      {$else}
-      function   LlDefineVariableName;           external LibNameLL30DLL name 'LlDefineVariableNameW';
+      function   LlDefineVariableName;           external LibNameLL31DLL name 'LlDefineVariableNameW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableNameW;          external LibNameLL30DLL index 125;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableNameW;          external LibNameLL31DLL index 125;
      {$else}
-      function   LlDefineVariableNameW;          external LibNameLL30DLL name 'LlDefineVariableNameW';
+      function   LlDefineVariableNameW;          external LibNameLL31DLL name 'LlDefineVariableNameW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlDefineVariableStart;          external LibNameLL30DLL index 26;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlDefineVariableStart;          external LibNameLL31DLL index 26;
    {$else}
-    procedure  LlDefineVariableStart;          external LibNameLL30DLL name 'LlDefineVariableStart';
+    procedure  LlDefineVariableStart;          external LibNameLL31DLL name 'LlDefineVariableStart';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSumVariableA;           external LibNameLL30DLL index 27;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSumVariableA;           external LibNameLL31DLL index 27;
      {$else}
-      function   LlDefineSumVariableA;           external LibNameLL30DLL name 'LlDefineSumVariableA';
+      function   LlDefineSumVariableA;           external LibNameLL31DLL name 'LlDefineSumVariableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSumVariable;            external LibNameLL30DLL index 27;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSumVariable;            external LibNameLL31DLL index 27;
      {$else}
-      function   LlDefineSumVariable;            external LibNameLL30DLL name 'LlDefineSumVariableA';
+      function   LlDefineSumVariable;            external LibNameLL31DLL name 'LlDefineSumVariableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSumVariable;            external LibNameLL30DLL index 127;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSumVariable;            external LibNameLL31DLL index 127;
      {$else}
-      function   LlDefineSumVariable;            external LibNameLL30DLL name 'LlDefineSumVariableW';
+      function   LlDefineSumVariable;            external LibNameLL31DLL name 'LlDefineSumVariableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSumVariableW;           external LibNameLL30DLL index 127;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSumVariableW;           external LibNameLL31DLL index 127;
      {$else}
-      function   LlDefineSumVariableW;           external LibNameLL30DLL name 'LlDefineSumVariableW';
+      function   LlDefineSumVariableW;           external LibNameLL31DLL name 'LlDefineSumVariableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineLayoutA;                external LibNameLL30DLL index 28;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineLayoutA;                external LibNameLL31DLL index 28;
      {$else}
-      function   LlDefineLayoutA;                external LibNameLL30DLL name 'LlDefineLayoutA';
+      function   LlDefineLayoutA;                external LibNameLL31DLL name 'LlDefineLayoutA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineLayout;                 external LibNameLL30DLL index 28;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineLayout;                 external LibNameLL31DLL index 28;
      {$else}
-      function   LlDefineLayout;                 external LibNameLL30DLL name 'LlDefineLayoutA';
+      function   LlDefineLayout;                 external LibNameLL31DLL name 'LlDefineLayoutA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineLayout;                 external LibNameLL30DLL index 128;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineLayout;                 external LibNameLL31DLL index 128;
      {$else}
-      function   LlDefineLayout;                 external LibNameLL30DLL name 'LlDefineLayoutW';
+      function   LlDefineLayout;                 external LibNameLL31DLL name 'LlDefineLayoutW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineLayoutW;                external LibNameLL30DLL index 128;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineLayoutW;                external LibNameLL31DLL index 128;
      {$else}
-      function   LlDefineLayoutW;                external LibNameLL30DLL name 'LlDefineLayoutW';
+      function   LlDefineLayoutW;                external LibNameLL31DLL name 'LlDefineLayoutW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLineA;                 external LibNameLL30DLL index 29;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLineA;                 external LibNameLL31DLL index 29;
      {$else}
-      function   LlDlgEditLineA;                 external LibNameLL30DLL name 'LlDlgEditLineA';
+      function   LlDlgEditLineA;                 external LibNameLL31DLL name 'LlDlgEditLineA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLine;                  external LibNameLL30DLL index 29;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLine;                  external LibNameLL31DLL index 29;
      {$else}
-      function   LlDlgEditLine;                  external LibNameLL30DLL name 'LlDlgEditLineA';
+      function   LlDlgEditLine;                  external LibNameLL31DLL name 'LlDlgEditLineA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLine;                  external LibNameLL30DLL index 129;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLine;                  external LibNameLL31DLL index 129;
      {$else}
-      function   LlDlgEditLine;                  external LibNameLL30DLL name 'LlDlgEditLineW';
+      function   LlDlgEditLine;                  external LibNameLL31DLL name 'LlDlgEditLineW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLineW;                 external LibNameLL30DLL index 129;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLineW;                 external LibNameLL31DLL index 129;
      {$else}
-      function   LlDlgEditLineW;                 external LibNameLL30DLL name 'LlDlgEditLineW';
+      function   LlDlgEditLineW;                 external LibNameLL31DLL name 'LlDlgEditLineW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLineExA;               external LibNameLL30DLL index 30;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLineExA;               external LibNameLL31DLL index 30;
      {$else}
-      function   LlDlgEditLineExA;               external LibNameLL30DLL name 'LlDlgEditLineExA';
+      function   LlDlgEditLineExA;               external LibNameLL31DLL name 'LlDlgEditLineExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLineEx;                external LibNameLL30DLL index 30;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLineEx;                external LibNameLL31DLL index 30;
      {$else}
-      function   LlDlgEditLineEx;                external LibNameLL30DLL name 'LlDlgEditLineExA';
+      function   LlDlgEditLineEx;                external LibNameLL31DLL name 'LlDlgEditLineExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLineEx;                external LibNameLL30DLL index 130;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLineEx;                external LibNameLL31DLL index 130;
      {$else}
-      function   LlDlgEditLineEx;                external LibNameLL30DLL name 'LlDlgEditLineExW';
+      function   LlDlgEditLineEx;                external LibNameLL31DLL name 'LlDlgEditLineExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDlgEditLineExW;               external LibNameLL30DLL index 130;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDlgEditLineExW;               external LibNameLL31DLL index 130;
      {$else}
-      function   LlDlgEditLineExW;               external LibNameLL30DLL name 'LlDlgEditLineExW';
+      function   LlDlgEditLineExW;               external LibNameLL31DLL name 'LlDlgEditLineExW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewSetTempPathA;          external LibNameLL30DLL index 31;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewSetTempPathA;          external LibNameLL31DLL index 31;
      {$else}
-      function   LlPreviewSetTempPathA;          external LibNameLL30DLL name 'LlPreviewSetTempPathA';
+      function   LlPreviewSetTempPathA;          external LibNameLL31DLL name 'LlPreviewSetTempPathA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewSetTempPath;           external LibNameLL30DLL index 31;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewSetTempPath;           external LibNameLL31DLL index 31;
      {$else}
-      function   LlPreviewSetTempPath;           external LibNameLL30DLL name 'LlPreviewSetTempPathA';
+      function   LlPreviewSetTempPath;           external LibNameLL31DLL name 'LlPreviewSetTempPathA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewSetTempPath;           external LibNameLL30DLL index 131;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewSetTempPath;           external LibNameLL31DLL index 131;
      {$else}
-      function   LlPreviewSetTempPath;           external LibNameLL30DLL name 'LlPreviewSetTempPathW';
+      function   LlPreviewSetTempPath;           external LibNameLL31DLL name 'LlPreviewSetTempPathW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewSetTempPathW;          external LibNameLL30DLL index 131;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewSetTempPathW;          external LibNameLL31DLL index 131;
      {$else}
-      function   LlPreviewSetTempPathW;          external LibNameLL30DLL name 'LlPreviewSetTempPathW';
+      function   LlPreviewSetTempPathW;          external LibNameLL31DLL name 'LlPreviewSetTempPathW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDeleteFilesA;          external LibNameLL30DLL index 32;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDeleteFilesA;          external LibNameLL31DLL index 32;
      {$else}
-      function   LlPreviewDeleteFilesA;          external LibNameLL30DLL name 'LlPreviewDeleteFilesA';
+      function   LlPreviewDeleteFilesA;          external LibNameLL31DLL name 'LlPreviewDeleteFilesA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDeleteFiles;           external LibNameLL30DLL index 32;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDeleteFiles;           external LibNameLL31DLL index 32;
      {$else}
-      function   LlPreviewDeleteFiles;           external LibNameLL30DLL name 'LlPreviewDeleteFilesA';
+      function   LlPreviewDeleteFiles;           external LibNameLL31DLL name 'LlPreviewDeleteFilesA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDeleteFiles;           external LibNameLL30DLL index 132;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDeleteFiles;           external LibNameLL31DLL index 132;
      {$else}
-      function   LlPreviewDeleteFiles;           external LibNameLL30DLL name 'LlPreviewDeleteFilesW';
+      function   LlPreviewDeleteFiles;           external LibNameLL31DLL name 'LlPreviewDeleteFilesW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDeleteFilesW;          external LibNameLL30DLL index 132;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDeleteFilesW;          external LibNameLL31DLL index 132;
      {$else}
-      function   LlPreviewDeleteFilesW;          external LibNameLL30DLL name 'LlPreviewDeleteFilesW';
+      function   LlPreviewDeleteFilesW;          external LibNameLL31DLL name 'LlPreviewDeleteFilesW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplayA;              external LibNameLL30DLL index 33;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplayA;              external LibNameLL31DLL index 33;
      {$else}
-      function   LlPreviewDisplayA;              external LibNameLL30DLL name 'LlPreviewDisplayA';
+      function   LlPreviewDisplayA;              external LibNameLL31DLL name 'LlPreviewDisplayA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplay;               external LibNameLL30DLL index 33;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplay;               external LibNameLL31DLL index 33;
      {$else}
-      function   LlPreviewDisplay;               external LibNameLL30DLL name 'LlPreviewDisplayA';
+      function   LlPreviewDisplay;               external LibNameLL31DLL name 'LlPreviewDisplayA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplay;               external LibNameLL30DLL index 133;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplay;               external LibNameLL31DLL index 133;
      {$else}
-      function   LlPreviewDisplay;               external LibNameLL30DLL name 'LlPreviewDisplayW';
+      function   LlPreviewDisplay;               external LibNameLL31DLL name 'LlPreviewDisplayW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplayW;              external LibNameLL30DLL index 133;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplayW;              external LibNameLL31DLL index 133;
      {$else}
-      function   LlPreviewDisplayW;              external LibNameLL30DLL name 'LlPreviewDisplayW';
+      function   LlPreviewDisplayW;              external LibNameLL31DLL name 'LlPreviewDisplayW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplayExA;            external LibNameLL30DLL index 34;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplayExA;            external LibNameLL31DLL index 34;
      {$else}
-      function   LlPreviewDisplayExA;            external LibNameLL30DLL name 'LlPreviewDisplayExA';
+      function   LlPreviewDisplayExA;            external LibNameLL31DLL name 'LlPreviewDisplayExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplayEx;             external LibNameLL30DLL index 34;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplayEx;             external LibNameLL31DLL index 34;
      {$else}
-      function   LlPreviewDisplayEx;             external LibNameLL30DLL name 'LlPreviewDisplayExA';
+      function   LlPreviewDisplayEx;             external LibNameLL31DLL name 'LlPreviewDisplayExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplayEx;             external LibNameLL30DLL index 134;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplayEx;             external LibNameLL31DLL index 134;
      {$else}
-      function   LlPreviewDisplayEx;             external LibNameLL30DLL name 'LlPreviewDisplayExW';
+      function   LlPreviewDisplayEx;             external LibNameLL31DLL name 'LlPreviewDisplayExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPreviewDisplayExW;            external LibNameLL30DLL index 134;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPreviewDisplayExW;            external LibNameLL31DLL index 134;
      {$else}
-      function   LlPreviewDisplayExW;            external LibNameLL30DLL name 'LlPreviewDisplayExW';
+      function   LlPreviewDisplayExW;            external LibNameLL31DLL name 'LlPreviewDisplayExW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrint;                        external LibNameLL30DLL index 35;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrint;                        external LibNameLL31DLL index 35;
    {$else}
-    function   LlPrint;                        external LibNameLL30DLL name 'LlPrint';
+    function   LlPrint;                        external LibNameLL31DLL name 'LlPrint';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintAbort;                   external LibNameLL30DLL index 36;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintAbort;                   external LibNameLL31DLL index 36;
    {$else}
-    function   LlPrintAbort;                   external LibNameLL30DLL name 'LlPrintAbort';
+    function   LlPrintAbort;                   external LibNameLL31DLL name 'LlPrintAbort';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintCheckLineFit;            external LibNameLL30DLL index 37;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintCheckLineFit;            external LibNameLL31DLL index 37;
    {$else}
-    function   LlPrintCheckLineFit;            external LibNameLL30DLL name 'LlPrintCheckLineFit';
+    function   LlPrintCheckLineFit;            external LibNameLL31DLL name 'LlPrintCheckLineFit';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintEnd;                     external LibNameLL30DLL index 38;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintEnd;                     external LibNameLL31DLL index 38;
    {$else}
-    function   LlPrintEnd;                     external LibNameLL30DLL name 'LlPrintEnd';
+    function   LlPrintEnd;                     external LibNameLL31DLL name 'LlPrintEnd';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintFields;                  external LibNameLL30DLL index 39;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintFields;                  external LibNameLL31DLL index 39;
    {$else}
-    function   LlPrintFields;                  external LibNameLL30DLL name 'LlPrintFields';
+    function   LlPrintFields;                  external LibNameLL31DLL name 'LlPrintFields';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintFieldsEnd;               external LibNameLL30DLL index 40;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintFieldsEnd;               external LibNameLL31DLL index 40;
    {$else}
-    function   LlPrintFieldsEnd;               external LibNameLL30DLL name 'LlPrintFieldsEnd';
+    function   LlPrintFieldsEnd;               external LibNameLL31DLL name 'LlPrintFieldsEnd';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGetCurrentPage;          external LibNameLL30DLL index 41;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGetCurrentPage;          external LibNameLL31DLL index 41;
    {$else}
-    function   LlPrintGetCurrentPage;          external LibNameLL30DLL name 'LlPrintGetCurrentPage';
+    function   LlPrintGetCurrentPage;          external LibNameLL31DLL name 'LlPrintGetCurrentPage';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGetItemsPerPage;         external LibNameLL30DLL index 42;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGetItemsPerPage;         external LibNameLL31DLL index 42;
    {$else}
-    function   LlPrintGetItemsPerPage;         external LibNameLL30DLL name 'LlPrintGetItemsPerPage';
+    function   LlPrintGetItemsPerPage;         external LibNameLL31DLL name 'LlPrintGetItemsPerPage';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGetItemsPerTable;        external LibNameLL30DLL index 43;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGetItemsPerTable;        external LibNameLL31DLL index 43;
    {$else}
-    function   LlPrintGetItemsPerTable;        external LibNameLL30DLL name 'LlPrintGetItemsPerTable';
+    function   LlPrintGetItemsPerTable;        external LibNameLL31DLL name 'LlPrintGetItemsPerTable';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingItemsPerTableA;    external LibNameLL30DLL index 44;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingItemsPerTableA;    external LibNameLL31DLL index 44;
      {$else}
-      function   LlPrintGetRemainingItemsPerTableA;    external LibNameLL30DLL name 'LlPrintGetRemainingItemsPerTableA';
+      function   LlPrintGetRemainingItemsPerTableA;    external LibNameLL31DLL name 'LlPrintGetRemainingItemsPerTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL30DLL index 44;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL31DLL index 44;
      {$else}
-      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL30DLL name 'LlPrintGetRemainingItemsPerTableA';
+      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL31DLL name 'LlPrintGetRemainingItemsPerTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL30DLL index 144;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL31DLL index 144;
      {$else}
-      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL30DLL name 'LlPrintGetRemainingItemsPerTableW';
+      function   LlPrintGetRemainingItemsPerTable;   external LibNameLL31DLL name 'LlPrintGetRemainingItemsPerTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingItemsPerTableW;    external LibNameLL30DLL index 144;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingItemsPerTableW;    external LibNameLL31DLL index 144;
      {$else}
-      function   LlPrintGetRemainingItemsPerTableW;    external LibNameLL30DLL name 'LlPrintGetRemainingItemsPerTableW';
+      function   LlPrintGetRemainingItemsPerTableW;    external LibNameLL31DLL name 'LlPrintGetRemainingItemsPerTableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemItemsPerTableA;    external LibNameLL30DLL index 45;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemItemsPerTableA;    external LibNameLL31DLL index 45;
      {$else}
-      function   LlPrintGetRemItemsPerTableA;    external LibNameLL30DLL name 'LlPrintGetRemItemsPerTableA';
+      function   LlPrintGetRemItemsPerTableA;    external LibNameLL31DLL name 'LlPrintGetRemItemsPerTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemItemsPerTable;     external LibNameLL30DLL index 45;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemItemsPerTable;     external LibNameLL31DLL index 45;
      {$else}
-      function   LlPrintGetRemItemsPerTable;     external LibNameLL30DLL name 'LlPrintGetRemItemsPerTableA';
+      function   LlPrintGetRemItemsPerTable;     external LibNameLL31DLL name 'LlPrintGetRemItemsPerTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemItemsPerTable;     external LibNameLL30DLL index 145;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemItemsPerTable;     external LibNameLL31DLL index 145;
      {$else}
-      function   LlPrintGetRemItemsPerTable;     external LibNameLL30DLL name 'LlPrintGetRemItemsPerTableW';
+      function   LlPrintGetRemItemsPerTable;     external LibNameLL31DLL name 'LlPrintGetRemItemsPerTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemItemsPerTableW;    external LibNameLL30DLL index 145;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemItemsPerTableW;    external LibNameLL31DLL index 145;
      {$else}
-      function   LlPrintGetRemItemsPerTableW;    external LibNameLL30DLL name 'LlPrintGetRemItemsPerTableW';
+      function   LlPrintGetRemItemsPerTableW;    external LibNameLL31DLL name 'LlPrintGetRemItemsPerTableW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGetOption;               external LibNameLL30DLL index 46;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGetOption;               external LibNameLL31DLL index 46;
    {$else}
-    function   LlPrintGetOption;               external LibNameLL30DLL name 'LlPrintGetOption';
+    function   LlPrintGetOption;               external LibNameLL31DLL name 'LlPrintGetOption';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetPrinterInfoA;         external LibNameLL30DLL index 47;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetPrinterInfoA;         external LibNameLL31DLL index 47;
      {$else}
-      function   LlPrintGetPrinterInfoA;         external LibNameLL30DLL name 'LlPrintGetPrinterInfoA';
+      function   LlPrintGetPrinterInfoA;         external LibNameLL31DLL name 'LlPrintGetPrinterInfoA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetPrinterInfo;          external LibNameLL30DLL index 47;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetPrinterInfo;          external LibNameLL31DLL index 47;
      {$else}
-      function   LlPrintGetPrinterInfo;          external LibNameLL30DLL name 'LlPrintGetPrinterInfoA';
+      function   LlPrintGetPrinterInfo;          external LibNameLL31DLL name 'LlPrintGetPrinterInfoA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetPrinterInfo;          external LibNameLL30DLL index 147;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetPrinterInfo;          external LibNameLL31DLL index 147;
      {$else}
-      function   LlPrintGetPrinterInfo;          external LibNameLL30DLL name 'LlPrintGetPrinterInfoW';
+      function   LlPrintGetPrinterInfo;          external LibNameLL31DLL name 'LlPrintGetPrinterInfoW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetPrinterInfoW;         external LibNameLL30DLL index 147;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetPrinterInfoW;         external LibNameLL31DLL index 147;
      {$else}
-      function   LlPrintGetPrinterInfoW;         external LibNameLL30DLL name 'LlPrintGetPrinterInfoW';
+      function   LlPrintGetPrinterInfoW;         external LibNameLL31DLL name 'LlPrintGetPrinterInfoW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialogA;          external LibNameLL30DLL index 48;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialogA;          external LibNameLL31DLL index 48;
      {$else}
-      function   LlPrintOptionsDialogA;          external LibNameLL30DLL name 'LlPrintOptionsDialogA';
+      function   LlPrintOptionsDialogA;          external LibNameLL31DLL name 'LlPrintOptionsDialogA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialog;           external LibNameLL30DLL index 48;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialog;           external LibNameLL31DLL index 48;
      {$else}
-      function   LlPrintOptionsDialog;           external LibNameLL30DLL name 'LlPrintOptionsDialogA';
+      function   LlPrintOptionsDialog;           external LibNameLL31DLL name 'LlPrintOptionsDialogA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialog;           external LibNameLL30DLL index 148;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialog;           external LibNameLL31DLL index 148;
      {$else}
-      function   LlPrintOptionsDialog;           external LibNameLL30DLL name 'LlPrintOptionsDialogW';
+      function   LlPrintOptionsDialog;           external LibNameLL31DLL name 'LlPrintOptionsDialogW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialogW;          external LibNameLL30DLL index 148;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialogW;          external LibNameLL31DLL index 148;
      {$else}
-      function   LlPrintOptionsDialogW;          external LibNameLL30DLL name 'LlPrintOptionsDialogW';
+      function   LlPrintOptionsDialogW;          external LibNameLL31DLL name 'LlPrintOptionsDialogW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintSelectOffsetEx;          external LibNameLL30DLL index 49;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintSelectOffsetEx;          external LibNameLL31DLL index 49;
    {$else}
-    function   LlPrintSelectOffsetEx;          external LibNameLL30DLL name 'LlPrintSelectOffsetEx';
+    function   LlPrintSelectOffsetEx;          external LibNameLL31DLL name 'LlPrintSelectOffsetEx';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetBoxTextA;             external LibNameLL30DLL index 50;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetBoxTextA;             external LibNameLL31DLL index 50;
      {$else}
-      function   LlPrintSetBoxTextA;             external LibNameLL30DLL name 'LlPrintSetBoxTextA';
+      function   LlPrintSetBoxTextA;             external LibNameLL31DLL name 'LlPrintSetBoxTextA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetBoxText;              external LibNameLL30DLL index 50;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetBoxText;              external LibNameLL31DLL index 50;
      {$else}
-      function   LlPrintSetBoxText;              external LibNameLL30DLL name 'LlPrintSetBoxTextA';
+      function   LlPrintSetBoxText;              external LibNameLL31DLL name 'LlPrintSetBoxTextA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetBoxText;              external LibNameLL30DLL index 150;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetBoxText;              external LibNameLL31DLL index 150;
      {$else}
-      function   LlPrintSetBoxText;              external LibNameLL30DLL name 'LlPrintSetBoxTextW';
+      function   LlPrintSetBoxText;              external LibNameLL31DLL name 'LlPrintSetBoxTextW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetBoxTextW;             external LibNameLL30DLL index 150;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetBoxTextW;             external LibNameLL31DLL index 150;
      {$else}
-      function   LlPrintSetBoxTextW;             external LibNameLL30DLL name 'LlPrintSetBoxTextW';
+      function   LlPrintSetBoxTextW;             external LibNameLL31DLL name 'LlPrintSetBoxTextW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintSetOption;               external LibNameLL30DLL index 51;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintSetOption;               external LibNameLL31DLL index 51;
    {$else}
-    function   LlPrintSetOption;               external LibNameLL30DLL name 'LlPrintSetOption';
+    function   LlPrintSetOption;               external LibNameLL31DLL name 'LlPrintSetOption';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintUpdateBox;               external LibNameLL30DLL index 52;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintUpdateBox;               external LibNameLL31DLL index 52;
    {$else}
-    function   LlPrintUpdateBox;               external LibNameLL30DLL name 'LlPrintUpdateBox';
+    function   LlPrintUpdateBox;               external LibNameLL31DLL name 'LlPrintUpdateBox';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintStartA;                  external LibNameLL30DLL index 53;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintStartA;                  external LibNameLL31DLL index 53;
      {$else}
-      function   LlPrintStartA;                  external LibNameLL30DLL name 'LlPrintStartA';
+      function   LlPrintStartA;                  external LibNameLL31DLL name 'LlPrintStartA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintStart;                   external LibNameLL30DLL index 53;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintStart;                   external LibNameLL31DLL index 53;
      {$else}
-      function   LlPrintStart;                   external LibNameLL30DLL name 'LlPrintStartA';
+      function   LlPrintStart;                   external LibNameLL31DLL name 'LlPrintStartA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintStart;                   external LibNameLL30DLL index 153;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintStart;                   external LibNameLL31DLL index 153;
      {$else}
-      function   LlPrintStart;                   external LibNameLL30DLL name 'LlPrintStartW';
+      function   LlPrintStart;                   external LibNameLL31DLL name 'LlPrintStartW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintStartW;                  external LibNameLL30DLL index 153;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintStartW;                  external LibNameLL31DLL index 153;
      {$else}
-      function   LlPrintStartW;                  external LibNameLL30DLL name 'LlPrintStartW';
+      function   LlPrintStartW;                  external LibNameLL31DLL name 'LlPrintStartW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintWithBoxStartA;           external LibNameLL30DLL index 54;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintWithBoxStartA;           external LibNameLL31DLL index 54;
      {$else}
-      function   LlPrintWithBoxStartA;           external LibNameLL30DLL name 'LlPrintWithBoxStartA';
+      function   LlPrintWithBoxStartA;           external LibNameLL31DLL name 'LlPrintWithBoxStartA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintWithBoxStart;            external LibNameLL30DLL index 54;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintWithBoxStart;            external LibNameLL31DLL index 54;
      {$else}
-      function   LlPrintWithBoxStart;            external LibNameLL30DLL name 'LlPrintWithBoxStartA';
+      function   LlPrintWithBoxStart;            external LibNameLL31DLL name 'LlPrintWithBoxStartA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintWithBoxStart;            external LibNameLL30DLL index 154;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintWithBoxStart;            external LibNameLL31DLL index 154;
      {$else}
-      function   LlPrintWithBoxStart;            external LibNameLL30DLL name 'LlPrintWithBoxStartW';
+      function   LlPrintWithBoxStart;            external LibNameLL31DLL name 'LlPrintWithBoxStartW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintWithBoxStartW;           external LibNameLL30DLL index 154;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintWithBoxStartW;           external LibNameLL31DLL index 154;
      {$else}
-      function   LlPrintWithBoxStartW;           external LibNameLL30DLL name 'LlPrintWithBoxStartW';
+      function   LlPrintWithBoxStartW;           external LibNameLL31DLL name 'LlPrintWithBoxStartW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrinterSetupA;                external LibNameLL30DLL index 55;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrinterSetupA;                external LibNameLL31DLL index 55;
      {$else}
-      function   LlPrinterSetupA;                external LibNameLL30DLL name 'LlPrinterSetupA';
+      function   LlPrinterSetupA;                external LibNameLL31DLL name 'LlPrinterSetupA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrinterSetup;                 external LibNameLL30DLL index 55;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrinterSetup;                 external LibNameLL31DLL index 55;
      {$else}
-      function   LlPrinterSetup;                 external LibNameLL30DLL name 'LlPrinterSetupA';
+      function   LlPrinterSetup;                 external LibNameLL31DLL name 'LlPrinterSetupA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrinterSetup;                 external LibNameLL30DLL index 155;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrinterSetup;                 external LibNameLL31DLL index 155;
      {$else}
-      function   LlPrinterSetup;                 external LibNameLL30DLL name 'LlPrinterSetupW';
+      function   LlPrinterSetup;                 external LibNameLL31DLL name 'LlPrinterSetupW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrinterSetupW;                external LibNameLL30DLL index 155;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrinterSetupW;                external LibNameLL31DLL index 155;
      {$else}
-      function   LlPrinterSetupW;                external LibNameLL30DLL name 'LlPrinterSetupW';
+      function   LlPrinterSetupW;                external LibNameLL31DLL name 'LlPrinterSetupW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSelectFileDlgTitleExA;        external LibNameLL30DLL index 56;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSelectFileDlgTitleExA;        external LibNameLL31DLL index 56;
      {$else}
-      function   LlSelectFileDlgTitleExA;        external LibNameLL30DLL name 'LlSelectFileDlgTitleExA';
+      function   LlSelectFileDlgTitleExA;        external LibNameLL31DLL name 'LlSelectFileDlgTitleExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSelectFileDlgTitleEx;         external LibNameLL30DLL index 56;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSelectFileDlgTitleEx;         external LibNameLL31DLL index 56;
      {$else}
-      function   LlSelectFileDlgTitleEx;         external LibNameLL30DLL name 'LlSelectFileDlgTitleExA';
+      function   LlSelectFileDlgTitleEx;         external LibNameLL31DLL name 'LlSelectFileDlgTitleExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSelectFileDlgTitleEx;         external LibNameLL30DLL index 156;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSelectFileDlgTitleEx;         external LibNameLL31DLL index 156;
      {$else}
-      function   LlSelectFileDlgTitleEx;         external LibNameLL30DLL name 'LlSelectFileDlgTitleExW';
+      function   LlSelectFileDlgTitleEx;         external LibNameLL31DLL name 'LlSelectFileDlgTitleExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSelectFileDlgTitleExW;        external LibNameLL30DLL index 156;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSelectFileDlgTitleExW;        external LibNameLL31DLL index 156;
      {$else}
-      function   LlSelectFileDlgTitleExW;        external LibNameLL30DLL name 'LlSelectFileDlgTitleExW';
+      function   LlSelectFileDlgTitleExW;        external LibNameLL31DLL name 'LlSelectFileDlgTitleExW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlSetDlgboxMode;                external LibNameLL30DLL index 57;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlSetDlgboxMode;                external LibNameLL31DLL index 57;
    {$else}
-    procedure  LlSetDlgboxMode;                external LibNameLL30DLL name 'LlSetDlgboxMode';
+    procedure  LlSetDlgboxMode;                external LibNameLL31DLL name 'LlSetDlgboxMode';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetDlgboxMode;                external LibNameLL30DLL index 58;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetDlgboxMode;                external LibNameLL31DLL index 58;
    {$else}
-    function   LlGetDlgboxMode;                external LibNameLL30DLL name 'LlGetDlgboxMode';
+    function   LlGetDlgboxMode;                external LibNameLL31DLL name 'LlGetDlgboxMode';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprParseA;                   external LibNameLL30DLL index 59;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprParseA;                   external LibNameLL31DLL index 59;
      {$else}
-      function   LlExprParseA;                   external LibNameLL30DLL name 'LlExprParseA';
+      function   LlExprParseA;                   external LibNameLL31DLL name 'LlExprParseA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprParse;                    external LibNameLL30DLL index 59;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprParse;                    external LibNameLL31DLL index 59;
      {$else}
-      function   LlExprParse;                    external LibNameLL30DLL name 'LlExprParseA';
+      function   LlExprParse;                    external LibNameLL31DLL name 'LlExprParseA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprParse;                    external LibNameLL30DLL index 159;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprParse;                    external LibNameLL31DLL index 159;
      {$else}
-      function   LlExprParse;                    external LibNameLL30DLL name 'LlExprParseW';
+      function   LlExprParse;                    external LibNameLL31DLL name 'LlExprParseW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprParseW;                   external LibNameLL30DLL index 159;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprParseW;                   external LibNameLL31DLL index 159;
      {$else}
-      function   LlExprParseW;                   external LibNameLL30DLL name 'LlExprParseW';
+      function   LlExprParseW;                   external LibNameLL31DLL name 'LlExprParseW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprType;                     external LibNameLL30DLL index 60;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprType;                     external LibNameLL31DLL index 60;
    {$else}
-    function   LlExprType;                     external LibNameLL30DLL name 'LlExprType';
+    function   LlExprType;                     external LibNameLL31DLL name 'LlExprType';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlExprErrorA;                   external LibNameLL30DLL index 61;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlExprErrorA;                   external LibNameLL31DLL index 61;
      {$else}
-      procedure  LlExprErrorA;                   external LibNameLL30DLL name 'LlExprErrorA';
+      procedure  LlExprErrorA;                   external LibNameLL31DLL name 'LlExprErrorA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlExprError;                    external LibNameLL30DLL index 61;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlExprError;                    external LibNameLL31DLL index 61;
      {$else}
-      procedure  LlExprError;                    external LibNameLL30DLL name 'LlExprErrorA';
+      procedure  LlExprError;                    external LibNameLL31DLL name 'LlExprErrorA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlExprError;                    external LibNameLL30DLL index 161;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlExprError;                    external LibNameLL31DLL index 161;
      {$else}
-      procedure  LlExprError;                    external LibNameLL30DLL name 'LlExprErrorW';
+      procedure  LlExprError;                    external LibNameLL31DLL name 'LlExprErrorW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlExprErrorW;                   external LibNameLL30DLL index 161;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlExprErrorW;                   external LibNameLL31DLL index 161;
      {$else}
-      procedure  LlExprErrorW;                   external LibNameLL30DLL name 'LlExprErrorW';
+      procedure  LlExprErrorW;                   external LibNameLL31DLL name 'LlExprErrorW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlExprFree;                     external LibNameLL30DLL index 62;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlExprFree;                     external LibNameLL31DLL index 62;
    {$else}
-    procedure  LlExprFree;                     external LibNameLL30DLL name 'LlExprFree';
+    procedure  LlExprFree;                     external LibNameLL31DLL name 'LlExprFree';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprEvaluateA;                external LibNameLL30DLL index 63;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprEvaluateA;                external LibNameLL31DLL index 63;
      {$else}
-      function   LlExprEvaluateA;                external LibNameLL30DLL name 'LlExprEvaluateA';
+      function   LlExprEvaluateA;                external LibNameLL31DLL name 'LlExprEvaluateA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprEvaluate;                 external LibNameLL30DLL index 63;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprEvaluate;                 external LibNameLL31DLL index 63;
      {$else}
-      function   LlExprEvaluate;                 external LibNameLL30DLL name 'LlExprEvaluateA';
+      function   LlExprEvaluate;                 external LibNameLL31DLL name 'LlExprEvaluateA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprEvaluate;                 external LibNameLL30DLL index 163;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprEvaluate;                 external LibNameLL31DLL index 163;
      {$else}
-      function   LlExprEvaluate;                 external LibNameLL30DLL name 'LlExprEvaluateW';
+      function   LlExprEvaluate;                 external LibNameLL31DLL name 'LlExprEvaluateW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprEvaluateW;                external LibNameLL30DLL index 163;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprEvaluateW;                external LibNameLL31DLL index 163;
      {$else}
-      function   LlExprEvaluateW;                external LibNameLL30DLL name 'LlExprEvaluateW';
+      function   LlExprEvaluateW;                external LibNameLL31DLL name 'LlExprEvaluateW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVarsA;             external LibNameLL30DLL index 162;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVarsA;             external LibNameLL31DLL index 162;
      {$else}
-      function   LlExprGetUsedVarsA;             external LibNameLL30DLL name 'LlExprGetUsedVarsA';
+      function   LlExprGetUsedVarsA;             external LibNameLL31DLL name 'LlExprGetUsedVarsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVars;              external LibNameLL30DLL index 162;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVars;              external LibNameLL31DLL index 162;
      {$else}
-      function   LlExprGetUsedVars;              external LibNameLL30DLL name 'LlExprGetUsedVarsA';
+      function   LlExprGetUsedVars;              external LibNameLL31DLL name 'LlExprGetUsedVarsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVars;              external LibNameLL30DLL index 362;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVars;              external LibNameLL31DLL index 362;
      {$else}
-      function   LlExprGetUsedVars;              external LibNameLL30DLL name 'LlExprGetUsedVarsW';
+      function   LlExprGetUsedVars;              external LibNameLL31DLL name 'LlExprGetUsedVarsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVarsW;             external LibNameLL30DLL index 362;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVarsW;             external LibNameLL31DLL index 362;
      {$else}
-      function   LlExprGetUsedVarsW;             external LibNameLL30DLL name 'LlExprGetUsedVarsW';
+      function   LlExprGetUsedVarsW;             external LibNameLL31DLL name 'LlExprGetUsedVarsW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlSetOption;                    external LibNameLL30DLL index 64;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlSetOption;                    external LibNameLL31DLL index 64;
    {$else}
-    function   LlSetOption;                    external LibNameLL30DLL name 'LlSetOption';
+    function   LlSetOption;                    external LibNameLL31DLL name 'LlSetOption';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetOption;                    external LibNameLL30DLL index 65;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetOption;                    external LibNameLL31DLL index 65;
    {$else}
-    function   LlGetOption;                    external LibNameLL30DLL name 'LlGetOption';
+    function   LlGetOption;                    external LibNameLL31DLL name 'LlGetOption';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetOptionStringA;             external LibNameLL30DLL index 66;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetOptionStringA;             external LibNameLL31DLL index 66;
      {$else}
-      function   LlSetOptionStringA;             external LibNameLL30DLL name 'LlSetOptionStringA';
+      function   LlSetOptionStringA;             external LibNameLL31DLL name 'LlSetOptionStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetOptionString;              external LibNameLL30DLL index 66;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetOptionString;              external LibNameLL31DLL index 66;
      {$else}
-      function   LlSetOptionString;              external LibNameLL30DLL name 'LlSetOptionStringA';
+      function   LlSetOptionString;              external LibNameLL31DLL name 'LlSetOptionStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetOptionString;              external LibNameLL30DLL index 166;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetOptionString;              external LibNameLL31DLL index 166;
      {$else}
-      function   LlSetOptionString;              external LibNameLL30DLL name 'LlSetOptionStringW';
+      function   LlSetOptionString;              external LibNameLL31DLL name 'LlSetOptionStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetOptionStringW;             external LibNameLL30DLL index 166;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetOptionStringW;             external LibNameLL31DLL index 166;
      {$else}
-      function   LlSetOptionStringW;             external LibNameLL30DLL name 'LlSetOptionStringW';
+      function   LlSetOptionStringW;             external LibNameLL31DLL name 'LlSetOptionStringW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetOptionStringA;             external LibNameLL30DLL index 67;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetOptionStringA;             external LibNameLL31DLL index 67;
      {$else}
-      function   LlGetOptionStringA;             external LibNameLL30DLL name 'LlGetOptionStringA';
+      function   LlGetOptionStringA;             external LibNameLL31DLL name 'LlGetOptionStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetOptionString;              external LibNameLL30DLL index 67;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetOptionString;              external LibNameLL31DLL index 67;
      {$else}
-      function   LlGetOptionString;              external LibNameLL30DLL name 'LlGetOptionStringA';
+      function   LlGetOptionString;              external LibNameLL31DLL name 'LlGetOptionStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetOptionString;              external LibNameLL30DLL index 167;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetOptionString;              external LibNameLL31DLL index 167;
      {$else}
-      function   LlGetOptionString;              external LibNameLL30DLL name 'LlGetOptionStringW';
+      function   LlGetOptionString;              external LibNameLL31DLL name 'LlGetOptionStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetOptionStringW;             external LibNameLL30DLL index 167;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetOptionStringW;             external LibNameLL31DLL index 167;
      {$else}
-      function   LlGetOptionStringW;             external LibNameLL30DLL name 'LlGetOptionStringW';
+      function   LlGetOptionStringW;             external LibNameLL31DLL name 'LlGetOptionStringW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetOptionStringA;        external LibNameLL30DLL index 68;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetOptionStringA;        external LibNameLL31DLL index 68;
      {$else}
-      function   LlPrintSetOptionStringA;        external LibNameLL30DLL name 'LlPrintSetOptionStringA';
+      function   LlPrintSetOptionStringA;        external LibNameLL31DLL name 'LlPrintSetOptionStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetOptionString;         external LibNameLL30DLL index 68;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetOptionString;         external LibNameLL31DLL index 68;
      {$else}
-      function   LlPrintSetOptionString;         external LibNameLL30DLL name 'LlPrintSetOptionStringA';
+      function   LlPrintSetOptionString;         external LibNameLL31DLL name 'LlPrintSetOptionStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetOptionString;         external LibNameLL30DLL index 168;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetOptionString;         external LibNameLL31DLL index 168;
      {$else}
-      function   LlPrintSetOptionString;         external LibNameLL30DLL name 'LlPrintSetOptionStringW';
+      function   LlPrintSetOptionString;         external LibNameLL31DLL name 'LlPrintSetOptionStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetOptionStringW;        external LibNameLL30DLL index 168;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetOptionStringW;        external LibNameLL31DLL index 168;
      {$else}
-      function   LlPrintSetOptionStringW;        external LibNameLL30DLL name 'LlPrintSetOptionStringW';
+      function   LlPrintSetOptionStringW;        external LibNameLL31DLL name 'LlPrintSetOptionStringW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetOptionStringA;        external LibNameLL30DLL index 69;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetOptionStringA;        external LibNameLL31DLL index 69;
      {$else}
-      function   LlPrintGetOptionStringA;        external LibNameLL30DLL name 'LlPrintGetOptionStringA';
+      function   LlPrintGetOptionStringA;        external LibNameLL31DLL name 'LlPrintGetOptionStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetOptionString;         external LibNameLL30DLL index 69;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetOptionString;         external LibNameLL31DLL index 69;
      {$else}
-      function   LlPrintGetOptionString;         external LibNameLL30DLL name 'LlPrintGetOptionStringA';
+      function   LlPrintGetOptionString;         external LibNameLL31DLL name 'LlPrintGetOptionStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetOptionString;         external LibNameLL30DLL index 169;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetOptionString;         external LibNameLL31DLL index 169;
      {$else}
-      function   LlPrintGetOptionString;         external LibNameLL30DLL name 'LlPrintGetOptionStringW';
+      function   LlPrintGetOptionString;         external LibNameLL31DLL name 'LlPrintGetOptionStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetOptionStringW;        external LibNameLL30DLL index 169;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetOptionStringW;        external LibNameLL31DLL index 169;
      {$else}
-      function   LlPrintGetOptionStringW;        external LibNameLL30DLL name 'LlPrintGetOptionStringW';
+      function   LlPrintGetOptionStringW;        external LibNameLL31DLL name 'LlPrintGetOptionStringW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDesignerProhibitAction;       external LibNameLL30DLL index 70;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDesignerProhibitAction;       external LibNameLL31DLL index 70;
    {$else}
-    function   LlDesignerProhibitAction;       external LibNameLL30DLL name 'LlDesignerProhibitAction';
+    function   LlDesignerProhibitAction;       external LibNameLL31DLL name 'LlDesignerProhibitAction';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitFunctionA;    external LibNameLL30DLL index 1;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitFunctionA;    external LibNameLL31DLL index 1;
      {$else}
-      function   LlDesignerProhibitFunctionA;    external LibNameLL30DLL name 'LlDesignerProhibitFunctionA';
+      function   LlDesignerProhibitFunctionA;    external LibNameLL31DLL name 'LlDesignerProhibitFunctionA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitFunction;     external LibNameLL30DLL index 1;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitFunction;     external LibNameLL31DLL index 1;
      {$else}
-      function   LlDesignerProhibitFunction;     external LibNameLL30DLL name 'LlDesignerProhibitFunctionA';
+      function   LlDesignerProhibitFunction;     external LibNameLL31DLL name 'LlDesignerProhibitFunctionA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitFunction;     external LibNameLL30DLL index 101;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitFunction;     external LibNameLL31DLL index 101;
      {$else}
-      function   LlDesignerProhibitFunction;     external LibNameLL30DLL name 'LlDesignerProhibitFunctionW';
+      function   LlDesignerProhibitFunction;     external LibNameLL31DLL name 'LlDesignerProhibitFunctionW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitFunctionW;    external LibNameLL30DLL index 101;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitFunctionW;    external LibNameLL31DLL index 101;
      {$else}
-      function   LlDesignerProhibitFunctionW;    external LibNameLL30DLL name 'LlDesignerProhibitFunctionW';
+      function   LlDesignerProhibitFunctionW;    external LibNameLL31DLL name 'LlDesignerProhibitFunctionW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDesignerProhibitFunctionGroup;  external LibNameLL30DLL index 337;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDesignerProhibitFunctionGroup;  external LibNameLL31DLL index 337;
    {$else}
-    function   LlDesignerProhibitFunctionGroup;  external LibNameLL30DLL name 'LlDesignerProhibitFunctionGroup';
+    function   LlDesignerProhibitFunctionGroup;  external LibNameLL31DLL name 'LlDesignerProhibitFunctionGroup';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintEnableObjectA;           external LibNameLL30DLL index 71;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintEnableObjectA;           external LibNameLL31DLL index 71;
      {$else}
-      function   LlPrintEnableObjectA;           external LibNameLL30DLL name 'LlPrintEnableObjectA';
+      function   LlPrintEnableObjectA;           external LibNameLL31DLL name 'LlPrintEnableObjectA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintEnableObject;            external LibNameLL30DLL index 71;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintEnableObject;            external LibNameLL31DLL index 71;
      {$else}
-      function   LlPrintEnableObject;            external LibNameLL30DLL name 'LlPrintEnableObjectA';
+      function   LlPrintEnableObject;            external LibNameLL31DLL name 'LlPrintEnableObjectA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintEnableObject;            external LibNameLL30DLL index 171;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintEnableObject;            external LibNameLL31DLL index 171;
      {$else}
-      function   LlPrintEnableObject;            external LibNameLL30DLL name 'LlPrintEnableObjectW';
+      function   LlPrintEnableObject;            external LibNameLL31DLL name 'LlPrintEnableObjectW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintEnableObjectW;           external LibNameLL30DLL index 171;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintEnableObjectW;           external LibNameLL31DLL index 171;
      {$else}
-      function   LlPrintEnableObjectW;           external LibNameLL30DLL name 'LlPrintEnableObjectW';
+      function   LlPrintEnableObjectW;           external LibNameLL31DLL name 'LlPrintEnableObjectW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetFileExtensionsA;           external LibNameLL30DLL index 72;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetFileExtensionsA;           external LibNameLL31DLL index 72;
      {$else}
-      function   LlSetFileExtensionsA;           external LibNameLL30DLL name 'LlSetFileExtensionsA';
+      function   LlSetFileExtensionsA;           external LibNameLL31DLL name 'LlSetFileExtensionsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetFileExtensions;            external LibNameLL30DLL index 72;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetFileExtensions;            external LibNameLL31DLL index 72;
      {$else}
-      function   LlSetFileExtensions;            external LibNameLL30DLL name 'LlSetFileExtensionsA';
+      function   LlSetFileExtensions;            external LibNameLL31DLL name 'LlSetFileExtensionsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetFileExtensions;            external LibNameLL30DLL index 172;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetFileExtensions;            external LibNameLL31DLL index 172;
      {$else}
-      function   LlSetFileExtensions;            external LibNameLL30DLL name 'LlSetFileExtensionsW';
+      function   LlSetFileExtensions;            external LibNameLL31DLL name 'LlSetFileExtensionsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetFileExtensionsW;           external LibNameLL30DLL index 172;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetFileExtensionsW;           external LibNameLL31DLL index 172;
      {$else}
-      function   LlSetFileExtensionsW;           external LibNameLL30DLL name 'LlSetFileExtensionsW';
+      function   LlSetFileExtensionsW;           external LibNameLL31DLL name 'LlSetFileExtensionsW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetTextCharsPrintedA;    external LibNameLL30DLL index 73;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetTextCharsPrintedA;    external LibNameLL31DLL index 73;
      {$else}
-      function   LlPrintGetTextCharsPrintedA;    external LibNameLL30DLL name 'LlPrintGetTextCharsPrintedA';
+      function   LlPrintGetTextCharsPrintedA;    external LibNameLL31DLL name 'LlPrintGetTextCharsPrintedA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetTextCharsPrinted;     external LibNameLL30DLL index 73;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetTextCharsPrinted;     external LibNameLL31DLL index 73;
      {$else}
-      function   LlPrintGetTextCharsPrinted;     external LibNameLL30DLL name 'LlPrintGetTextCharsPrintedA';
+      function   LlPrintGetTextCharsPrinted;     external LibNameLL31DLL name 'LlPrintGetTextCharsPrintedA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetTextCharsPrinted;     external LibNameLL30DLL index 173;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetTextCharsPrinted;     external LibNameLL31DLL index 173;
      {$else}
-      function   LlPrintGetTextCharsPrinted;     external LibNameLL30DLL name 'LlPrintGetTextCharsPrintedW';
+      function   LlPrintGetTextCharsPrinted;     external LibNameLL31DLL name 'LlPrintGetTextCharsPrintedW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetTextCharsPrintedW;    external LibNameLL30DLL index 173;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetTextCharsPrintedW;    external LibNameLL31DLL index 173;
      {$else}
-      function   LlPrintGetTextCharsPrintedW;    external LibNameLL30DLL name 'LlPrintGetTextCharsPrintedW';
+      function   LlPrintGetTextCharsPrintedW;    external LibNameLL31DLL name 'LlPrintGetTextCharsPrintedW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFieldCharsPrintedA;   external LibNameLL30DLL index 74;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFieldCharsPrintedA;   external LibNameLL31DLL index 74;
      {$else}
-      function   LlPrintGetFieldCharsPrintedA;   external LibNameLL30DLL name 'LlPrintGetFieldCharsPrintedA';
+      function   LlPrintGetFieldCharsPrintedA;   external LibNameLL31DLL name 'LlPrintGetFieldCharsPrintedA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFieldCharsPrinted;    external LibNameLL30DLL index 74;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFieldCharsPrinted;    external LibNameLL31DLL index 74;
      {$else}
-      function   LlPrintGetFieldCharsPrinted;    external LibNameLL30DLL name 'LlPrintGetFieldCharsPrintedA';
+      function   LlPrintGetFieldCharsPrinted;    external LibNameLL31DLL name 'LlPrintGetFieldCharsPrintedA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFieldCharsPrinted;    external LibNameLL30DLL index 174;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFieldCharsPrinted;    external LibNameLL31DLL index 174;
      {$else}
-      function   LlPrintGetFieldCharsPrinted;    external LibNameLL30DLL name 'LlPrintGetFieldCharsPrintedW';
+      function   LlPrintGetFieldCharsPrinted;    external LibNameLL31DLL name 'LlPrintGetFieldCharsPrintedW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFieldCharsPrintedW;   external LibNameLL30DLL index 174;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFieldCharsPrintedW;   external LibNameLL31DLL index 174;
      {$else}
-      function   LlPrintGetFieldCharsPrintedW;   external LibNameLL30DLL name 'LlPrintGetFieldCharsPrintedW';
+      function   LlPrintGetFieldCharsPrintedW;   external LibNameLL31DLL name 'LlPrintGetFieldCharsPrintedW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsVariableUsedA;         external LibNameLL30DLL index 75;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsVariableUsedA;         external LibNameLL31DLL index 75;
      {$else}
-      function   LlPrintIsVariableUsedA;         external LibNameLL30DLL name 'LlPrintIsVariableUsedA';
+      function   LlPrintIsVariableUsedA;         external LibNameLL31DLL name 'LlPrintIsVariableUsedA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsVariableUsed;          external LibNameLL30DLL index 75;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsVariableUsed;          external LibNameLL31DLL index 75;
      {$else}
-      function   LlPrintIsVariableUsed;          external LibNameLL30DLL name 'LlPrintIsVariableUsedA';
+      function   LlPrintIsVariableUsed;          external LibNameLL31DLL name 'LlPrintIsVariableUsedA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsVariableUsed;          external LibNameLL30DLL index 175;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsVariableUsed;          external LibNameLL31DLL index 175;
      {$else}
-      function   LlPrintIsVariableUsed;          external LibNameLL30DLL name 'LlPrintIsVariableUsedW';
+      function   LlPrintIsVariableUsed;          external LibNameLL31DLL name 'LlPrintIsVariableUsedW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsVariableUsedW;         external LibNameLL30DLL index 175;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsVariableUsedW;         external LibNameLL31DLL index 175;
      {$else}
-      function   LlPrintIsVariableUsedW;         external LibNameLL30DLL name 'LlPrintIsVariableUsedW';
+      function   LlPrintIsVariableUsedW;         external LibNameLL31DLL name 'LlPrintIsVariableUsedW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsFieldUsedA;            external LibNameLL30DLL index 76;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsFieldUsedA;            external LibNameLL31DLL index 76;
      {$else}
-      function   LlPrintIsFieldUsedA;            external LibNameLL30DLL name 'LlPrintIsFieldUsedA';
+      function   LlPrintIsFieldUsedA;            external LibNameLL31DLL name 'LlPrintIsFieldUsedA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsFieldUsed;             external LibNameLL30DLL index 76;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsFieldUsed;             external LibNameLL31DLL index 76;
      {$else}
-      function   LlPrintIsFieldUsed;             external LibNameLL30DLL name 'LlPrintIsFieldUsedA';
+      function   LlPrintIsFieldUsed;             external LibNameLL31DLL name 'LlPrintIsFieldUsedA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsFieldUsed;             external LibNameLL30DLL index 176;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsFieldUsed;             external LibNameLL31DLL index 176;
      {$else}
-      function   LlPrintIsFieldUsed;             external LibNameLL30DLL name 'LlPrintIsFieldUsedW';
+      function   LlPrintIsFieldUsed;             external LibNameLL31DLL name 'LlPrintIsFieldUsedW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsFieldUsedW;            external LibNameLL30DLL index 176;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsFieldUsedW;            external LibNameLL31DLL index 176;
      {$else}
-      function   LlPrintIsFieldUsedW;            external LibNameLL30DLL name 'LlPrintIsFieldUsedW';
+      function   LlPrintIsFieldUsedW;            external LibNameLL31DLL name 'LlPrintIsFieldUsedW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialogTitleA;     external LibNameLL30DLL index 77;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialogTitleA;     external LibNameLL31DLL index 77;
      {$else}
-      function   LlPrintOptionsDialogTitleA;     external LibNameLL30DLL name 'LlPrintOptionsDialogTitleA';
+      function   LlPrintOptionsDialogTitleA;     external LibNameLL31DLL name 'LlPrintOptionsDialogTitleA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialogTitle;      external LibNameLL30DLL index 77;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialogTitle;      external LibNameLL31DLL index 77;
      {$else}
-      function   LlPrintOptionsDialogTitle;      external LibNameLL30DLL name 'LlPrintOptionsDialogTitleA';
+      function   LlPrintOptionsDialogTitle;      external LibNameLL31DLL name 'LlPrintOptionsDialogTitleA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialogTitle;      external LibNameLL30DLL index 177;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialogTitle;      external LibNameLL31DLL index 177;
      {$else}
-      function   LlPrintOptionsDialogTitle;      external LibNameLL30DLL name 'LlPrintOptionsDialogTitleW';
+      function   LlPrintOptionsDialogTitle;      external LibNameLL31DLL name 'LlPrintOptionsDialogTitleW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintOptionsDialogTitleW;     external LibNameLL30DLL index 177;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintOptionsDialogTitleW;     external LibNameLL31DLL index 177;
      {$else}
-      function   LlPrintOptionsDialogTitleW;     external LibNameLL30DLL name 'LlPrintOptionsDialogTitleW';
+      function   LlPrintOptionsDialogTitleW;     external LibNameLL31DLL name 'LlPrintOptionsDialogTitleW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterToDefaultA;         external LibNameLL30DLL index 78;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterToDefaultA;         external LibNameLL31DLL index 78;
      {$else}
-      function   LlSetPrinterToDefaultA;         external LibNameLL30DLL name 'LlSetPrinterToDefaultA';
+      function   LlSetPrinterToDefaultA;         external LibNameLL31DLL name 'LlSetPrinterToDefaultA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterToDefault;          external LibNameLL30DLL index 78;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterToDefault;          external LibNameLL31DLL index 78;
      {$else}
-      function   LlSetPrinterToDefault;          external LibNameLL30DLL name 'LlSetPrinterToDefaultA';
+      function   LlSetPrinterToDefault;          external LibNameLL31DLL name 'LlSetPrinterToDefaultA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterToDefault;          external LibNameLL30DLL index 178;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterToDefault;          external LibNameLL31DLL index 178;
      {$else}
-      function   LlSetPrinterToDefault;          external LibNameLL30DLL name 'LlSetPrinterToDefaultW';
+      function   LlSetPrinterToDefault;          external LibNameLL31DLL name 'LlSetPrinterToDefaultW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterToDefaultW;         external LibNameLL30DLL index 178;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterToDefaultW;         external LibNameLL31DLL index 178;
      {$else}
-      function   LlSetPrinterToDefaultW;         external LibNameLL30DLL name 'LlSetPrinterToDefaultW';
+      function   LlSetPrinterToDefaultW;         external LibNameLL31DLL name 'LlSetPrinterToDefaultW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDefineSortOrderStart;         external LibNameLL30DLL index 79;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDefineSortOrderStart;         external LibNameLL31DLL index 79;
    {$else}
-    function   LlDefineSortOrderStart;         external LibNameLL30DLL name 'LlDefineSortOrderStart';
+    function   LlDefineSortOrderStart;         external LibNameLL31DLL name 'LlDefineSortOrderStart';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSortOrderA;             external LibNameLL30DLL index 80;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSortOrderA;             external LibNameLL31DLL index 80;
      {$else}
-      function   LlDefineSortOrderA;             external LibNameLL30DLL name 'LlDefineSortOrderA';
+      function   LlDefineSortOrderA;             external LibNameLL31DLL name 'LlDefineSortOrderA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSortOrder;              external LibNameLL30DLL index 80;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSortOrder;              external LibNameLL31DLL index 80;
      {$else}
-      function   LlDefineSortOrder;              external LibNameLL30DLL name 'LlDefineSortOrderA';
+      function   LlDefineSortOrder;              external LibNameLL31DLL name 'LlDefineSortOrderA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSortOrder;              external LibNameLL30DLL index 180;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSortOrder;              external LibNameLL31DLL index 180;
      {$else}
-      function   LlDefineSortOrder;              external LibNameLL30DLL name 'LlDefineSortOrderW';
+      function   LlDefineSortOrder;              external LibNameLL31DLL name 'LlDefineSortOrderW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineSortOrderW;             external LibNameLL30DLL index 180;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineSortOrderW;             external LibNameLL31DLL index 180;
      {$else}
-      function   LlDefineSortOrderW;             external LibNameLL30DLL name 'LlDefineSortOrderW';
+      function   LlDefineSortOrderW;             external LibNameLL31DLL name 'LlDefineSortOrderW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetSortOrderA;           external LibNameLL30DLL index 81;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetSortOrderA;           external LibNameLL31DLL index 81;
      {$else}
-      function   LlPrintGetSortOrderA;           external LibNameLL30DLL name 'LlPrintGetSortOrderA';
+      function   LlPrintGetSortOrderA;           external LibNameLL31DLL name 'LlPrintGetSortOrderA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetSortOrder;            external LibNameLL30DLL index 81;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetSortOrder;            external LibNameLL31DLL index 81;
      {$else}
-      function   LlPrintGetSortOrder;            external LibNameLL30DLL name 'LlPrintGetSortOrderA';
+      function   LlPrintGetSortOrder;            external LibNameLL31DLL name 'LlPrintGetSortOrderA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetSortOrder;            external LibNameLL30DLL index 181;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetSortOrder;            external LibNameLL31DLL index 181;
      {$else}
-      function   LlPrintGetSortOrder;            external LibNameLL30DLL name 'LlPrintGetSortOrderW';
+      function   LlPrintGetSortOrder;            external LibNameLL31DLL name 'LlPrintGetSortOrderW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetSortOrderW;           external LibNameLL30DLL index 181;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetSortOrderW;           external LibNameLL31DLL index 181;
      {$else}
-      function   LlPrintGetSortOrderW;           external LibNameLL30DLL name 'LlPrintGetSortOrderW';
+      function   LlPrintGetSortOrderW;           external LibNameLL31DLL name 'LlPrintGetSortOrderW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineGroupingA;              external LibNameLL30DLL index 82;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineGroupingA;              external LibNameLL31DLL index 82;
      {$else}
-      function   LlDefineGroupingA;              external LibNameLL30DLL name 'LlDefineGroupingA';
+      function   LlDefineGroupingA;              external LibNameLL31DLL name 'LlDefineGroupingA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineGrouping;               external LibNameLL30DLL index 82;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineGrouping;               external LibNameLL31DLL index 82;
      {$else}
-      function   LlDefineGrouping;               external LibNameLL30DLL name 'LlDefineGroupingA';
+      function   LlDefineGrouping;               external LibNameLL31DLL name 'LlDefineGroupingA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineGrouping;               external LibNameLL30DLL index 182;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineGrouping;               external LibNameLL31DLL index 182;
      {$else}
-      function   LlDefineGrouping;               external LibNameLL30DLL name 'LlDefineGroupingW';
+      function   LlDefineGrouping;               external LibNameLL31DLL name 'LlDefineGroupingW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineGroupingW;              external LibNameLL30DLL index 182;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineGroupingW;              external LibNameLL31DLL index 182;
      {$else}
-      function   LlDefineGroupingW;              external LibNameLL30DLL name 'LlDefineGroupingW';
+      function   LlDefineGroupingW;              external LibNameLL31DLL name 'LlDefineGroupingW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetGroupingA;            external LibNameLL30DLL index 83;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetGroupingA;            external LibNameLL31DLL index 83;
      {$else}
-      function   LlPrintGetGroupingA;            external LibNameLL30DLL name 'LlPrintGetGroupingA';
+      function   LlPrintGetGroupingA;            external LibNameLL31DLL name 'LlPrintGetGroupingA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetGrouping;             external LibNameLL30DLL index 83;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetGrouping;             external LibNameLL31DLL index 83;
      {$else}
-      function   LlPrintGetGrouping;             external LibNameLL30DLL name 'LlPrintGetGroupingA';
+      function   LlPrintGetGrouping;             external LibNameLL31DLL name 'LlPrintGetGroupingA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetGrouping;             external LibNameLL30DLL index 183;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetGrouping;             external LibNameLL31DLL index 183;
      {$else}
-      function   LlPrintGetGrouping;             external LibNameLL30DLL name 'LlPrintGetGroupingW';
+      function   LlPrintGetGrouping;             external LibNameLL31DLL name 'LlPrintGetGroupingW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetGroupingW;            external LibNameLL30DLL index 183;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetGroupingW;            external LibNameLL31DLL index 183;
      {$else}
-      function   LlPrintGetGroupingW;            external LibNameLL30DLL name 'LlPrintGetGroupingW';
+      function   LlPrintGetGroupingW;            external LibNameLL31DLL name 'LlPrintGetGroupingW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlAddCtlSupportA;               external LibNameLL30DLL index 84;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlAddCtlSupportA;               external LibNameLL31DLL index 84;
      {$else}
-      function   LlAddCtlSupportA;               external LibNameLL30DLL name 'LlAddCtlSupportA';
+      function   LlAddCtlSupportA;               external LibNameLL31DLL name 'LlAddCtlSupportA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlAddCtlSupport;                external LibNameLL30DLL index 84;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlAddCtlSupport;                external LibNameLL31DLL index 84;
      {$else}
-      function   LlAddCtlSupport;                external LibNameLL30DLL name 'LlAddCtlSupportA';
+      function   LlAddCtlSupport;                external LibNameLL31DLL name 'LlAddCtlSupportA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlAddCtlSupport;                external LibNameLL30DLL index 184;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlAddCtlSupport;                external LibNameLL31DLL index 184;
      {$else}
-      function   LlAddCtlSupport;                external LibNameLL30DLL name 'LlAddCtlSupportW';
+      function   LlAddCtlSupport;                external LibNameLL31DLL name 'LlAddCtlSupportW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlAddCtlSupportW;               external LibNameLL30DLL index 184;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlAddCtlSupportW;               external LibNameLL31DLL index 184;
      {$else}
-      function   LlAddCtlSupportW;               external LibNameLL30DLL name 'LlAddCtlSupportW';
+      function   LlAddCtlSupportW;               external LibNameLL31DLL name 'LlAddCtlSupportW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintBeginGroup;              external LibNameLL30DLL index 85;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintBeginGroup;              external LibNameLL31DLL index 85;
    {$else}
-    function   LlPrintBeginGroup;              external LibNameLL30DLL name 'LlPrintBeginGroup';
+    function   LlPrintBeginGroup;              external LibNameLL31DLL name 'LlPrintBeginGroup';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintEndGroup;                external LibNameLL30DLL index 86;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintEndGroup;                external LibNameLL31DLL index 86;
    {$else}
-    function   LlPrintEndGroup;                external LibNameLL30DLL name 'LlPrintEndGroup';
+    function   LlPrintEndGroup;                external LibNameLL31DLL name 'LlPrintEndGroup';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGroupLine;               external LibNameLL30DLL index 87;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGroupLine;               external LibNameLL31DLL index 87;
    {$else}
-    function   LlPrintGroupLine;               external LibNameLL30DLL name 'LlPrintGroupLine';
+    function   LlPrintGroupLine;               external LibNameLL31DLL name 'LlPrintGroupLine';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGroupHeader;             external LibNameLL30DLL index 88;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGroupHeader;             external LibNameLL31DLL index 88;
    {$else}
-    function   LlPrintGroupHeader;             external LibNameLL30DLL name 'LlPrintGroupHeader';
+    function   LlPrintGroupHeader;             external LibNameLL31DLL name 'LlPrintGroupHeader';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFilterExpressionA;    external LibNameLL30DLL index 89;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFilterExpressionA;    external LibNameLL31DLL index 89;
      {$else}
-      function   LlPrintGetFilterExpressionA;    external LibNameLL30DLL name 'LlPrintGetFilterExpressionA';
+      function   LlPrintGetFilterExpressionA;    external LibNameLL31DLL name 'LlPrintGetFilterExpressionA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFilterExpression;     external LibNameLL30DLL index 89;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFilterExpression;     external LibNameLL31DLL index 89;
      {$else}
-      function   LlPrintGetFilterExpression;     external LibNameLL30DLL name 'LlPrintGetFilterExpressionA';
+      function   LlPrintGetFilterExpression;     external LibNameLL31DLL name 'LlPrintGetFilterExpressionA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFilterExpression;     external LibNameLL30DLL index 189;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFilterExpression;     external LibNameLL31DLL index 189;
      {$else}
-      function   LlPrintGetFilterExpression;     external LibNameLL30DLL name 'LlPrintGetFilterExpressionW';
+      function   LlPrintGetFilterExpression;     external LibNameLL31DLL name 'LlPrintGetFilterExpressionW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetFilterExpressionW;    external LibNameLL30DLL index 189;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetFilterExpressionW;    external LibNameLL31DLL index 189;
      {$else}
-      function   LlPrintGetFilterExpressionW;    external LibNameLL30DLL name 'LlPrintGetFilterExpressionW';
+      function   LlPrintGetFilterExpressionW;    external LibNameLL31DLL name 'LlPrintGetFilterExpressionW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintWillMatchFilter;         external LibNameLL30DLL index 90;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintWillMatchFilter;         external LibNameLL31DLL index 90;
    {$else}
-    function   LlPrintWillMatchFilter;         external LibNameLL30DLL name 'LlPrintWillMatchFilter';
+    function   LlPrintWillMatchFilter;         external LibNameLL31DLL name 'LlPrintWillMatchFilter';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintDidMatchFilter;          external LibNameLL30DLL index 91;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintDidMatchFilter;          external LibNameLL31DLL index 91;
    {$else}
-    function   LlPrintDidMatchFilter;          external LibNameLL30DLL name 'LlPrintDidMatchFilter';
+    function   LlPrintDidMatchFilter;          external LibNameLL31DLL name 'LlPrintDidMatchFilter';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldContentsA;            external LibNameLL30DLL index 93;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldContentsA;            external LibNameLL31DLL index 93;
      {$else}
-      function   LlGetFieldContentsA;            external LibNameLL30DLL name 'LlGetFieldContentsA';
+      function   LlGetFieldContentsA;            external LibNameLL31DLL name 'LlGetFieldContentsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldContents;             external LibNameLL30DLL index 93;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldContents;             external LibNameLL31DLL index 93;
      {$else}
-      function   LlGetFieldContents;             external LibNameLL30DLL name 'LlGetFieldContentsA';
+      function   LlGetFieldContents;             external LibNameLL31DLL name 'LlGetFieldContentsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldContents;             external LibNameLL30DLL index 193;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldContents;             external LibNameLL31DLL index 193;
      {$else}
-      function   LlGetFieldContents;             external LibNameLL30DLL name 'LlGetFieldContentsW';
+      function   LlGetFieldContents;             external LibNameLL31DLL name 'LlGetFieldContentsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldContentsW;            external LibNameLL30DLL index 193;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldContentsW;            external LibNameLL31DLL index 193;
      {$else}
-      function   LlGetFieldContentsW;            external LibNameLL30DLL name 'LlGetFieldContentsW';
+      function   LlGetFieldContentsW;            external LibNameLL31DLL name 'LlGetFieldContentsW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableContentsA;         external LibNameLL30DLL index 92;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableContentsA;         external LibNameLL31DLL index 92;
      {$else}
-      function   LlGetVariableContentsA;         external LibNameLL30DLL name 'LlGetVariableContentsA';
+      function   LlGetVariableContentsA;         external LibNameLL31DLL name 'LlGetVariableContentsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableContents;          external LibNameLL30DLL index 92;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableContents;          external LibNameLL31DLL index 92;
      {$else}
-      function   LlGetVariableContents;          external LibNameLL30DLL name 'LlGetVariableContentsA';
+      function   LlGetVariableContents;          external LibNameLL31DLL name 'LlGetVariableContentsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableContents;          external LibNameLL30DLL index 192;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableContents;          external LibNameLL31DLL index 192;
      {$else}
-      function   LlGetVariableContents;          external LibNameLL30DLL name 'LlGetVariableContentsW';
+      function   LlGetVariableContents;          external LibNameLL31DLL name 'LlGetVariableContentsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableContentsW;         external LibNameLL30DLL index 192;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableContentsW;         external LibNameLL31DLL index 192;
      {$else}
-      function   LlGetVariableContentsW;         external LibNameLL30DLL name 'LlGetVariableContentsW';
+      function   LlGetVariableContentsW;         external LibNameLL31DLL name 'LlGetVariableContentsW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetSumVariableContentsA;      external LibNameLL30DLL index 94;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetSumVariableContentsA;      external LibNameLL31DLL index 94;
      {$else}
-      function   LlGetSumVariableContentsA;      external LibNameLL30DLL name 'LlGetSumVariableContentsA';
+      function   LlGetSumVariableContentsA;      external LibNameLL31DLL name 'LlGetSumVariableContentsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetSumVariableContents;       external LibNameLL30DLL index 94;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetSumVariableContents;       external LibNameLL31DLL index 94;
      {$else}
-      function   LlGetSumVariableContents;       external LibNameLL30DLL name 'LlGetSumVariableContentsA';
+      function   LlGetSumVariableContents;       external LibNameLL31DLL name 'LlGetSumVariableContentsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetSumVariableContents;       external LibNameLL30DLL index 194;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetSumVariableContents;       external LibNameLL31DLL index 194;
      {$else}
-      function   LlGetSumVariableContents;       external LibNameLL30DLL name 'LlGetSumVariableContentsW';
+      function   LlGetSumVariableContents;       external LibNameLL31DLL name 'LlGetSumVariableContentsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetSumVariableContentsW;      external LibNameLL30DLL index 194;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetSumVariableContentsW;      external LibNameLL31DLL index 194;
      {$else}
-      function   LlGetSumVariableContentsW;      external LibNameLL30DLL name 'LlGetSumVariableContentsW';
+      function   LlGetSumVariableContentsW;      external LibNameLL31DLL name 'LlGetSumVariableContentsW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUserVariableContentsA;     external LibNameLL30DLL index 95;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUserVariableContentsA;     external LibNameLL31DLL index 95;
      {$else}
-      function   LlGetUserVariableContentsA;     external LibNameLL30DLL name 'LlGetUserVariableContentsA';
+      function   LlGetUserVariableContentsA;     external LibNameLL31DLL name 'LlGetUserVariableContentsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUserVariableContents;      external LibNameLL30DLL index 95;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUserVariableContents;      external LibNameLL31DLL index 95;
      {$else}
-      function   LlGetUserVariableContents;      external LibNameLL30DLL name 'LlGetUserVariableContentsA';
+      function   LlGetUserVariableContents;      external LibNameLL31DLL name 'LlGetUserVariableContentsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUserVariableContents;      external LibNameLL30DLL index 195;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUserVariableContents;      external LibNameLL31DLL index 195;
      {$else}
-      function   LlGetUserVariableContents;      external LibNameLL30DLL name 'LlGetUserVariableContentsW';
+      function   LlGetUserVariableContents;      external LibNameLL31DLL name 'LlGetUserVariableContentsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUserVariableContentsW;     external LibNameLL30DLL index 195;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUserVariableContentsW;     external LibNameLL31DLL index 195;
      {$else}
-      function   LlGetUserVariableContentsW;     external LibNameLL30DLL name 'LlGetUserVariableContentsW';
+      function   LlGetUserVariableContentsW;     external LibNameLL31DLL name 'LlGetUserVariableContentsW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableTypeA;             external LibNameLL30DLL index 96;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableTypeA;             external LibNameLL31DLL index 96;
      {$else}
-      function   LlGetVariableTypeA;             external LibNameLL30DLL name 'LlGetVariableTypeA';
+      function   LlGetVariableTypeA;             external LibNameLL31DLL name 'LlGetVariableTypeA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableType;              external LibNameLL30DLL index 96;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableType;              external LibNameLL31DLL index 96;
      {$else}
-      function   LlGetVariableType;              external LibNameLL30DLL name 'LlGetVariableTypeA';
+      function   LlGetVariableType;              external LibNameLL31DLL name 'LlGetVariableTypeA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableType;              external LibNameLL30DLL index 196;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableType;              external LibNameLL31DLL index 196;
      {$else}
-      function   LlGetVariableType;              external LibNameLL30DLL name 'LlGetVariableTypeW';
+      function   LlGetVariableType;              external LibNameLL31DLL name 'LlGetVariableTypeW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetVariableTypeW;             external LibNameLL30DLL index 196;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetVariableTypeW;             external LibNameLL31DLL index 196;
      {$else}
-      function   LlGetVariableTypeW;             external LibNameLL30DLL name 'LlGetVariableTypeW';
+      function   LlGetVariableTypeW;             external LibNameLL31DLL name 'LlGetVariableTypeW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldTypeA;                external LibNameLL30DLL index 97;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldTypeA;                external LibNameLL31DLL index 97;
      {$else}
-      function   LlGetFieldTypeA;                external LibNameLL30DLL name 'LlGetFieldTypeA';
+      function   LlGetFieldTypeA;                external LibNameLL31DLL name 'LlGetFieldTypeA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldType;                 external LibNameLL30DLL index 97;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldType;                 external LibNameLL31DLL index 97;
      {$else}
-      function   LlGetFieldType;                 external LibNameLL30DLL name 'LlGetFieldTypeA';
+      function   LlGetFieldType;                 external LibNameLL31DLL name 'LlGetFieldTypeA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldType;                 external LibNameLL30DLL index 197;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldType;                 external LibNameLL31DLL index 197;
      {$else}
-      function   LlGetFieldType;                 external LibNameLL30DLL name 'LlGetFieldTypeW';
+      function   LlGetFieldType;                 external LibNameLL31DLL name 'LlGetFieldTypeW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetFieldTypeW;                external LibNameLL30DLL index 197;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetFieldTypeW;                external LibNameLL31DLL index 197;
      {$else}
-      function   LlGetFieldTypeW;                external LibNameLL30DLL name 'LlGetFieldTypeW';
+      function   LlGetFieldTypeW;                external LibNameLL31DLL name 'LlGetFieldTypeW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetColumnInfoA;          external LibNameLL30DLL index 99;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetColumnInfoA;          external LibNameLL31DLL index 99;
      {$else}
-      function   LlPrintGetColumnInfoA;          external LibNameLL30DLL name 'LlPrintGetColumnInfoA';
+      function   LlPrintGetColumnInfoA;          external LibNameLL31DLL name 'LlPrintGetColumnInfoA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetColumnInfo;           external LibNameLL30DLL index 99;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetColumnInfo;           external LibNameLL31DLL index 99;
      {$else}
-      function   LlPrintGetColumnInfo;           external LibNameLL30DLL name 'LlPrintGetColumnInfoA';
+      function   LlPrintGetColumnInfo;           external LibNameLL31DLL name 'LlPrintGetColumnInfoA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetColumnInfo;           external LibNameLL30DLL index 199;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetColumnInfo;           external LibNameLL31DLL index 199;
      {$else}
-      function   LlPrintGetColumnInfo;           external LibNameLL30DLL name 'LlPrintGetColumnInfoW';
+      function   LlPrintGetColumnInfo;           external LibNameLL31DLL name 'LlPrintGetColumnInfoW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetColumnInfoW;          external LibNameLL30DLL index 199;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetColumnInfoW;          external LibNameLL31DLL index 199;
      {$else}
-      function   LlPrintGetColumnInfoW;          external LibNameLL30DLL name 'LlPrintGetColumnInfoW';
+      function   LlPrintGetColumnInfoW;          external LibNameLL31DLL name 'LlPrintGetColumnInfoW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterDefaultsDirA;       external LibNameLL30DLL index 200;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterDefaultsDirA;       external LibNameLL31DLL index 200;
      {$else}
-      function   LlSetPrinterDefaultsDirA;       external LibNameLL30DLL name 'LlSetPrinterDefaultsDirA';
+      function   LlSetPrinterDefaultsDirA;       external LibNameLL31DLL name 'LlSetPrinterDefaultsDirA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterDefaultsDir;        external LibNameLL30DLL index 200;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterDefaultsDir;        external LibNameLL31DLL index 200;
      {$else}
-      function   LlSetPrinterDefaultsDir;        external LibNameLL30DLL name 'LlSetPrinterDefaultsDirA';
+      function   LlSetPrinterDefaultsDir;        external LibNameLL31DLL name 'LlSetPrinterDefaultsDirA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterDefaultsDir;        external LibNameLL30DLL index 300;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterDefaultsDir;        external LibNameLL31DLL index 300;
      {$else}
-      function   LlSetPrinterDefaultsDir;        external LibNameLL30DLL name 'LlSetPrinterDefaultsDirW';
+      function   LlSetPrinterDefaultsDir;        external LibNameLL31DLL name 'LlSetPrinterDefaultsDirW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterDefaultsDirW;       external LibNameLL30DLL index 300;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterDefaultsDirW;       external LibNameLL31DLL index 300;
      {$else}
-      function   LlSetPrinterDefaultsDirW;       external LibNameLL30DLL name 'LlSetPrinterDefaultsDirW';
+      function   LlSetPrinterDefaultsDirW;       external LibNameLL31DLL name 'LlSetPrinterDefaultsDirW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlCreateSketchA;                external LibNameLL30DLL index 201;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlCreateSketchA;                external LibNameLL31DLL index 201;
      {$else}
-      function   LlCreateSketchA;                external LibNameLL30DLL name 'LlCreateSketchA';
+      function   LlCreateSketchA;                external LibNameLL31DLL name 'LlCreateSketchA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlCreateSketch;                 external LibNameLL30DLL index 201;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlCreateSketch;                 external LibNameLL31DLL index 201;
      {$else}
-      function   LlCreateSketch;                 external LibNameLL30DLL name 'LlCreateSketchA';
+      function   LlCreateSketch;                 external LibNameLL31DLL name 'LlCreateSketchA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlCreateSketch;                 external LibNameLL30DLL index 301;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlCreateSketch;                 external LibNameLL31DLL index 301;
      {$else}
-      function   LlCreateSketch;                 external LibNameLL30DLL name 'LlCreateSketchW';
+      function   LlCreateSketch;                 external LibNameLL31DLL name 'LlCreateSketchW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlCreateSketchW;                external LibNameLL30DLL index 301;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlCreateSketchW;                external LibNameLL31DLL index 301;
      {$else}
-      function   LlCreateSketchW;                external LibNameLL30DLL name 'LlCreateSketchW';
+      function   LlCreateSketchW;                external LibNameLL31DLL name 'LlCreateSketchW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlViewerProhibitAction;         external LibNameLL30DLL index 202;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlViewerProhibitAction;         external LibNameLL31DLL index 202;
    {$else}
-    function   LlViewerProhibitAction;         external LibNameLL30DLL name 'LlViewerProhibitAction';
+    function   LlViewerProhibitAction;         external LibNameLL31DLL name 'LlViewerProhibitAction';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintCopyPrinterConfigurationA;   external LibNameLL30DLL index 203;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintCopyPrinterConfigurationA;   external LibNameLL31DLL index 203;
      {$else}
-      function   LlPrintCopyPrinterConfigurationA;   external LibNameLL30DLL name 'LlPrintCopyPrinterConfigurationA';
+      function   LlPrintCopyPrinterConfigurationA;   external LibNameLL31DLL name 'LlPrintCopyPrinterConfigurationA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintCopyPrinterConfiguration;  external LibNameLL30DLL index 203;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintCopyPrinterConfiguration;  external LibNameLL31DLL index 203;
      {$else}
-      function   LlPrintCopyPrinterConfiguration;  external LibNameLL30DLL name 'LlPrintCopyPrinterConfigurationA';
+      function   LlPrintCopyPrinterConfiguration;  external LibNameLL31DLL name 'LlPrintCopyPrinterConfigurationA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintCopyPrinterConfiguration;  external LibNameLL30DLL index 303;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintCopyPrinterConfiguration;  external LibNameLL31DLL index 303;
      {$else}
-      function   LlPrintCopyPrinterConfiguration;  external LibNameLL30DLL name 'LlPrintCopyPrinterConfigurationW';
+      function   LlPrintCopyPrinterConfiguration;  external LibNameLL31DLL name 'LlPrintCopyPrinterConfigurationW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintCopyPrinterConfigurationW;   external LibNameLL30DLL index 303;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintCopyPrinterConfigurationW;   external LibNameLL31DLL index 303;
      {$else}
-      function   LlPrintCopyPrinterConfigurationW;   external LibNameLL30DLL name 'LlPrintCopyPrinterConfigurationW';
+      function   LlPrintCopyPrinterConfigurationW;   external LibNameLL31DLL name 'LlPrintCopyPrinterConfigurationW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterInPrinterFileA;     external LibNameLL30DLL index 204;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterInPrinterFileA;     external LibNameLL31DLL index 204;
      {$else}
-      function   LlSetPrinterInPrinterFileA;     external LibNameLL30DLL name 'LlSetPrinterInPrinterFileA';
+      function   LlSetPrinterInPrinterFileA;     external LibNameLL31DLL name 'LlSetPrinterInPrinterFileA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterInPrinterFile;      external LibNameLL30DLL index 204;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterInPrinterFile;      external LibNameLL31DLL index 204;
      {$else}
-      function   LlSetPrinterInPrinterFile;      external LibNameLL30DLL name 'LlSetPrinterInPrinterFileA';
+      function   LlSetPrinterInPrinterFile;      external LibNameLL31DLL name 'LlSetPrinterInPrinterFileA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterInPrinterFile;      external LibNameLL30DLL index 304;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterInPrinterFile;      external LibNameLL31DLL index 304;
      {$else}
-      function   LlSetPrinterInPrinterFile;      external LibNameLL30DLL name 'LlSetPrinterInPrinterFileW';
+      function   LlSetPrinterInPrinterFile;      external LibNameLL31DLL name 'LlSetPrinterInPrinterFileW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetPrinterInPrinterFileW;     external LibNameLL30DLL index 304;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetPrinterInPrinterFileW;     external LibNameLL31DLL index 304;
      {$else}
-      function   LlSetPrinterInPrinterFileW;     external LibNameLL30DLL name 'LlSetPrinterInPrinterFileW';
+      function   LlSetPrinterInPrinterFileW;     external LibNameLL31DLL name 'LlSetPrinterInPrinterFileW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFCreateObject;              external LibNameLL30DLL index 228;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFCreateObject;              external LibNameLL31DLL index 228;
    {$else}
-    function   LlRTFCreateObject;              external LibNameLL30DLL name 'LlRTFCreateObject';
+    function   LlRTFCreateObject;              external LibNameLL31DLL name 'LlRTFCreateObject';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFDeleteObject;              external LibNameLL30DLL index 229;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFDeleteObject;              external LibNameLL31DLL index 229;
    {$else}
-    function   LlRTFDeleteObject;              external LibNameLL30DLL name 'LlRTFDeleteObject';
+    function   LlRTFDeleteObject;              external LibNameLL31DLL name 'LlRTFDeleteObject';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetTextA;                  external LibNameLL30DLL index 230;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetTextA;                  external LibNameLL31DLL index 230;
      {$else}
-      function   LlRTFSetTextA;                  external LibNameLL30DLL name 'LlRTFSetTextA';
+      function   LlRTFSetTextA;                  external LibNameLL31DLL name 'LlRTFSetTextA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetText;                   external LibNameLL30DLL index 230;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetText;                   external LibNameLL31DLL index 230;
      {$else}
-      function   LlRTFSetText;                   external LibNameLL30DLL name 'LlRTFSetTextA';
+      function   LlRTFSetText;                   external LibNameLL31DLL name 'LlRTFSetTextA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetText;                   external LibNameLL30DLL index 330;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetText;                   external LibNameLL31DLL index 330;
      {$else}
-      function   LlRTFSetText;                   external LibNameLL30DLL name 'LlRTFSetTextW';
+      function   LlRTFSetText;                   external LibNameLL31DLL name 'LlRTFSetTextW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetTextW;                  external LibNameLL30DLL index 330;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetTextW;                  external LibNameLL31DLL index 330;
      {$else}
-      function   LlRTFSetTextW;                  external LibNameLL30DLL name 'LlRTFSetTextW';
+      function   LlRTFSetTextW;                  external LibNameLL31DLL name 'LlRTFSetTextW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFGetTextLength;             external LibNameLL30DLL index 231;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFGetTextLength;             external LibNameLL31DLL index 231;
    {$else}
-    function   LlRTFGetTextLength;             external LibNameLL30DLL name 'LlRTFGetTextLength';
+    function   LlRTFGetTextLength;             external LibNameLL31DLL name 'LlRTFGetTextLength';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFGetTextA;                  external LibNameLL30DLL index 232;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFGetTextA;                  external LibNameLL31DLL index 232;
      {$else}
-      function   LlRTFGetTextA;                  external LibNameLL30DLL name 'LlRTFGetTextA';
+      function   LlRTFGetTextA;                  external LibNameLL31DLL name 'LlRTFGetTextA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFGetText;                   external LibNameLL30DLL index 232;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFGetText;                   external LibNameLL31DLL index 232;
      {$else}
-      function   LlRTFGetText;                   external LibNameLL30DLL name 'LlRTFGetTextA';
+      function   LlRTFGetText;                   external LibNameLL31DLL name 'LlRTFGetTextA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFGetText;                   external LibNameLL30DLL index 332;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFGetText;                   external LibNameLL31DLL index 332;
      {$else}
-      function   LlRTFGetText;                   external LibNameLL30DLL name 'LlRTFGetTextW';
+      function   LlRTFGetText;                   external LibNameLL31DLL name 'LlRTFGetTextW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFGetTextW;                  external LibNameLL30DLL index 332;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFGetTextW;                  external LibNameLL31DLL index 332;
      {$else}
-      function   LlRTFGetTextW;                  external LibNameLL30DLL name 'LlRTFGetTextW';
+      function   LlRTFGetTextW;                  external LibNameLL31DLL name 'LlRTFGetTextW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFEditObject;                external LibNameLL30DLL index 233;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFEditObject;                external LibNameLL31DLL index 233;
    {$else}
-    function   LlRTFEditObject;                external LibNameLL30DLL name 'LlRTFEditObject';
+    function   LlRTFEditObject;                external LibNameLL31DLL name 'LlRTFEditObject';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFCopyToClipboard;           external LibNameLL30DLL index 234;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFCopyToClipboard;           external LibNameLL31DLL index 234;
    {$else}
-    function   LlRTFCopyToClipboard;           external LibNameLL30DLL name 'LlRTFCopyToClipboard';
+    function   LlRTFCopyToClipboard;           external LibNameLL31DLL name 'LlRTFCopyToClipboard';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFDisplay;                   external LibNameLL30DLL index 235;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFDisplay;                   external LibNameLL31DLL index 235;
    {$else}
-    function   LlRTFDisplay;                   external LibNameLL30DLL name 'LlRTFDisplay';
+    function   LlRTFDisplay;                   external LibNameLL31DLL name 'LlRTFDisplay';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFEditorProhibitAction;      external LibNameLL30DLL index 109;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFEditorProhibitAction;      external LibNameLL31DLL index 109;
    {$else}
-    function   LlRTFEditorProhibitAction;      external LibNameLL30DLL name 'LlRTFEditorProhibitAction';
+    function   LlRTFEditorProhibitAction;      external LibNameLL31DLL name 'LlRTFEditorProhibitAction';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFEditorInvokeAction;        external LibNameLL30DLL index 117;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFEditorInvokeAction;        external LibNameLL31DLL index 117;
    {$else}
-    function   LlRTFEditorInvokeAction;        external LibNameLL30DLL name 'LlRTFEditorInvokeAction';
+    function   LlRTFEditorInvokeAction;        external LibNameLL31DLL name 'LlRTFEditorInvokeAction';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlDebugOutputA;                 external LibNameLL30DLL index 240;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlDebugOutputA;                 external LibNameLL31DLL index 240;
      {$else}
-      procedure  LlDebugOutputA;                 external LibNameLL30DLL name 'LlDebugOutputA';
+      procedure  LlDebugOutputA;                 external LibNameLL31DLL name 'LlDebugOutputA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlDebugOutput;                  external LibNameLL30DLL index 240;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlDebugOutput;                  external LibNameLL31DLL index 240;
      {$else}
-      procedure  LlDebugOutput;                  external LibNameLL30DLL name 'LlDebugOutputA';
+      procedure  LlDebugOutput;                  external LibNameLL31DLL name 'LlDebugOutputA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlDebugOutput;                  external LibNameLL30DLL index 440;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlDebugOutput;                  external LibNameLL31DLL index 440;
      {$else}
-      procedure  LlDebugOutput;                  external LibNameLL30DLL name 'LlDebugOutputW';
+      procedure  LlDebugOutput;                  external LibNameLL31DLL name 'LlDebugOutputW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      procedure  LlDebugOutputW;                 external LibNameLL30DLL index 440;
+    {$ifdef CMLL31_LINK_INDEXED}
+      procedure  LlDebugOutputW;                 external LibNameLL31DLL index 440;
      {$else}
-      procedure  LlDebugOutputW;                 external LibNameLL30DLL name 'LlDebugOutputW';
+      procedure  LlDebugOutputW;                 external LibNameLL31DLL name 'LlDebugOutputW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlEnumGetFirstVar;              external LibNameLL30DLL index 241;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlEnumGetFirstVar;              external LibNameLL31DLL index 241;
    {$else}
-    function   LlEnumGetFirstVar;              external LibNameLL30DLL name 'LlEnumGetFirstVar';
+    function   LlEnumGetFirstVar;              external LibNameLL31DLL name 'LlEnumGetFirstVar';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlEnumGetFirstField;            external LibNameLL30DLL index 242;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlEnumGetFirstField;            external LibNameLL31DLL index 242;
    {$else}
-    function   LlEnumGetFirstField;            external LibNameLL30DLL name 'LlEnumGetFirstField';
+    function   LlEnumGetFirstField;            external LibNameLL31DLL name 'LlEnumGetFirstField';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlEnumGetFirstConstant;         external LibNameLL30DLL index 493;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlEnumGetFirstConstant;         external LibNameLL31DLL index 493;
    {$else}
-    function   LlEnumGetFirstConstant;         external LibNameLL30DLL name 'LlEnumGetFirstConstant';
+    function   LlEnumGetFirstConstant;         external LibNameLL31DLL name 'LlEnumGetFirstConstant';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlEnumGetNextEntry;             external LibNameLL30DLL index 243;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlEnumGetNextEntry;             external LibNameLL31DLL index 243;
    {$else}
-    function   LlEnumGetNextEntry;             external LibNameLL30DLL name 'LlEnumGetNextEntry';
+    function   LlEnumGetNextEntry;             external LibNameLL31DLL name 'LlEnumGetNextEntry';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlEnumGetEntryA;                external LibNameLL30DLL index 244;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlEnumGetEntryA;                external LibNameLL31DLL index 244;
      {$else}
-      function   LlEnumGetEntryA;                external LibNameLL30DLL name 'LlEnumGetEntryA';
+      function   LlEnumGetEntryA;                external LibNameLL31DLL name 'LlEnumGetEntryA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlEnumGetEntry;                 external LibNameLL30DLL index 244;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlEnumGetEntry;                 external LibNameLL31DLL index 244;
      {$else}
-      function   LlEnumGetEntry;                 external LibNameLL30DLL name 'LlEnumGetEntryA';
+      function   LlEnumGetEntry;                 external LibNameLL31DLL name 'LlEnumGetEntryA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlEnumGetEntry;                 external LibNameLL30DLL index 344;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlEnumGetEntry;                 external LibNameLL31DLL index 344;
      {$else}
-      function   LlEnumGetEntry;                 external LibNameLL30DLL name 'LlEnumGetEntryW';
+      function   LlEnumGetEntry;                 external LibNameLL31DLL name 'LlEnumGetEntryW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlEnumGetEntryW;                external LibNameLL30DLL index 344;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlEnumGetEntryW;                external LibNameLL31DLL index 344;
      {$else}
-      function   LlEnumGetEntryW;                external LibNameLL30DLL name 'LlEnumGetEntryW';
+      function   LlEnumGetEntryW;                external LibNameLL31DLL name 'LlEnumGetEntryW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintResetObjectStates;       external LibNameLL30DLL index 245;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintResetObjectStates;       external LibNameLL31DLL index 245;
    {$else}
-    function   LlPrintResetObjectStates;       external LibNameLL30DLL name 'LlPrintResetObjectStates';
+    function   LlPrintResetObjectStates;       external LibNameLL31DLL name 'LlPrintResetObjectStates';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetParameterA;               external LibNameLL30DLL index 246;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetParameterA;               external LibNameLL31DLL index 246;
      {$else}
-      function   LlXSetParameterA;               external LibNameLL30DLL name 'LlXSetParameterA';
+      function   LlXSetParameterA;               external LibNameLL31DLL name 'LlXSetParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetParameter;                external LibNameLL30DLL index 246;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetParameter;                external LibNameLL31DLL index 246;
      {$else}
-      function   LlXSetParameter;                external LibNameLL30DLL name 'LlXSetParameterA';
+      function   LlXSetParameter;                external LibNameLL31DLL name 'LlXSetParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetParameter;                external LibNameLL30DLL index 446;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetParameter;                external LibNameLL31DLL index 446;
      {$else}
-      function   LlXSetParameter;                external LibNameLL30DLL name 'LlXSetParameterW';
+      function   LlXSetParameter;                external LibNameLL31DLL name 'LlXSetParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetParameterW;               external LibNameLL30DLL index 446;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetParameterW;               external LibNameLL31DLL index 446;
      {$else}
-      function   LlXSetParameterW;               external LibNameLL30DLL name 'LlXSetParameterW';
+      function   LlXSetParameterW;               external LibNameLL31DLL name 'LlXSetParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetParameterA;               external LibNameLL30DLL index 247;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetParameterA;               external LibNameLL31DLL index 247;
      {$else}
-      function   LlXGetParameterA;               external LibNameLL30DLL name 'LlXGetParameterA';
+      function   LlXGetParameterA;               external LibNameLL31DLL name 'LlXGetParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetParameter;                external LibNameLL30DLL index 247;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetParameter;                external LibNameLL31DLL index 247;
      {$else}
-      function   LlXGetParameter;                external LibNameLL30DLL name 'LlXGetParameterA';
+      function   LlXGetParameter;                external LibNameLL31DLL name 'LlXGetParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetParameter;                external LibNameLL30DLL index 347;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetParameter;                external LibNameLL31DLL index 347;
      {$else}
-      function   LlXGetParameter;                external LibNameLL30DLL name 'LlXGetParameterW';
+      function   LlXGetParameter;                external LibNameLL31DLL name 'LlXGetParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetParameterW;               external LibNameLL30DLL index 347;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetParameterW;               external LibNameLL31DLL index 347;
      {$else}
-      function   LlXGetParameterW;               external LibNameLL30DLL name 'LlXGetParameterW';
+      function   LlXGetParameterW;               external LibNameLL31DLL name 'LlXGetParameterW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintResetProjectState;       external LibNameLL30DLL index 248;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintResetProjectState;       external LibNameLL31DLL index 248;
    {$else}
-    function   LlPrintResetProjectState;       external LibNameLL30DLL name 'LlPrintResetProjectState';
+    function   LlPrintResetProjectState;       external LibNameLL31DLL name 'LlPrintResetProjectState';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlDefineChartFieldStart;        external LibNameLL30DLL index 2;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlDefineChartFieldStart;        external LibNameLL31DLL index 2;
    {$else}
-    procedure  LlDefineChartFieldStart;        external LibNameLL30DLL name 'LlDefineChartFieldStart';
+    procedure  LlDefineChartFieldStart;        external LibNameLL31DLL name 'LlDefineChartFieldStart';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldExtA;         external LibNameLL30DLL index 3;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldExtA;         external LibNameLL31DLL index 3;
      {$else}
-      function   LlDefineChartFieldExtA;         external LibNameLL30DLL name 'LlDefineChartFieldExtA';
+      function   LlDefineChartFieldExtA;         external LibNameLL31DLL name 'LlDefineChartFieldExtA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldExt;          external LibNameLL30DLL index 3;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldExt;          external LibNameLL31DLL index 3;
      {$else}
-      function   LlDefineChartFieldExt;          external LibNameLL30DLL name 'LlDefineChartFieldExtA';
+      function   LlDefineChartFieldExt;          external LibNameLL31DLL name 'LlDefineChartFieldExtA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldExt;          external LibNameLL30DLL index 103;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldExt;          external LibNameLL31DLL index 103;
      {$else}
-      function   LlDefineChartFieldExt;          external LibNameLL30DLL name 'LlDefineChartFieldExtW';
+      function   LlDefineChartFieldExt;          external LibNameLL31DLL name 'LlDefineChartFieldExtW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldExtW;         external LibNameLL30DLL index 103;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldExtW;         external LibNameLL31DLL index 103;
      {$else}
-      function   LlDefineChartFieldExtW;         external LibNameLL30DLL name 'LlDefineChartFieldExtW';
+      function   LlDefineChartFieldExtW;         external LibNameLL31DLL name 'LlDefineChartFieldExtW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintDeclareChartRow;         external LibNameLL30DLL index 4;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintDeclareChartRow;         external LibNameLL31DLL index 4;
    {$else}
-    function   LlPrintDeclareChartRow;         external LibNameLL30DLL name 'LlPrintDeclareChartRow';
+    function   LlPrintDeclareChartRow;         external LibNameLL31DLL name 'LlPrintDeclareChartRow';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintGetChartObjectCount;     external LibNameLL30DLL index 6;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintGetChartObjectCount;     external LibNameLL31DLL index 6;
    {$else}
-    function   LlPrintGetChartObjectCount;     external LibNameLL30DLL name 'LlPrintGetChartObjectCount';
+    function   LlPrintGetChartObjectCount;     external LibNameLL31DLL name 'LlPrintGetChartObjectCount';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsChartFieldUsedA;       external LibNameLL30DLL index 5;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsChartFieldUsedA;       external LibNameLL31DLL index 5;
      {$else}
-      function   LlPrintIsChartFieldUsedA;       external LibNameLL30DLL name 'LlPrintIsChartFieldUsedA';
+      function   LlPrintIsChartFieldUsedA;       external LibNameLL31DLL name 'LlPrintIsChartFieldUsedA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsChartFieldUsed;        external LibNameLL30DLL index 5;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsChartFieldUsed;        external LibNameLL31DLL index 5;
      {$else}
-      function   LlPrintIsChartFieldUsed;        external LibNameLL30DLL name 'LlPrintIsChartFieldUsedA';
+      function   LlPrintIsChartFieldUsed;        external LibNameLL31DLL name 'LlPrintIsChartFieldUsedA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsChartFieldUsed;        external LibNameLL30DLL index 105;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsChartFieldUsed;        external LibNameLL31DLL index 105;
      {$else}
-      function   LlPrintIsChartFieldUsed;        external LibNameLL30DLL name 'LlPrintIsChartFieldUsedW';
+      function   LlPrintIsChartFieldUsed;        external LibNameLL31DLL name 'LlPrintIsChartFieldUsedW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintIsChartFieldUsedW;       external LibNameLL30DLL index 105;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintIsChartFieldUsedW;       external LibNameLL31DLL index 105;
      {$else}
-      function   LlPrintIsChartFieldUsedW;       external LibNameLL30DLL name 'LlPrintIsChartFieldUsedW';
+      function   LlPrintIsChartFieldUsedW;       external LibNameLL31DLL name 'LlPrintIsChartFieldUsedW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetChartFieldContentsA;       external LibNameLL30DLL index 8;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetChartFieldContentsA;       external LibNameLL31DLL index 8;
      {$else}
-      function   LlGetChartFieldContentsA;       external LibNameLL30DLL name 'LlGetChartFieldContentsA';
+      function   LlGetChartFieldContentsA;       external LibNameLL31DLL name 'LlGetChartFieldContentsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetChartFieldContents;        external LibNameLL30DLL index 8;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetChartFieldContents;        external LibNameLL31DLL index 8;
      {$else}
-      function   LlGetChartFieldContents;        external LibNameLL30DLL name 'LlGetChartFieldContentsA';
+      function   LlGetChartFieldContents;        external LibNameLL31DLL name 'LlGetChartFieldContentsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetChartFieldContents;        external LibNameLL30DLL index 106;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetChartFieldContents;        external LibNameLL31DLL index 106;
      {$else}
-      function   LlGetChartFieldContents;        external LibNameLL30DLL name 'LlGetChartFieldContentsW';
+      function   LlGetChartFieldContents;        external LibNameLL31DLL name 'LlGetChartFieldContentsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetChartFieldContentsW;       external LibNameLL30DLL index 106;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetChartFieldContentsW;       external LibNameLL31DLL index 106;
      {$else}
-      function   LlGetChartFieldContentsW;       external LibNameLL30DLL name 'LlGetChartFieldContentsW';
+      function   LlGetChartFieldContentsW;       external LibNameLL31DLL name 'LlGetChartFieldContentsW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlEnumGetFirstChartField;       external LibNameLL30DLL index 9;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlEnumGetFirstChartField;       external LibNameLL31DLL index 9;
    {$else}
-    function   LlEnumGetFirstChartField;       external LibNameLL30DLL name 'LlEnumGetFirstChartField';
+    function   LlEnumGetFirstChartField;       external LibNameLL31DLL name 'LlEnumGetFirstChartField';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlSetNotificationCallbackExt;   external LibNameLL30DLL index 100;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlSetNotificationCallbackExt;   external LibNameLL31DLL index 100;
    {$else}
-    function   LlSetNotificationCallbackExt;   external LibNameLL30DLL name 'LlSetNotificationCallbackExt';
+    function   LlSetNotificationCallbackExt;   external LibNameLL31DLL name 'LlSetNotificationCallbackExt';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprEvaluateVar;              external LibNameLL30DLL index 111;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprEvaluateVar;              external LibNameLL31DLL index 111;
    {$else}
-    function   LlExprEvaluateVar;              external LibNameLL30DLL name 'LlExprEvaluateVar';
+    function   LlExprEvaluateVar;              external LibNameLL31DLL name 'LlExprEvaluateVar';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprTypeVar;                  external LibNameLL30DLL index 112;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprTypeVar;                  external LibNameLL31DLL index 112;
    {$else}
-    function   LlExprTypeVar;                  external LibNameLL30DLL name 'LlExprTypeVar';
+    function   LlExprTypeVar;                  external LibNameLL31DLL name 'LlExprTypeVar';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetPrinterFromPrinterFileA;   external LibNameLL30DLL index 98;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetPrinterFromPrinterFileA;   external LibNameLL31DLL index 98;
      {$else}
-      function   LlGetPrinterFromPrinterFileA;   external LibNameLL30DLL name 'LlGetPrinterFromPrinterFileA';
+      function   LlGetPrinterFromPrinterFileA;   external LibNameLL31DLL name 'LlGetPrinterFromPrinterFileA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetPrinterFromPrinterFile;    external LibNameLL30DLL index 98;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetPrinterFromPrinterFile;    external LibNameLL31DLL index 98;
      {$else}
-      function   LlGetPrinterFromPrinterFile;    external LibNameLL30DLL name 'LlGetPrinterFromPrinterFileA';
+      function   LlGetPrinterFromPrinterFile;    external LibNameLL31DLL name 'LlGetPrinterFromPrinterFileA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetPrinterFromPrinterFile;    external LibNameLL30DLL index 198;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetPrinterFromPrinterFile;    external LibNameLL31DLL index 198;
      {$else}
-      function   LlGetPrinterFromPrinterFile;    external LibNameLL30DLL name 'LlGetPrinterFromPrinterFileW';
+      function   LlGetPrinterFromPrinterFile;    external LibNameLL31DLL name 'LlGetPrinterFromPrinterFileW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetPrinterFromPrinterFileW;   external LibNameLL30DLL index 198;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetPrinterFromPrinterFileW;   external LibNameLL31DLL index 198;
      {$else}
-      function   LlGetPrinterFromPrinterFileW;   external LibNameLL30DLL name 'LlGetPrinterFromPrinterFileW';
+      function   LlGetPrinterFromPrinterFileW;   external LibNameLL31DLL name 'LlGetPrinterFromPrinterFileW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingSpacePerTableA;    external LibNameLL30DLL index 102;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingSpacePerTableA;    external LibNameLL31DLL index 102;
      {$else}
-      function   LlPrintGetRemainingSpacePerTableA;    external LibNameLL30DLL name 'LlPrintGetRemainingSpacePerTableA';
+      function   LlPrintGetRemainingSpacePerTableA;    external LibNameLL31DLL name 'LlPrintGetRemainingSpacePerTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL30DLL index 102;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL31DLL index 102;
      {$else}
-      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL30DLL name 'LlPrintGetRemainingSpacePerTableA';
+      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL31DLL name 'LlPrintGetRemainingSpacePerTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL30DLL index 302;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL31DLL index 302;
      {$else}
-      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL30DLL name 'LlPrintGetRemainingSpacePerTableW';
+      function   LlPrintGetRemainingSpacePerTable;   external LibNameLL31DLL name 'LlPrintGetRemainingSpacePerTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetRemainingSpacePerTableW;    external LibNameLL30DLL index 302;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetRemainingSpacePerTableW;    external LibNameLL31DLL index 302;
      {$else}
-      function   LlPrintGetRemainingSpacePerTableW;    external LibNameLL30DLL name 'LlPrintGetRemainingSpacePerTableW';
+      function   LlPrintGetRemainingSpacePerTableW;    external LibNameLL31DLL name 'LlPrintGetRemainingSpacePerTableW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlDrawToolbarBackground;        external LibNameLL30DLL index 104;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlDrawToolbarBackground;        external LibNameLL31DLL index 104;
    {$else}
-    procedure  LlDrawToolbarBackground;        external LibNameLL30DLL name 'LlDrawToolbarBackground';
+    procedure  LlDrawToolbarBackground;        external LibNameLL31DLL name 'LlDrawToolbarBackground';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetDefaultProjectParameterA;  external LibNameLL30DLL index 108;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetDefaultProjectParameterA;  external LibNameLL31DLL index 108;
      {$else}
-      function   LlSetDefaultProjectParameterA;  external LibNameLL30DLL name 'LlSetDefaultProjectParameterA';
+      function   LlSetDefaultProjectParameterA;  external LibNameLL31DLL name 'LlSetDefaultProjectParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetDefaultProjectParameter;   external LibNameLL30DLL index 108;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetDefaultProjectParameter;   external LibNameLL31DLL index 108;
      {$else}
-      function   LlSetDefaultProjectParameter;   external LibNameLL30DLL name 'LlSetDefaultProjectParameterA';
+      function   LlSetDefaultProjectParameter;   external LibNameLL31DLL name 'LlSetDefaultProjectParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetDefaultProjectParameter;   external LibNameLL30DLL index 308;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetDefaultProjectParameter;   external LibNameLL31DLL index 308;
      {$else}
-      function   LlSetDefaultProjectParameter;   external LibNameLL30DLL name 'LlSetDefaultProjectParameterW';
+      function   LlSetDefaultProjectParameter;   external LibNameLL31DLL name 'LlSetDefaultProjectParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlSetDefaultProjectParameterW;  external LibNameLL30DLL index 308;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlSetDefaultProjectParameterW;  external LibNameLL31DLL index 308;
      {$else}
-      function   LlSetDefaultProjectParameterW;  external LibNameLL30DLL name 'LlSetDefaultProjectParameterW';
+      function   LlSetDefaultProjectParameterW;  external LibNameLL31DLL name 'LlSetDefaultProjectParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultProjectParameterA;  external LibNameLL30DLL index 110;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultProjectParameterA;  external LibNameLL31DLL index 110;
      {$else}
-      function   LlGetDefaultProjectParameterA;  external LibNameLL30DLL name 'LlGetDefaultProjectParameterA';
+      function   LlGetDefaultProjectParameterA;  external LibNameLL31DLL name 'LlGetDefaultProjectParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultProjectParameter;   external LibNameLL30DLL index 110;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultProjectParameter;   external LibNameLL31DLL index 110;
      {$else}
-      function   LlGetDefaultProjectParameter;   external LibNameLL30DLL name 'LlGetDefaultProjectParameterA';
+      function   LlGetDefaultProjectParameter;   external LibNameLL31DLL name 'LlGetDefaultProjectParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultProjectParameter;   external LibNameLL30DLL index 310;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultProjectParameter;   external LibNameLL31DLL index 310;
      {$else}
-      function   LlGetDefaultProjectParameter;   external LibNameLL30DLL name 'LlGetDefaultProjectParameterW';
+      function   LlGetDefaultProjectParameter;   external LibNameLL31DLL name 'LlGetDefaultProjectParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultProjectParameterW;  external LibNameLL30DLL index 310;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultProjectParameterW;  external LibNameLL31DLL index 310;
      {$else}
-      function   LlGetDefaultProjectParameterW;  external LibNameLL30DLL name 'LlGetDefaultProjectParameterW';
+      function   LlGetDefaultProjectParameterW;  external LibNameLL31DLL name 'LlGetDefaultProjectParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetProjectParameterA;    external LibNameLL30DLL index 113;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetProjectParameterA;    external LibNameLL31DLL index 113;
      {$else}
-      function   LlPrintSetProjectParameterA;    external LibNameLL30DLL name 'LlPrintSetProjectParameterA';
+      function   LlPrintSetProjectParameterA;    external LibNameLL31DLL name 'LlPrintSetProjectParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetProjectParameter;     external LibNameLL30DLL index 113;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetProjectParameter;     external LibNameLL31DLL index 113;
      {$else}
-      function   LlPrintSetProjectParameter;     external LibNameLL30DLL name 'LlPrintSetProjectParameterA';
+      function   LlPrintSetProjectParameter;     external LibNameLL31DLL name 'LlPrintSetProjectParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetProjectParameter;     external LibNameLL30DLL index 313;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetProjectParameter;     external LibNameLL31DLL index 313;
      {$else}
-      function   LlPrintSetProjectParameter;     external LibNameLL30DLL name 'LlPrintSetProjectParameterW';
+      function   LlPrintSetProjectParameter;     external LibNameLL31DLL name 'LlPrintSetProjectParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintSetProjectParameterW;    external LibNameLL30DLL index 313;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintSetProjectParameterW;    external LibNameLL31DLL index 313;
      {$else}
-      function   LlPrintSetProjectParameterW;    external LibNameLL30DLL name 'LlPrintSetProjectParameterW';
+      function   LlPrintSetProjectParameterW;    external LibNameLL31DLL name 'LlPrintSetProjectParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetProjectParameterA;    external LibNameLL30DLL index 114;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetProjectParameterA;    external LibNameLL31DLL index 114;
      {$else}
-      function   LlPrintGetProjectParameterA;    external LibNameLL30DLL name 'LlPrintGetProjectParameterA';
+      function   LlPrintGetProjectParameterA;    external LibNameLL31DLL name 'LlPrintGetProjectParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetProjectParameter;     external LibNameLL30DLL index 114;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetProjectParameter;     external LibNameLL31DLL index 114;
      {$else}
-      function   LlPrintGetProjectParameter;     external LibNameLL30DLL name 'LlPrintGetProjectParameterA';
+      function   LlPrintGetProjectParameter;     external LibNameLL31DLL name 'LlPrintGetProjectParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetProjectParameter;     external LibNameLL30DLL index 314;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetProjectParameter;     external LibNameLL31DLL index 314;
      {$else}
-      function   LlPrintGetProjectParameter;     external LibNameLL30DLL name 'LlPrintGetProjectParameterW';
+      function   LlPrintGetProjectParameter;     external LibNameLL31DLL name 'LlPrintGetProjectParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintGetProjectParameterW;    external LibNameLL30DLL index 314;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintGetProjectParameterW;    external LibNameLL31DLL index 314;
      {$else}
-      function   LlPrintGetProjectParameterW;    external LibNameLL30DLL name 'LlPrintGetProjectParameterW';
+      function   LlPrintGetProjectParameterW;    external LibNameLL31DLL name 'LlPrintGetProjectParameterW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlCreateObject;                 external LibNameLL30DLL index 115;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlCreateObject;                 external LibNameLL31DLL index 115;
    {$else}
-    function   LlCreateObject;                 external LibNameLL30DLL name 'LlCreateObject';
+    function   LlCreateObject;                 external LibNameLL31DLL name 'LlCreateObject';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprContainsVariableA;        external LibNameLL30DLL index 7;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprContainsVariableA;        external LibNameLL31DLL index 7;
      {$else}
-      function   LlExprContainsVariableA;        external LibNameLL30DLL name 'LlExprContainsVariableA';
+      function   LlExprContainsVariableA;        external LibNameLL31DLL name 'LlExprContainsVariableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprContainsVariable;         external LibNameLL30DLL index 7;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprContainsVariable;         external LibNameLL31DLL index 7;
      {$else}
-      function   LlExprContainsVariable;         external LibNameLL30DLL name 'LlExprContainsVariableA';
+      function   LlExprContainsVariable;         external LibNameLL31DLL name 'LlExprContainsVariableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprContainsVariable;         external LibNameLL30DLL index 107;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprContainsVariable;         external LibNameLL31DLL index 107;
      {$else}
-      function   LlExprContainsVariable;         external LibNameLL30DLL name 'LlExprContainsVariableW';
+      function   LlExprContainsVariable;         external LibNameLL31DLL name 'LlExprContainsVariableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprContainsVariableW;        external LibNameLL30DLL index 107;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprContainsVariableW;        external LibNameLL31DLL index 107;
      {$else}
-      function   LlExprContainsVariableW;        external LibNameLL30DLL name 'LlExprContainsVariableW';
+      function   LlExprContainsVariableW;        external LibNameLL31DLL name 'LlExprContainsVariableW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprIsConstant;               external LibNameLL30DLL index 116;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprIsConstant;               external LibNameLL31DLL index 116;
    {$else}
-    function   LlExprIsConstant;               external LibNameLL30DLL name 'LlExprIsConstant';
+    function   LlExprIsConstant;               external LibNameLL31DLL name 'LlExprIsConstant';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProfileStartA;                external LibNameLL30DLL index 136;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProfileStartA;                external LibNameLL31DLL index 136;
      {$else}
-      function   LlProfileStartA;                external LibNameLL30DLL name 'LlProfileStartA';
+      function   LlProfileStartA;                external LibNameLL31DLL name 'LlProfileStartA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProfileStart;                 external LibNameLL30DLL index 136;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProfileStart;                 external LibNameLL31DLL index 136;
      {$else}
-      function   LlProfileStart;                 external LibNameLL30DLL name 'LlProfileStartA';
+      function   LlProfileStart;                 external LibNameLL31DLL name 'LlProfileStartA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProfileStart;                 external LibNameLL30DLL index 336;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProfileStart;                 external LibNameLL31DLL index 336;
      {$else}
-      function   LlProfileStart;                 external LibNameLL30DLL name 'LlProfileStartW';
+      function   LlProfileStart;                 external LibNameLL31DLL name 'LlProfileStartW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProfileStartW;                external LibNameLL30DLL index 336;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProfileStartW;                external LibNameLL31DLL index 336;
      {$else}
-      function   LlProfileStartW;                external LibNameLL30DLL name 'LlProfileStartW';
+      function   LlProfileStartW;                external LibNameLL31DLL name 'LlProfileStartW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlProfileEnd;                   external LibNameLL30DLL index 137;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlProfileEnd;                   external LibNameLL31DLL index 137;
    {$else}
-    procedure  LlProfileEnd;                   external LibNameLL30DLL name 'LlProfileEnd';
+    procedure  LlProfileEnd;                   external LibNameLL31DLL name 'LlProfileEnd';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlDumpMemory;                   external LibNameLL30DLL index 138;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlDumpMemory;                   external LibNameLL31DLL index 138;
    {$else}
-    procedure  LlDumpMemory;                   external LibNameLL30DLL name 'LlDumpMemory';
+    procedure  LlDumpMemory;                   external LibNameLL31DLL name 'LlDumpMemory';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableA;                  external LibNameLL30DLL index 139;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableA;                  external LibNameLL31DLL index 139;
      {$else}
-      function   LlDbAddTableA;                  external LibNameLL30DLL name 'LlDbAddTableA';
+      function   LlDbAddTableA;                  external LibNameLL31DLL name 'LlDbAddTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTable;                   external LibNameLL30DLL index 139;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTable;                   external LibNameLL31DLL index 139;
      {$else}
-      function   LlDbAddTable;                   external LibNameLL30DLL name 'LlDbAddTableA';
+      function   LlDbAddTable;                   external LibNameLL31DLL name 'LlDbAddTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTable;                   external LibNameLL30DLL index 339;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTable;                   external LibNameLL31DLL index 339;
      {$else}
-      function   LlDbAddTable;                   external LibNameLL30DLL name 'LlDbAddTableW';
+      function   LlDbAddTable;                   external LibNameLL31DLL name 'LlDbAddTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableW;                  external LibNameLL30DLL index 339;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableW;                  external LibNameLL31DLL index 339;
      {$else}
-      function   LlDbAddTableW;                  external LibNameLL30DLL name 'LlDbAddTableW';
+      function   LlDbAddTableW;                  external LibNameLL31DLL name 'LlDbAddTableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelationA;          external LibNameLL30DLL index 140;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelationA;          external LibNameLL31DLL index 140;
      {$else}
-      function   LlDbAddTableRelationA;          external LibNameLL30DLL name 'LlDbAddTableRelationA';
+      function   LlDbAddTableRelationA;          external LibNameLL31DLL name 'LlDbAddTableRelationA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelation;           external LibNameLL30DLL index 140;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelation;           external LibNameLL31DLL index 140;
      {$else}
-      function   LlDbAddTableRelation;           external LibNameLL30DLL name 'LlDbAddTableRelationA';
+      function   LlDbAddTableRelation;           external LibNameLL31DLL name 'LlDbAddTableRelationA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelation;           external LibNameLL30DLL index 340;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelation;           external LibNameLL31DLL index 340;
      {$else}
-      function   LlDbAddTableRelation;           external LibNameLL30DLL name 'LlDbAddTableRelationW';
+      function   LlDbAddTableRelation;           external LibNameLL31DLL name 'LlDbAddTableRelationW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelationW;          external LibNameLL30DLL index 340;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelationW;          external LibNameLL31DLL index 340;
      {$else}
-      function   LlDbAddTableRelationW;          external LibNameLL30DLL name 'LlDbAddTableRelationW';
+      function   LlDbAddTableRelationW;          external LibNameLL31DLL name 'LlDbAddTableRelationW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrderA;         external LibNameLL30DLL index 141;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrderA;         external LibNameLL31DLL index 141;
      {$else}
-      function   LlDbAddTableSortOrderA;         external LibNameLL30DLL name 'LlDbAddTableSortOrderA';
+      function   LlDbAddTableSortOrderA;         external LibNameLL31DLL name 'LlDbAddTableSortOrderA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrder;          external LibNameLL30DLL index 141;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrder;          external LibNameLL31DLL index 141;
      {$else}
-      function   LlDbAddTableSortOrder;          external LibNameLL30DLL name 'LlDbAddTableSortOrderA';
+      function   LlDbAddTableSortOrder;          external LibNameLL31DLL name 'LlDbAddTableSortOrderA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrder;          external LibNameLL30DLL index 341;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrder;          external LibNameLL31DLL index 341;
      {$else}
-      function   LlDbAddTableSortOrder;          external LibNameLL30DLL name 'LlDbAddTableSortOrderW';
+      function   LlDbAddTableSortOrder;          external LibNameLL31DLL name 'LlDbAddTableSortOrderW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrderW;         external LibNameLL30DLL index 341;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrderW;         external LibNameLL31DLL index 341;
      {$else}
-      function   LlDbAddTableSortOrderW;         external LibNameLL30DLL name 'LlDbAddTableSortOrderW';
+      function   LlDbAddTableSortOrderW;         external LibNameLL31DLL name 'LlDbAddTableSortOrderW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableA;      external LibNameLL30DLL index 142;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableA;      external LibNameLL31DLL index 142;
      {$else}
-      function   LlPrintDbGetCurrentTableA;      external LibNameLL30DLL name 'LlPrintDbGetCurrentTableA';
+      function   LlPrintDbGetCurrentTableA;      external LibNameLL31DLL name 'LlPrintDbGetCurrentTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTable;       external LibNameLL30DLL index 142;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTable;       external LibNameLL31DLL index 142;
      {$else}
-      function   LlPrintDbGetCurrentTable;       external LibNameLL30DLL name 'LlPrintDbGetCurrentTableA';
+      function   LlPrintDbGetCurrentTable;       external LibNameLL31DLL name 'LlPrintDbGetCurrentTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTable;       external LibNameLL30DLL index 342;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTable;       external LibNameLL31DLL index 342;
      {$else}
-      function   LlPrintDbGetCurrentTable;       external LibNameLL30DLL name 'LlPrintDbGetCurrentTableW';
+      function   LlPrintDbGetCurrentTable;       external LibNameLL31DLL name 'LlPrintDbGetCurrentTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableW;      external LibNameLL30DLL index 342;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableW;      external LibNameLL31DLL index 342;
      {$else}
-      function   LlPrintDbGetCurrentTableW;      external LibNameLL30DLL name 'LlPrintDbGetCurrentTableW';
+      function   LlPrintDbGetCurrentTableW;      external LibNameLL31DLL name 'LlPrintDbGetCurrentTableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableRelationA;    external LibNameLL30DLL index 143;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableRelationA;    external LibNameLL31DLL index 143;
      {$else}
-      function   LlPrintDbGetCurrentTableRelationA;    external LibNameLL30DLL name 'LlPrintDbGetCurrentTableRelationA';
+      function   LlPrintDbGetCurrentTableRelationA;    external LibNameLL31DLL name 'LlPrintDbGetCurrentTableRelationA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL30DLL index 143;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL31DLL index 143;
      {$else}
-      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL30DLL name 'LlPrintDbGetCurrentTableRelationA';
+      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL31DLL name 'LlPrintDbGetCurrentTableRelationA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL30DLL index 343;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL31DLL index 343;
      {$else}
-      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL30DLL name 'LlPrintDbGetCurrentTableRelationW';
+      function   LlPrintDbGetCurrentTableRelation;   external LibNameLL31DLL name 'LlPrintDbGetCurrentTableRelationW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableRelationW;    external LibNameLL30DLL index 343;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableRelationW;    external LibNameLL31DLL index 343;
      {$else}
-      function   LlPrintDbGetCurrentTableRelationW;    external LibNameLL30DLL name 'LlPrintDbGetCurrentTableRelationW';
+      function   LlPrintDbGetCurrentTableRelationW;    external LibNameLL31DLL name 'LlPrintDbGetCurrentTableRelationW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableSortOrderA;     external LibNameLL30DLL index 146;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableSortOrderA;     external LibNameLL31DLL index 146;
      {$else}
-      function   LlPrintDbGetCurrentTableSortOrderA;     external LibNameLL30DLL name 'LlPrintDbGetCurrentTableSortOrderA';
+      function   LlPrintDbGetCurrentTableSortOrderA;     external LibNameLL31DLL name 'LlPrintDbGetCurrentTableSortOrderA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL30DLL index 146;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL31DLL index 146;
      {$else}
-      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL30DLL name 'LlPrintDbGetCurrentTableSortOrderA';
+      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL31DLL name 'LlPrintDbGetCurrentTableSortOrderA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL30DLL index 346;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL31DLL index 346;
      {$else}
-      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL30DLL name 'LlPrintDbGetCurrentTableSortOrderW';
+      function   LlPrintDbGetCurrentTableSortOrder;    external LibNameLL31DLL name 'LlPrintDbGetCurrentTableSortOrderW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlPrintDbGetCurrentTableSortOrderW;     external LibNameLL30DLL index 346;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlPrintDbGetCurrentTableSortOrderW;     external LibNameLL31DLL index 346;
      {$else}
-      function   LlPrintDbGetCurrentTableSortOrderW;     external LibNameLL30DLL name 'LlPrintDbGetCurrentTableSortOrderW';
+      function   LlPrintDbGetCurrentTableSortOrderW;     external LibNameLL31DLL name 'LlPrintDbGetCurrentTableSortOrderW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDbDumpStructure;              external LibNameLL30DLL index 149;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDbDumpStructure;              external LibNameLL31DLL index 149;
    {$else}
-    function   LlDbDumpStructure;              external LibNameLL30DLL name 'LlDbDumpStructure';
+    function   LlDbDumpStructure;              external LibNameLL31DLL name 'LlDbDumpStructure';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintDbGetRootTableCount;     external LibNameLL30DLL index 151;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintDbGetRootTableCount;     external LibNameLL31DLL index 151;
    {$else}
-    function   LlPrintDbGetRootTableCount;     external LibNameLL30DLL name 'LlPrintDbGetRootTableCount';
+    function   LlPrintDbGetRootTableCount;     external LibNameLL31DLL name 'LlPrintDbGetRootTableCount';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbSetMasterTableA;            external LibNameLL30DLL index 152;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbSetMasterTableA;            external LibNameLL31DLL index 152;
      {$else}
-      function   LlDbSetMasterTableA;            external LibNameLL30DLL name 'LlDbSetMasterTableA';
+      function   LlDbSetMasterTableA;            external LibNameLL31DLL name 'LlDbSetMasterTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbSetMasterTable;             external LibNameLL30DLL index 152;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbSetMasterTable;             external LibNameLL31DLL index 152;
      {$else}
-      function   LlDbSetMasterTable;             external LibNameLL30DLL name 'LlDbSetMasterTableA';
+      function   LlDbSetMasterTable;             external LibNameLL31DLL name 'LlDbSetMasterTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbSetMasterTable;             external LibNameLL30DLL index 352;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbSetMasterTable;             external LibNameLL31DLL index 352;
      {$else}
-      function   LlDbSetMasterTable;             external LibNameLL30DLL name 'LlDbSetMasterTableW';
+      function   LlDbSetMasterTable;             external LibNameLL31DLL name 'LlDbSetMasterTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbSetMasterTableW;            external LibNameLL30DLL index 352;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbSetMasterTableW;            external LibNameLL31DLL index 352;
      {$else}
-      function   LlDbSetMasterTableW;            external LibNameLL30DLL name 'LlDbSetMasterTableW';
+      function   LlDbSetMasterTableW;            external LibNameLL31DLL name 'LlDbSetMasterTableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbGetMasterTableA;            external LibNameLL30DLL index 157;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbGetMasterTableA;            external LibNameLL31DLL index 157;
      {$else}
-      function   LlDbGetMasterTableA;            external LibNameLL30DLL name 'LlDbGetMasterTableA';
+      function   LlDbGetMasterTableA;            external LibNameLL31DLL name 'LlDbGetMasterTableA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbGetMasterTable;             external LibNameLL30DLL index 157;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbGetMasterTable;             external LibNameLL31DLL index 157;
      {$else}
-      function   LlDbGetMasterTable;             external LibNameLL30DLL name 'LlDbGetMasterTableA';
+      function   LlDbGetMasterTable;             external LibNameLL31DLL name 'LlDbGetMasterTableA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbGetMasterTable;             external LibNameLL30DLL index 357;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbGetMasterTable;             external LibNameLL31DLL index 357;
      {$else}
-      function   LlDbGetMasterTable;             external LibNameLL30DLL name 'LlDbGetMasterTableW';
+      function   LlDbGetMasterTable;             external LibNameLL31DLL name 'LlDbGetMasterTableW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbGetMasterTableW;            external LibNameLL30DLL index 357;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbGetMasterTableW;            external LibNameLL31DLL index 357;
      {$else}
-      function   LlDbGetMasterTableW;            external LibNameLL30DLL name 'LlDbGetMasterTableW';
+      function   LlDbGetMasterTableW;            external LibNameLL31DLL name 'LlDbGetMasterTableW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetExportParameterA;         external LibNameLL30DLL index 158;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetExportParameterA;         external LibNameLL31DLL index 158;
      {$else}
-      function   LlXSetExportParameterA;         external LibNameLL30DLL name 'LlXSetExportParameterA';
+      function   LlXSetExportParameterA;         external LibNameLL31DLL name 'LlXSetExportParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetExportParameter;          external LibNameLL30DLL index 158;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetExportParameter;          external LibNameLL31DLL index 158;
      {$else}
-      function   LlXSetExportParameter;          external LibNameLL30DLL name 'LlXSetExportParameterA';
+      function   LlXSetExportParameter;          external LibNameLL31DLL name 'LlXSetExportParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetExportParameter;          external LibNameLL30DLL index 358;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetExportParameter;          external LibNameLL31DLL index 358;
      {$else}
-      function   LlXSetExportParameter;          external LibNameLL30DLL name 'LlXSetExportParameterW';
+      function   LlXSetExportParameter;          external LibNameLL31DLL name 'LlXSetExportParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXSetExportParameterW;         external LibNameLL30DLL index 358;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXSetExportParameterW;         external LibNameLL31DLL index 358;
      {$else}
-      function   LlXSetExportParameterW;         external LibNameLL30DLL name 'LlXSetExportParameterW';
+      function   LlXSetExportParameterW;         external LibNameLL31DLL name 'LlXSetExportParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetExportParameterA;         external LibNameLL30DLL index 160;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetExportParameterA;         external LibNameLL31DLL index 160;
      {$else}
-      function   LlXGetExportParameterA;         external LibNameLL30DLL name 'LlXGetExportParameterA';
+      function   LlXGetExportParameterA;         external LibNameLL31DLL name 'LlXGetExportParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetExportParameter;          external LibNameLL30DLL index 160;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetExportParameter;          external LibNameLL31DLL index 160;
      {$else}
-      function   LlXGetExportParameter;          external LibNameLL30DLL name 'LlXGetExportParameterA';
+      function   LlXGetExportParameter;          external LibNameLL31DLL name 'LlXGetExportParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetExportParameter;          external LibNameLL30DLL index 360;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetExportParameter;          external LibNameLL31DLL index 360;
      {$else}
-      function   LlXGetExportParameter;          external LibNameLL30DLL name 'LlXGetExportParameterW';
+      function   LlXGetExportParameter;          external LibNameLL31DLL name 'LlXGetExportParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXGetExportParameterW;         external LibNameLL30DLL index 360;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXGetExportParameterW;         external LibNameLL31DLL index 360;
      {$else}
-      function   LlXGetExportParameterW;         external LibNameLL30DLL name 'LlXGetExportParameterW';
+      function   LlXGetExportParameterW;         external LibNameLL31DLL name 'LlXGetExportParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXlatNameA;                    external LibNameLL30DLL index 164;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXlatNameA;                    external LibNameLL31DLL index 164;
      {$else}
-      function   LlXlatNameA;                    external LibNameLL30DLL name 'LlXlatNameA';
+      function   LlXlatNameA;                    external LibNameLL31DLL name 'LlXlatNameA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXlatName;                     external LibNameLL30DLL index 164;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXlatName;                     external LibNameLL31DLL index 164;
      {$else}
-      function   LlXlatName;                     external LibNameLL30DLL name 'LlXlatNameA';
+      function   LlXlatName;                     external LibNameLL31DLL name 'LlXlatNameA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXlatName;                     external LibNameLL30DLL index 364;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXlatName;                     external LibNameLL31DLL index 364;
      {$else}
-      function   LlXlatName;                     external LibNameLL30DLL name 'LlXlatNameW';
+      function   LlXlatName;                     external LibNameLL31DLL name 'LlXlatNameW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlXlatNameW;                    external LibNameLL30DLL index 364;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlXlatNameW;                    external LibNameLL31DLL index 364;
      {$else}
-      function   LlXlatNameW;                    external LibNameLL30DLL name 'LlXlatNameW';
+      function   LlXlatNameW;                    external LibNameLL31DLL name 'LlXlatNameW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableVarA;           external LibNameLL30DLL index 165;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableVarA;           external LibNameLL31DLL index 165;
      {$else}
-      function   LlDefineVariableVarA;           external LibNameLL30DLL name 'LlDefineVariableVarA';
+      function   LlDefineVariableVarA;           external LibNameLL31DLL name 'LlDefineVariableVarA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableVar;            external LibNameLL30DLL index 165;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableVar;            external LibNameLL31DLL index 165;
      {$else}
-      function   LlDefineVariableVar;            external LibNameLL30DLL name 'LlDefineVariableVarA';
+      function   LlDefineVariableVar;            external LibNameLL31DLL name 'LlDefineVariableVarA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableVar;            external LibNameLL30DLL index 365;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableVar;            external LibNameLL31DLL index 365;
      {$else}
-      function   LlDefineVariableVar;            external LibNameLL30DLL name 'LlDefineVariableVarW';
+      function   LlDefineVariableVar;            external LibNameLL31DLL name 'LlDefineVariableVarW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineVariableVarW;           external LibNameLL30DLL index 365;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineVariableVarW;           external LibNameLL31DLL index 365;
      {$else}
-      function   LlDefineVariableVarW;           external LibNameLL30DLL name 'LlDefineVariableVarW';
+      function   LlDefineVariableVarW;           external LibNameLL31DLL name 'LlDefineVariableVarW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldVarA;              external LibNameLL30DLL index 170;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldVarA;              external LibNameLL31DLL index 170;
      {$else}
-      function   LlDefineFieldVarA;              external LibNameLL30DLL name 'LlDefineFieldVarA';
+      function   LlDefineFieldVarA;              external LibNameLL31DLL name 'LlDefineFieldVarA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldVar;               external LibNameLL30DLL index 170;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldVar;               external LibNameLL31DLL index 170;
      {$else}
-      function   LlDefineFieldVar;               external LibNameLL30DLL name 'LlDefineFieldVarA';
+      function   LlDefineFieldVar;               external LibNameLL31DLL name 'LlDefineFieldVarA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldVar;               external LibNameLL30DLL index 370;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldVar;               external LibNameLL31DLL index 370;
      {$else}
-      function   LlDefineFieldVar;               external LibNameLL30DLL name 'LlDefineFieldVarW';
+      function   LlDefineFieldVar;               external LibNameLL31DLL name 'LlDefineFieldVarW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineFieldVarW;              external LibNameLL30DLL index 370;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineFieldVarW;              external LibNameLL31DLL index 370;
      {$else}
-      function   LlDefineFieldVarW;              external LibNameLL30DLL name 'LlDefineFieldVarW';
+      function   LlDefineFieldVarW;              external LibNameLL31DLL name 'LlDefineFieldVarW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldVarA;         external LibNameLL30DLL index 179;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldVarA;         external LibNameLL31DLL index 179;
      {$else}
-      function   LlDefineChartFieldVarA;         external LibNameLL30DLL name 'LlDefineChartFieldVarA';
+      function   LlDefineChartFieldVarA;         external LibNameLL31DLL name 'LlDefineChartFieldVarA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldVar;          external LibNameLL30DLL index 179;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldVar;          external LibNameLL31DLL index 179;
      {$else}
-      function   LlDefineChartFieldVar;          external LibNameLL30DLL name 'LlDefineChartFieldVarA';
+      function   LlDefineChartFieldVar;          external LibNameLL31DLL name 'LlDefineChartFieldVarA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldVar;          external LibNameLL30DLL index 379;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldVar;          external LibNameLL31DLL index 379;
      {$else}
-      function   LlDefineChartFieldVar;          external LibNameLL30DLL name 'LlDefineChartFieldVarW';
+      function   LlDefineChartFieldVar;          external LibNameLL31DLL name 'LlDefineChartFieldVarW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDefineChartFieldVarW;         external LibNameLL30DLL index 379;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDefineChartFieldVarW;         external LibNameLL31DLL index 379;
      {$else}
-      function   LlDefineChartFieldVarW;         external LibNameLL30DLL name 'LlDefineChartFieldVarW';
+      function   LlDefineChartFieldVarW;         external LibNameLL31DLL name 'LlDefineChartFieldVarW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitEditingObjectA;   external LibNameLL30DLL index 185;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitEditingObjectA;   external LibNameLL31DLL index 185;
      {$else}
-      function   LlDesignerProhibitEditingObjectA;   external LibNameLL30DLL name 'LlDesignerProhibitEditingObjectA';
+      function   LlDesignerProhibitEditingObjectA;   external LibNameLL31DLL name 'LlDesignerProhibitEditingObjectA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitEditingObject;  external LibNameLL30DLL index 185;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitEditingObject;  external LibNameLL31DLL index 185;
      {$else}
-      function   LlDesignerProhibitEditingObject;  external LibNameLL30DLL name 'LlDesignerProhibitEditingObjectA';
+      function   LlDesignerProhibitEditingObject;  external LibNameLL31DLL name 'LlDesignerProhibitEditingObjectA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitEditingObject;  external LibNameLL30DLL index 385;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitEditingObject;  external LibNameLL31DLL index 385;
      {$else}
-      function   LlDesignerProhibitEditingObject;  external LibNameLL30DLL name 'LlDesignerProhibitEditingObjectW';
+      function   LlDesignerProhibitEditingObject;  external LibNameLL31DLL name 'LlDesignerProhibitEditingObjectW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerProhibitEditingObjectW;   external LibNameLL30DLL index 385;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerProhibitEditingObjectW;   external LibNameLL31DLL index 385;
      {$else}
-      function   LlDesignerProhibitEditingObjectW;   external LibNameLL30DLL name 'LlDesignerProhibitEditingObjectW';
+      function   LlDesignerProhibitEditingObjectW;   external LibNameLL31DLL name 'LlDesignerProhibitEditingObjectW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiersA;          external LibNameLL30DLL index 186;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiersA;          external LibNameLL31DLL index 186;
      {$else}
-      function   LlGetUsedIdentifiersA;          external LibNameLL30DLL name 'LlGetUsedIdentifiersA';
+      function   LlGetUsedIdentifiersA;          external LibNameLL31DLL name 'LlGetUsedIdentifiersA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiers;           external LibNameLL30DLL index 186;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiers;           external LibNameLL31DLL index 186;
      {$else}
-      function   LlGetUsedIdentifiers;           external LibNameLL30DLL name 'LlGetUsedIdentifiersA';
+      function   LlGetUsedIdentifiers;           external LibNameLL31DLL name 'LlGetUsedIdentifiersA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiers;           external LibNameLL30DLL index 386;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiers;           external LibNameLL31DLL index 386;
      {$else}
-      function   LlGetUsedIdentifiers;           external LibNameLL30DLL name 'LlGetUsedIdentifiersW';
+      function   LlGetUsedIdentifiers;           external LibNameLL31DLL name 'LlGetUsedIdentifiersW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiersW;          external LibNameLL30DLL index 386;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiersW;          external LibNameLL31DLL index 386;
      {$else}
-      function   LlGetUsedIdentifiersW;          external LibNameLL30DLL name 'LlGetUsedIdentifiersW';
+      function   LlGetUsedIdentifiersW;          external LibNameLL31DLL name 'LlGetUsedIdentifiersW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVarsExA;           external LibNameLL30DLL index 205;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVarsExA;           external LibNameLL31DLL index 205;
      {$else}
-      function   LlExprGetUsedVarsExA;           external LibNameLL30DLL name 'LlExprGetUsedVarsExA';
+      function   LlExprGetUsedVarsExA;           external LibNameLL31DLL name 'LlExprGetUsedVarsExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVarsEx;            external LibNameLL30DLL index 205;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVarsEx;            external LibNameLL31DLL index 205;
      {$else}
-      function   LlExprGetUsedVarsEx;            external LibNameLL30DLL name 'LlExprGetUsedVarsExA';
+      function   LlExprGetUsedVarsEx;            external LibNameLL31DLL name 'LlExprGetUsedVarsExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVarsEx;            external LibNameLL30DLL index 405;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVarsEx;            external LibNameLL31DLL index 405;
      {$else}
-      function   LlExprGetUsedVarsEx;            external LibNameLL30DLL name 'LlExprGetUsedVarsExW';
+      function   LlExprGetUsedVarsEx;            external LibNameLL31DLL name 'LlExprGetUsedVarsExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedVarsExW;           external LibNameLL30DLL index 405;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedVarsExW;           external LibNameLL31DLL index 405;
      {$else}
-      function   LlExprGetUsedVarsExW;           external LibNameLL30DLL name 'LlExprGetUsedVarsExW';
+      function   LlExprGetUsedVarsExW;           external LibNameLL31DLL name 'LlExprGetUsedVarsExW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetProject;                external LibNameLL30DLL index 206;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetProject;                external LibNameLL31DLL index 206;
    {$else}
-    function   LlDomGetProject;                external LibNameLL30DLL name 'LlDomGetProject';
+    function   LlDomGetProject;                external LibNameLL31DLL name 'LlDomGetProject';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetPropertyA;              external LibNameLL30DLL index 207;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetPropertyA;              external LibNameLL31DLL index 207;
      {$else}
-      function   LlDomGetPropertyA;              external LibNameLL30DLL name 'LlDomGetPropertyA';
+      function   LlDomGetPropertyA;              external LibNameLL31DLL name 'LlDomGetPropertyA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetProperty;               external LibNameLL30DLL index 207;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetProperty;               external LibNameLL31DLL index 207;
      {$else}
-      function   LlDomGetProperty;               external LibNameLL30DLL name 'LlDomGetPropertyA';
+      function   LlDomGetProperty;               external LibNameLL31DLL name 'LlDomGetPropertyA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetProperty;               external LibNameLL30DLL index 407;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetProperty;               external LibNameLL31DLL index 407;
      {$else}
-      function   LlDomGetProperty;               external LibNameLL30DLL name 'LlDomGetPropertyW';
+      function   LlDomGetProperty;               external LibNameLL31DLL name 'LlDomGetPropertyW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetPropertyW;              external LibNameLL30DLL index 407;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetPropertyW;              external LibNameLL31DLL index 407;
      {$else}
-      function   LlDomGetPropertyW;              external LibNameLL30DLL name 'LlDomGetPropertyW';
+      function   LlDomGetPropertyW;              external LibNameLL31DLL name 'LlDomGetPropertyW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomSetPropertyA;              external LibNameLL30DLL index 208;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomSetPropertyA;              external LibNameLL31DLL index 208;
      {$else}
-      function   LlDomSetPropertyA;              external LibNameLL30DLL name 'LlDomSetPropertyA';
+      function   LlDomSetPropertyA;              external LibNameLL31DLL name 'LlDomSetPropertyA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomSetProperty;               external LibNameLL30DLL index 208;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomSetProperty;               external LibNameLL31DLL index 208;
      {$else}
-      function   LlDomSetProperty;               external LibNameLL30DLL name 'LlDomSetPropertyA';
+      function   LlDomSetProperty;               external LibNameLL31DLL name 'LlDomSetPropertyA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomSetProperty;               external LibNameLL30DLL index 408;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomSetProperty;               external LibNameLL31DLL index 408;
      {$else}
-      function   LlDomSetProperty;               external LibNameLL30DLL name 'LlDomSetPropertyW';
+      function   LlDomSetProperty;               external LibNameLL31DLL name 'LlDomSetPropertyW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomSetPropertyW;              external LibNameLL30DLL index 408;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomSetPropertyW;              external LibNameLL31DLL index 408;
      {$else}
-      function   LlDomSetPropertyW;              external LibNameLL30DLL name 'LlDomSetPropertyW';
+      function   LlDomSetPropertyW;              external LibNameLL31DLL name 'LlDomSetPropertyW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetObjectA;                external LibNameLL30DLL index 209;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetObjectA;                external LibNameLL31DLL index 209;
      {$else}
-      function   LlDomGetObjectA;                external LibNameLL30DLL name 'LlDomGetObjectA';
+      function   LlDomGetObjectA;                external LibNameLL31DLL name 'LlDomGetObjectA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetObject;                 external LibNameLL30DLL index 209;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetObject;                 external LibNameLL31DLL index 209;
      {$else}
-      function   LlDomGetObject;                 external LibNameLL30DLL name 'LlDomGetObjectA';
+      function   LlDomGetObject;                 external LibNameLL31DLL name 'LlDomGetObjectA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetObject;                 external LibNameLL30DLL index 409;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetObject;                 external LibNameLL31DLL index 409;
      {$else}
-      function   LlDomGetObject;                 external LibNameLL30DLL name 'LlDomGetObjectW';
+      function   LlDomGetObject;                 external LibNameLL31DLL name 'LlDomGetObjectW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomGetObjectW;                external LibNameLL30DLL index 409;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomGetObjectW;                external LibNameLL31DLL index 409;
      {$else}
-      function   LlDomGetObjectW;                external LibNameLL30DLL name 'LlDomGetObjectW';
+      function   LlDomGetObjectW;                external LibNameLL31DLL name 'LlDomGetObjectW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetSubobjectCount;         external LibNameLL30DLL index 210;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetSubobjectCount;         external LibNameLL31DLL index 210;
    {$else}
-    function   LlDomGetSubobjectCount;         external LibNameLL30DLL name 'LlDomGetSubobjectCount';
+    function   LlDomGetSubobjectCount;         external LibNameLL31DLL name 'LlDomGetSubobjectCount';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetSubobject;              external LibNameLL30DLL index 211;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetSubobject;              external LibNameLL31DLL index 211;
    {$else}
-    function   LlDomGetSubobject;              external LibNameLL30DLL name 'LlDomGetSubobject';
+    function   LlDomGetSubobject;              external LibNameLL31DLL name 'LlDomGetSubobject';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomCreateSubobjectA;          external LibNameLL30DLL index 212;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomCreateSubobjectA;          external LibNameLL31DLL index 212;
      {$else}
-      function   LlDomCreateSubobjectA;          external LibNameLL30DLL name 'LlDomCreateSubobjectA';
+      function   LlDomCreateSubobjectA;          external LibNameLL31DLL name 'LlDomCreateSubobjectA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomCreateSubobject;           external LibNameLL30DLL index 212;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomCreateSubobject;           external LibNameLL31DLL index 212;
      {$else}
-      function   LlDomCreateSubobject;           external LibNameLL30DLL name 'LlDomCreateSubobjectA';
+      function   LlDomCreateSubobject;           external LibNameLL31DLL name 'LlDomCreateSubobjectA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomCreateSubobject;           external LibNameLL30DLL index 412;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomCreateSubobject;           external LibNameLL31DLL index 412;
      {$else}
-      function   LlDomCreateSubobject;           external LibNameLL30DLL name 'LlDomCreateSubobjectW';
+      function   LlDomCreateSubobject;           external LibNameLL31DLL name 'LlDomCreateSubobjectW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDomCreateSubobjectW;          external LibNameLL30DLL index 412;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDomCreateSubobjectW;          external LibNameLL31DLL index 412;
      {$else}
-      function   LlDomCreateSubobjectW;          external LibNameLL30DLL name 'LlDomCreateSubobjectW';
+      function   LlDomCreateSubobjectW;          external LibNameLL31DLL name 'LlDomCreateSubobjectW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomDeleteSubobject;           external LibNameLL30DLL index 213;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomDeleteSubobject;           external LibNameLL31DLL index 213;
    {$else}
-    function   LlDomDeleteSubobject;           external LibNameLL30DLL name 'LlDomDeleteSubobject';
+    function   LlDomDeleteSubobject;           external LibNameLL31DLL name 'LlDomDeleteSubobject';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomMoveSubobject;             external LibNameLL30DLL index 348;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomMoveSubobject;             external LibNameLL31DLL index 348;
    {$else}
-    function   LlDomMoveSubobject;             external LibNameLL30DLL name 'LlDomMoveSubobject';
+    function   LlDomMoveSubobject;             external LibNameLL31DLL name 'LlDomMoveSubobject';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectOpenA;                 external LibNameLL30DLL index 214;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectOpenA;                 external LibNameLL31DLL index 214;
      {$else}
-      function   LlProjectOpenA;                 external LibNameLL30DLL name 'LlProjectOpenA';
+      function   LlProjectOpenA;                 external LibNameLL31DLL name 'LlProjectOpenA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectOpen;                  external LibNameLL30DLL index 214;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectOpen;                  external LibNameLL31DLL index 214;
      {$else}
-      function   LlProjectOpen;                  external LibNameLL30DLL name 'LlProjectOpenA';
+      function   LlProjectOpen;                  external LibNameLL31DLL name 'LlProjectOpenA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectOpen;                  external LibNameLL30DLL index 414;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectOpen;                  external LibNameLL31DLL index 414;
      {$else}
-      function   LlProjectOpen;                  external LibNameLL30DLL name 'LlProjectOpenW';
+      function   LlProjectOpen;                  external LibNameLL31DLL name 'LlProjectOpenW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectOpenW;                 external LibNameLL30DLL index 414;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectOpenW;                 external LibNameLL31DLL index 414;
      {$else}
-      function   LlProjectOpenW;                 external LibNameLL30DLL name 'LlProjectOpenW';
+      function   LlProjectOpenW;                 external LibNameLL31DLL name 'LlProjectOpenW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSaveA;                 external LibNameLL30DLL index 215;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSaveA;                 external LibNameLL31DLL index 215;
      {$else}
-      function   LlProjectSaveA;                 external LibNameLL30DLL name 'LlProjectSaveA';
+      function   LlProjectSaveA;                 external LibNameLL31DLL name 'LlProjectSaveA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSave;                  external LibNameLL30DLL index 215;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSave;                  external LibNameLL31DLL index 215;
      {$else}
-      function   LlProjectSave;                  external LibNameLL30DLL name 'LlProjectSaveA';
+      function   LlProjectSave;                  external LibNameLL31DLL name 'LlProjectSaveA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSave;                  external LibNameLL30DLL index 415;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSave;                  external LibNameLL31DLL index 415;
      {$else}
-      function   LlProjectSave;                  external LibNameLL30DLL name 'LlProjectSaveW';
+      function   LlProjectSave;                  external LibNameLL31DLL name 'LlProjectSaveW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSaveW;                 external LibNameLL30DLL index 415;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSaveW;                 external LibNameLL31DLL index 415;
      {$else}
-      function   LlProjectSaveW;                 external LibNameLL30DLL name 'LlProjectSaveW';
+      function   LlProjectSaveW;                 external LibNameLL31DLL name 'LlProjectSaveW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSaveCopyAsA;           external LibNameLL30DLL index 361;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSaveCopyAsA;           external LibNameLL31DLL index 361;
      {$else}
-      function   LlProjectSaveCopyAsA;           external LibNameLL30DLL name 'LlProjectSaveCopyAsA';
+      function   LlProjectSaveCopyAsA;           external LibNameLL31DLL name 'LlProjectSaveCopyAsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSaveCopyAs;            external LibNameLL30DLL index 361;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSaveCopyAs;            external LibNameLL31DLL index 361;
      {$else}
-      function   LlProjectSaveCopyAs;            external LibNameLL30DLL name 'LlProjectSaveCopyAsA';
+      function   LlProjectSaveCopyAs;            external LibNameLL31DLL name 'LlProjectSaveCopyAsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSaveCopyAs;            external LibNameLL30DLL index 460;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSaveCopyAs;            external LibNameLL31DLL index 460;
      {$else}
-      function   LlProjectSaveCopyAs;            external LibNameLL30DLL name 'LlProjectSaveCopyAsW';
+      function   LlProjectSaveCopyAs;            external LibNameLL31DLL name 'LlProjectSaveCopyAsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlProjectSaveCopyAsW;           external LibNameLL30DLL index 460;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlProjectSaveCopyAsW;           external LibNameLL31DLL index 460;
      {$else}
-      function   LlProjectSaveCopyAsW;           external LibNameLL30DLL name 'LlProjectSaveCopyAsW';
+      function   LlProjectSaveCopyAsW;           external LibNameLL31DLL name 'LlProjectSaveCopyAsW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlProjectClose;                 external LibNameLL30DLL index 216;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlProjectClose;                 external LibNameLL31DLL index 216;
    {$else}
-    function   LlProjectClose;                 external LibNameLL30DLL name 'LlProjectClose';
+    function   LlProjectClose;                 external LibNameLL31DLL name 'LlProjectClose';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetPropertyCount;          external LibNameLL30DLL index 350;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetPropertyCount;          external LibNameLL31DLL index 350;
    {$else}
-    function   LlDomGetPropertyCount;          external LibNameLL30DLL name 'LlDomGetPropertyCount';
+    function   LlDomGetPropertyCount;          external LibNameLL31DLL name 'LlDomGetPropertyCount';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetPropertyBSTR;           external LibNameLL30DLL index 217;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetPropertyBSTR;           external LibNameLL31DLL index 217;
    {$else}
-    function   LlDomGetPropertyBSTR;           external LibNameLL30DLL name 'LlDomGetPropertyBSTR';
+    function   LlDomGetPropertyBSTR;           external LibNameLL31DLL name 'LlDomGetPropertyBSTR';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlAssociatePreviewControl;      external LibNameLL30DLL index 218;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlAssociatePreviewControl;      external LibNameLL31DLL index 218;
    {$else}
-    function   LlAssociatePreviewControl;      external LibNameLL30DLL name 'LlAssociatePreviewControl';
+    function   LlAssociatePreviewControl;      external LibNameLL31DLL name 'LlAssociatePreviewControl';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetErrortextA;                external LibNameLL30DLL index 219;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetErrortextA;                external LibNameLL31DLL index 219;
      {$else}
-      function   LlGetErrortextA;                external LibNameLL30DLL name 'LlGetErrortextA';
+      function   LlGetErrortextA;                external LibNameLL31DLL name 'LlGetErrortextA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetErrortext;                 external LibNameLL30DLL index 219;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetErrortext;                 external LibNameLL31DLL index 219;
      {$else}
-      function   LlGetErrortext;                 external LibNameLL30DLL name 'LlGetErrortextA';
+      function   LlGetErrortext;                 external LibNameLL31DLL name 'LlGetErrortextA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetErrortext;                 external LibNameLL30DLL index 419;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetErrortext;                 external LibNameLL31DLL index 419;
      {$else}
-      function   LlGetErrortext;                 external LibNameLL30DLL name 'LlGetErrortextW';
+      function   LlGetErrortext;                 external LibNameLL31DLL name 'LlGetErrortextW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetErrortextW;                external LibNameLL30DLL index 419;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetErrortextW;                external LibNameLL31DLL index 419;
      {$else}
-      function   LlGetErrortextW;                external LibNameLL30DLL name 'LlGetErrortextW';
+      function   LlGetErrortextW;                external LibNameLL31DLL name 'LlGetErrortextW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlSetPreviewOption;             external LibNameLL30DLL index 221;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlSetPreviewOption;             external LibNameLL31DLL index 221;
    {$else}
-    function   LlSetPreviewOption;             external LibNameLL30DLL name 'LlSetPreviewOption';
+    function   LlSetPreviewOption;             external LibNameLL31DLL name 'LlSetPreviewOption';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetPreviewOption;             external LibNameLL30DLL index 222;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetPreviewOption;             external LibNameLL31DLL index 222;
    {$else}
-    function   LlGetPreviewOption;             external LibNameLL30DLL name 'LlGetPreviewOption';
+    function   LlGetPreviewOption;             external LibNameLL31DLL name 'LlGetPreviewOption';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDesignerInvokeAction;         external LibNameLL30DLL index 223;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDesignerInvokeAction;         external LibNameLL31DLL index 223;
    {$else}
-    function   LlDesignerInvokeAction;         external LibNameLL30DLL name 'LlDesignerInvokeAction';
+    function   LlDesignerInvokeAction;         external LibNameLL31DLL name 'LlDesignerInvokeAction';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDesignerRefreshWorkspace;     external LibNameLL30DLL index 224;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDesignerRefreshWorkspace;     external LibNameLL31DLL index 224;
    {$else}
-    function   LlDesignerRefreshWorkspace;     external LibNameLL30DLL name 'LlDesignerRefreshWorkspace';
+    function   LlDesignerRefreshWorkspace;     external LibNameLL31DLL name 'LlDesignerRefreshWorkspace';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileOpenA;            external LibNameLL30DLL index 225;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileOpenA;            external LibNameLL31DLL index 225;
      {$else}
-      function   LlDesignerFileOpenA;            external LibNameLL30DLL name 'LlDesignerFileOpenA';
+      function   LlDesignerFileOpenA;            external LibNameLL31DLL name 'LlDesignerFileOpenA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileOpen;             external LibNameLL30DLL index 225;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileOpen;             external LibNameLL31DLL index 225;
      {$else}
-      function   LlDesignerFileOpen;             external LibNameLL30DLL name 'LlDesignerFileOpenA';
+      function   LlDesignerFileOpen;             external LibNameLL31DLL name 'LlDesignerFileOpenA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileOpen;             external LibNameLL30DLL index 425;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileOpen;             external LibNameLL31DLL index 425;
      {$else}
-      function   LlDesignerFileOpen;             external LibNameLL30DLL name 'LlDesignerFileOpenW';
+      function   LlDesignerFileOpen;             external LibNameLL31DLL name 'LlDesignerFileOpenW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileOpenW;            external LibNameLL30DLL index 425;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileOpenW;            external LibNameLL31DLL index 425;
      {$else}
-      function   LlDesignerFileOpenW;            external LibNameLL30DLL name 'LlDesignerFileOpenW';
+      function   LlDesignerFileOpenW;            external LibNameLL31DLL name 'LlDesignerFileOpenW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileSaveA;            external LibNameLL30DLL index 226;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileSaveA;            external LibNameLL31DLL index 226;
      {$else}
-      function   LlDesignerFileSaveA;            external LibNameLL30DLL name 'LlDesignerFileSaveA';
+      function   LlDesignerFileSaveA;            external LibNameLL31DLL name 'LlDesignerFileSaveA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileSave;             external LibNameLL30DLL index 226;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileSave;             external LibNameLL31DLL index 226;
      {$else}
-      function   LlDesignerFileSave;             external LibNameLL30DLL name 'LlDesignerFileSaveA';
+      function   LlDesignerFileSave;             external LibNameLL31DLL name 'LlDesignerFileSaveA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileSave;             external LibNameLL30DLL index 426;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileSave;             external LibNameLL31DLL index 426;
      {$else}
-      function   LlDesignerFileSave;             external LibNameLL30DLL name 'LlDesignerFileSaveW';
+      function   LlDesignerFileSave;             external LibNameLL31DLL name 'LlDesignerFileSaveW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerFileSaveW;            external LibNameLL30DLL index 426;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerFileSaveW;            external LibNameLL31DLL index 426;
      {$else}
-      function   LlDesignerFileSaveW;            external LibNameLL30DLL name 'LlDesignerFileSaveW';
+      function   LlDesignerFileSaveW;            external LibNameLL31DLL name 'LlDesignerFileSaveW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerAddActionA;           external LibNameLL30DLL index 227;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerAddActionA;           external LibNameLL31DLL index 227;
      {$else}
-      function   LlDesignerAddActionA;           external LibNameLL30DLL name 'LlDesignerAddActionA';
+      function   LlDesignerAddActionA;           external LibNameLL31DLL name 'LlDesignerAddActionA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerAddAction;            external LibNameLL30DLL index 227;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerAddAction;            external LibNameLL31DLL index 227;
      {$else}
-      function   LlDesignerAddAction;            external LibNameLL30DLL name 'LlDesignerAddActionA';
+      function   LlDesignerAddAction;            external LibNameLL31DLL name 'LlDesignerAddActionA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerAddAction;            external LibNameLL30DLL index 427;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerAddAction;            external LibNameLL31DLL index 427;
      {$else}
-      function   LlDesignerAddAction;            external LibNameLL30DLL name 'LlDesignerAddActionW';
+      function   LlDesignerAddAction;            external LibNameLL31DLL name 'LlDesignerAddActionW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerAddActionW;           external LibNameLL30DLL index 427;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerAddActionW;           external LibNameLL31DLL index 427;
      {$else}
-      function   LlDesignerAddActionW;           external LibNameLL30DLL name 'LlDesignerAddActionW';
+      function   LlDesignerAddActionW;           external LibNameLL31DLL name 'LlDesignerAddActionW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerGetOptionStringA;     external LibNameLL30DLL index 236;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerGetOptionStringA;     external LibNameLL31DLL index 236;
      {$else}
-      function   LlDesignerGetOptionStringA;     external LibNameLL30DLL name 'LlDesignerGetOptionStringA';
+      function   LlDesignerGetOptionStringA;     external LibNameLL31DLL name 'LlDesignerGetOptionStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerGetOptionString;      external LibNameLL30DLL index 236;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerGetOptionString;      external LibNameLL31DLL index 236;
      {$else}
-      function   LlDesignerGetOptionString;      external LibNameLL30DLL name 'LlDesignerGetOptionStringA';
+      function   LlDesignerGetOptionString;      external LibNameLL31DLL name 'LlDesignerGetOptionStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerGetOptionString;      external LibNameLL30DLL index 436;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerGetOptionString;      external LibNameLL31DLL index 436;
      {$else}
-      function   LlDesignerGetOptionString;      external LibNameLL30DLL name 'LlDesignerGetOptionStringW';
+      function   LlDesignerGetOptionString;      external LibNameLL31DLL name 'LlDesignerGetOptionStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerGetOptionStringW;     external LibNameLL30DLL index 436;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerGetOptionStringW;     external LibNameLL31DLL index 436;
      {$else}
-      function   LlDesignerGetOptionStringW;     external LibNameLL30DLL name 'LlDesignerGetOptionStringW';
+      function   LlDesignerGetOptionStringW;     external LibNameLL31DLL name 'LlDesignerGetOptionStringW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerSetOptionStringA;     external LibNameLL30DLL index 237;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerSetOptionStringA;     external LibNameLL31DLL index 237;
      {$else}
-      function   LlDesignerSetOptionStringA;     external LibNameLL30DLL name 'LlDesignerSetOptionStringA';
+      function   LlDesignerSetOptionStringA;     external LibNameLL31DLL name 'LlDesignerSetOptionStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerSetOptionString;      external LibNameLL30DLL index 237;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerSetOptionString;      external LibNameLL31DLL index 237;
      {$else}
-      function   LlDesignerSetOptionString;      external LibNameLL30DLL name 'LlDesignerSetOptionStringA';
+      function   LlDesignerSetOptionString;      external LibNameLL31DLL name 'LlDesignerSetOptionStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerSetOptionString;      external LibNameLL30DLL index 437;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerSetOptionString;      external LibNameLL31DLL index 437;
      {$else}
-      function   LlDesignerSetOptionString;      external LibNameLL30DLL name 'LlDesignerSetOptionStringW';
+      function   LlDesignerSetOptionString;      external LibNameLL31DLL name 'LlDesignerSetOptionStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDesignerSetOptionStringW;     external LibNameLL30DLL index 437;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDesignerSetOptionStringW;     external LibNameLL31DLL index 437;
      {$else}
-      function   LlDesignerSetOptionStringW;     external LibNameLL30DLL name 'LlDesignerSetOptionStringW';
+      function   LlDesignerSetOptionStringW;     external LibNameLL31DLL name 'LlDesignerSetOptionStringW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlJobOpenCopy;                  external LibNameLL30DLL index 239;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlJobOpenCopy;                  external LibNameLL31DLL index 239;
    {$else}
-    function   LlJobOpenCopy;                  external LibNameLL30DLL name 'LlJobOpenCopy';
+    function   LlJobOpenCopy;                  external LibNameLL31DLL name 'LlJobOpenCopy';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectParameterA;         external LibNameLL30DLL index 249;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectParameterA;         external LibNameLL31DLL index 249;
      {$else}
-      function   LlGetProjectParameterA;         external LibNameLL30DLL name 'LlGetProjectParameterA';
+      function   LlGetProjectParameterA;         external LibNameLL31DLL name 'LlGetProjectParameterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectParameter;          external LibNameLL30DLL index 249;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectParameter;          external LibNameLL31DLL index 249;
      {$else}
-      function   LlGetProjectParameter;          external LibNameLL30DLL name 'LlGetProjectParameterA';
+      function   LlGetProjectParameter;          external LibNameLL31DLL name 'LlGetProjectParameterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectParameter;          external LibNameLL30DLL index 449;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectParameter;          external LibNameLL31DLL index 449;
      {$else}
-      function   LlGetProjectParameter;          external LibNameLL30DLL name 'LlGetProjectParameterW';
+      function   LlGetProjectParameter;          external LibNameLL31DLL name 'LlGetProjectParameterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectParameterW;         external LibNameLL30DLL index 449;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectParameterW;         external LibNameLL31DLL index 449;
      {$else}
-      function   LlGetProjectParameterW;         external LibNameLL30DLL name 'LlGetProjectParameterW';
+      function   LlGetProjectParameterW;         external LibNameLL31DLL name 'LlGetProjectParameterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertBLOBToStringA;         external LibNameLL30DLL index 250;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertBLOBToStringA;         external LibNameLL31DLL index 250;
      {$else}
-      function   LlConvertBLOBToStringA;         external LibNameLL30DLL name 'LlConvertBLOBToStringA';
+      function   LlConvertBLOBToStringA;         external LibNameLL31DLL name 'LlConvertBLOBToStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertBLOBToString;          external LibNameLL30DLL index 250;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertBLOBToString;          external LibNameLL31DLL index 250;
      {$else}
-      function   LlConvertBLOBToString;          external LibNameLL30DLL name 'LlConvertBLOBToStringA';
+      function   LlConvertBLOBToString;          external LibNameLL31DLL name 'LlConvertBLOBToStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertBLOBToString;          external LibNameLL30DLL index 450;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertBLOBToString;          external LibNameLL31DLL index 450;
      {$else}
-      function   LlConvertBLOBToString;          external LibNameLL30DLL name 'LlConvertBLOBToStringW';
+      function   LlConvertBLOBToString;          external LibNameLL31DLL name 'LlConvertBLOBToStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertBLOBToStringW;         external LibNameLL30DLL index 450;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertBLOBToStringW;         external LibNameLL31DLL index 450;
      {$else}
-      function   LlConvertBLOBToStringW;         external LibNameLL30DLL name 'LlConvertBLOBToStringW';
+      function   LlConvertBLOBToStringW;         external LibNameLL31DLL name 'LlConvertBLOBToStringW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertStringToBLOBA;         external LibNameLL30DLL index 251;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToBLOBA;         external LibNameLL31DLL index 251;
      {$else}
-      function   LlConvertStringToBLOBA;         external LibNameLL30DLL name 'LlConvertStringToBLOBA';
+      function   LlConvertStringToBLOBA;         external LibNameLL31DLL name 'LlConvertStringToBLOBA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertStringToBLOB;          external LibNameLL30DLL index 251;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToBLOB;          external LibNameLL31DLL index 251;
      {$else}
-      function   LlConvertStringToBLOB;          external LibNameLL30DLL name 'LlConvertStringToBLOBA';
+      function   LlConvertStringToBLOB;          external LibNameLL31DLL name 'LlConvertStringToBLOBA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertStringToBLOB;          external LibNameLL30DLL index 451;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToBLOB;          external LibNameLL31DLL index 451;
      {$else}
-      function   LlConvertStringToBLOB;          external LibNameLL30DLL name 'LlConvertStringToBLOBW';
+      function   LlConvertStringToBLOB;          external LibNameLL31DLL name 'LlConvertStringToBLOBW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlConvertStringToBLOBW;         external LibNameLL30DLL index 451;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToBLOBW;         external LibNameLL31DLL index 451;
      {$else}
-      function   LlConvertStringToBLOBW;         external LibNameLL30DLL name 'LlConvertStringToBLOBW';
+      function   LlConvertStringToBLOBW;         external LibNameLL31DLL name 'LlConvertStringToBLOBW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelationExA;        external LibNameLL30DLL index 238;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStreamToStringA;       external LibNameLL31DLL index 252;
      {$else}
-      function   LlDbAddTableRelationExA;        external LibNameLL30DLL name 'LlDbAddTableRelationExA';
+      function   LlConvertStreamToStringA;       external LibNameLL31DLL name 'LlConvertStreamToStringA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelationEx;         external LibNameLL30DLL index 238;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStreamToString;        external LibNameLL31DLL index 252;
      {$else}
-      function   LlDbAddTableRelationEx;         external LibNameLL30DLL name 'LlDbAddTableRelationExA';
+      function   LlConvertStreamToString;        external LibNameLL31DLL name 'LlConvertStreamToStringA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelationEx;         external LibNameLL30DLL index 438;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStreamToString;        external LibNameLL31DLL index 452;
      {$else}
-      function   LlDbAddTableRelationEx;         external LibNameLL30DLL name 'LlDbAddTableRelationExW';
+      function   LlConvertStreamToString;        external LibNameLL31DLL name 'LlConvertStreamToStringW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableRelationExW;        external LibNameLL30DLL index 438;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStreamToStringW;       external LibNameLL31DLL index 452;
      {$else}
-      function   LlDbAddTableRelationExW;        external LibNameLL30DLL name 'LlDbAddTableRelationExW';
+      function   LlConvertStreamToStringW;       external LibNameLL31DLL name 'LlConvertStreamToStringW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrderExA;       external LibNameLL30DLL index 257;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToStreamA;       external LibNameLL31DLL index 253;
      {$else}
-      function   LlDbAddTableSortOrderExA;       external LibNameLL30DLL name 'LlDbAddTableSortOrderExA';
+      function   LlConvertStringToStreamA;       external LibNameLL31DLL name 'LlConvertStringToStreamA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrderEx;        external LibNameLL30DLL index 257;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToStream;        external LibNameLL31DLL index 253;
      {$else}
-      function   LlDbAddTableSortOrderEx;        external LibNameLL30DLL name 'LlDbAddTableSortOrderExA';
+      function   LlConvertStringToStream;        external LibNameLL31DLL name 'LlConvertStringToStreamA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrderEx;        external LibNameLL30DLL index 457;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToStream;        external LibNameLL31DLL index 453;
      {$else}
-      function   LlDbAddTableSortOrderEx;        external LibNameLL30DLL name 'LlDbAddTableSortOrderExW';
+      function   LlConvertStringToStream;        external LibNameLL31DLL name 'LlConvertStringToStreamW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableSortOrderExW;       external LibNameLL30DLL index 457;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlConvertStringToStreamW;       external LibNameLL31DLL index 453;
      {$else}
-      function   LlDbAddTableSortOrderExW;       external LibNameLL30DLL name 'LlDbAddTableSortOrderExW';
+      function   LlConvertStringToStreamW;       external LibNameLL31DLL name 'LlConvertStringToStreamW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiersExA;        external LibNameLL30DLL index 258;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelationExA;        external LibNameLL31DLL index 238;
      {$else}
-      function   LlGetUsedIdentifiersExA;        external LibNameLL30DLL name 'LlGetUsedIdentifiersExA';
+      function   LlDbAddTableRelationExA;        external LibNameLL31DLL name 'LlDbAddTableRelationExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiersEx;         external LibNameLL30DLL index 258;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelationEx;         external LibNameLL31DLL index 238;
      {$else}
-      function   LlGetUsedIdentifiersEx;         external LibNameLL30DLL name 'LlGetUsedIdentifiersExA';
+      function   LlDbAddTableRelationEx;         external LibNameLL31DLL name 'LlDbAddTableRelationExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiersEx;         external LibNameLL30DLL index 458;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelationEx;         external LibNameLL31DLL index 438;
      {$else}
-      function   LlGetUsedIdentifiersEx;         external LibNameLL30DLL name 'LlGetUsedIdentifiersExW';
+      function   LlDbAddTableRelationEx;         external LibNameLL31DLL name 'LlDbAddTableRelationExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetUsedIdentifiersExW;        external LibNameLL30DLL index 458;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableRelationExW;        external LibNameLL31DLL index 438;
      {$else}
-      function   LlGetUsedIdentifiersExW;        external LibNameLL30DLL name 'LlGetUsedIdentifiersExW';
+      function   LlDbAddTableRelationExW;        external LibNameLL31DLL name 'LlDbAddTableRelationExW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetTempFileNameA;             external LibNameLL30DLL index 259;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrderExA;       external LibNameLL31DLL index 257;
      {$else}
-      function   LlGetTempFileNameA;             external LibNameLL30DLL name 'LlGetTempFileNameA';
+      function   LlDbAddTableSortOrderExA;       external LibNameLL31DLL name 'LlDbAddTableSortOrderExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetTempFileName;              external LibNameLL30DLL index 259;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrderEx;        external LibNameLL31DLL index 257;
      {$else}
-      function   LlGetTempFileName;              external LibNameLL30DLL name 'LlGetTempFileNameA';
+      function   LlDbAddTableSortOrderEx;        external LibNameLL31DLL name 'LlDbAddTableSortOrderExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetTempFileName;              external LibNameLL30DLL index 459;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrderEx;        external LibNameLL31DLL index 457;
      {$else}
-      function   LlGetTempFileName;              external LibNameLL30DLL name 'LlGetTempFileNameW';
+      function   LlDbAddTableSortOrderEx;        external LibNameLL31DLL name 'LlDbAddTableSortOrderExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetTempFileNameW;             external LibNameLL30DLL index 459;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableSortOrderExW;       external LibNameLL31DLL index 457;
      {$else}
-      function   LlGetTempFileNameW;             external LibNameLL30DLL name 'LlGetTempFileNameW';
+      function   LlDbAddTableSortOrderExW;       external LibNameLL31DLL name 'LlDbAddTableSortOrderExW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetDebug;                     external LibNameLL30DLL index 260;
-   {$else}
-    function   LlGetDebug;                     external LibNameLL30DLL name 'LlGetDebug';
-  {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRTFEditorGetRTFControlHandle; external LibNameLL30DLL index 261;
-   {$else}
-    function   LlRTFEditorGetRTFControlHandle; external LibNameLL30DLL name 'LlRTFEditorGetRTFControlHandle';
-  {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultPrinterA;           external LibNameLL30DLL index 262;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiersExA;        external LibNameLL31DLL index 258;
      {$else}
-      function   LlGetDefaultPrinterA;           external LibNameLL30DLL name 'LlGetDefaultPrinterA';
+      function   LlGetUsedIdentifiersExA;        external LibNameLL31DLL name 'LlGetUsedIdentifiersExA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultPrinter;            external LibNameLL30DLL index 262;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiersEx;         external LibNameLL31DLL index 258;
      {$else}
-      function   LlGetDefaultPrinter;            external LibNameLL30DLL name 'LlGetDefaultPrinterA';
+      function   LlGetUsedIdentifiersEx;         external LibNameLL31DLL name 'LlGetUsedIdentifiersExA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultPrinter;            external LibNameLL30DLL index 462;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiersEx;         external LibNameLL31DLL index 458;
      {$else}
-      function   LlGetDefaultPrinter;            external LibNameLL30DLL name 'LlGetDefaultPrinterW';
+      function   LlGetUsedIdentifiersEx;         external LibNameLL31DLL name 'LlGetUsedIdentifiersExW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetDefaultPrinterW;           external LibNameLL30DLL index 462;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetUsedIdentifiersExW;        external LibNameLL31DLL index 458;
      {$else}
-      function   LlGetDefaultPrinterW;           external LibNameLL30DLL name 'LlGetDefaultPrinterW';
+      function   LlGetUsedIdentifiersExW;        external LibNameLL31DLL name 'LlGetUsedIdentifiersExW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlLocAddDictionaryEntryA;       external LibNameLL30DLL index 263;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetTempFileNameA;             external LibNameLL31DLL index 259;
      {$else}
-      function   LlLocAddDictionaryEntryA;       external LibNameLL30DLL name 'LlLocAddDictionaryEntryA';
+      function   LlGetTempFileNameA;             external LibNameLL31DLL name 'LlGetTempFileNameA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlLocAddDictionaryEntry;        external LibNameLL30DLL index 263;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetTempFileName;              external LibNameLL31DLL index 259;
      {$else}
-      function   LlLocAddDictionaryEntry;        external LibNameLL30DLL name 'LlLocAddDictionaryEntryA';
+      function   LlGetTempFileName;              external LibNameLL31DLL name 'LlGetTempFileNameA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlLocAddDictionaryEntry;        external LibNameLL30DLL index 464;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetTempFileName;              external LibNameLL31DLL index 459;
      {$else}
-      function   LlLocAddDictionaryEntry;        external LibNameLL30DLL name 'LlLocAddDictionaryEntryW';
+      function   LlGetTempFileName;              external LibNameLL31DLL name 'LlGetTempFileNameW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlLocAddDictionaryEntryW;       external LibNameLL30DLL index 464;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetTempFileNameW;             external LibNameLL31DLL index 459;
      {$else}
-      function   LlLocAddDictionaryEntryW;       external LibNameLL30DLL name 'LlLocAddDictionaryEntryW';
+      function   LlGetTempFileNameW;             external LibNameLL31DLL name 'LlGetTempFileNameW';
     {$endif}
-  {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlLocAddDesignLCID;             external LibNameLL30DLL index 264;
-   {$else}
-    function   LlLocAddDesignLCID;             external LibNameLL30DLL name 'LlLocAddDesignLCID';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlIsUILanguageAvailable;        external LibNameLL30DLL index 265;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetDebug;                     external LibNameLL31DLL index 260;
    {$else}
-    function   LlIsUILanguageAvailable;        external LibNameLL30DLL name 'LlIsUILanguageAvailable';
+    function   LlGetDebug;                     external LibNameLL31DLL name 'LlGetDebug';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlIsUILanguageAvailableLCID;    external LibNameLL30DLL index 266;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRTFEditorGetRTFControlHandle; external LibNameLL31DLL index 261;
    {$else}
-    function   LlIsUILanguageAvailableLCID;    external LibNameLL30DLL name 'LlIsUILanguageAvailableLCID';
+    function   LlRTFEditorGetRTFControlHandle; external LibNameLL31DLL name 'LlRTFEditorGetRTFControlHandle';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableExA;                external LibNameLL30DLL index 267;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultPrinterA;           external LibNameLL31DLL index 262;
      {$else}
-      function   LlDbAddTableExA;                external LibNameLL30DLL name 'LlDbAddTableExA';
+      function   LlGetDefaultPrinterA;           external LibNameLL31DLL name 'LlGetDefaultPrinterA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableEx;                 external LibNameLL30DLL index 267;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultPrinter;            external LibNameLL31DLL index 262;
      {$else}
-      function   LlDbAddTableEx;                 external LibNameLL30DLL name 'LlDbAddTableExA';
+      function   LlGetDefaultPrinter;            external LibNameLL31DLL name 'LlGetDefaultPrinterA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableEx;                 external LibNameLL30DLL index 465;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultPrinter;            external LibNameLL31DLL index 462;
      {$else}
-      function   LlDbAddTableEx;                 external LibNameLL30DLL name 'LlDbAddTableExW';
+      function   LlGetDefaultPrinter;            external LibNameLL31DLL name 'LlGetDefaultPrinterW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlDbAddTableExW;                external LibNameLL30DLL index 465;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetDefaultPrinterW;           external LibNameLL31DLL index 462;
      {$else}
-      function   LlDbAddTableExW;                external LibNameLL30DLL name 'LlDbAddTableExW';
+      function   LlGetDefaultPrinterW;           external LibNameLL31DLL name 'LlGetDefaultPrinterW';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetTextExA;                external LibNameLL30DLL index 269;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlLocAddDictionaryEntryA;       external LibNameLL31DLL index 263;
      {$else}
-      function   LlRTFSetTextExA;                external LibNameLL30DLL name 'LlRTFSetTextExA';
+      function   LlLocAddDictionaryEntryA;       external LibNameLL31DLL name 'LlLocAddDictionaryEntryA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetTextEx;                 external LibNameLL30DLL index 269;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlLocAddDictionaryEntry;        external LibNameLL31DLL index 263;
      {$else}
-      function   LlRTFSetTextEx;                 external LibNameLL30DLL name 'LlRTFSetTextExA';
+      function   LlLocAddDictionaryEntry;        external LibNameLL31DLL name 'LlLocAddDictionaryEntryA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetTextEx;                 external LibNameLL30DLL index 469;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlLocAddDictionaryEntry;        external LibNameLL31DLL index 464;
      {$else}
-      function   LlRTFSetTextEx;                 external LibNameLL30DLL name 'LlRTFSetTextExW';
+      function   LlLocAddDictionaryEntry;        external LibNameLL31DLL name 'LlLocAddDictionaryEntryW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlRTFSetTextExW;                external LibNameLL30DLL index 469;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlLocAddDictionaryEntryW;       external LibNameLL31DLL index 464;
      {$else}
-      function   LlRTFSetTextExW;                external LibNameLL30DLL name 'LlRTFSetTextExW';
+      function   LlLocAddDictionaryEntryW;       external LibNameLL31DLL name 'LlLocAddDictionaryEntryW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlInplaceDesignerInteraction;   external LibNameLL30DLL index 270;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlLocAddDesignLCID;             external LibNameLL31DLL index 264;
    {$else}
-    function   LlInplaceDesignerInteraction;   external LibNameLL30DLL name 'LlInplaceDesignerInteraction';
+    function   LlLocAddDesignLCID;             external LibNameLL31DLL name 'LlLocAddDesignLCID';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsExtractResourcefiles;    external LibNameLL30DLL index 271;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlIsUILanguageAvailable;        external LibNameLL31DLL index 265;
    {$else}
-    function   LlUtilsExtractResourcefiles;    external LibNameLL30DLL name 'LlUtilsExtractResourcefiles';
+    function   LlIsUILanguageAvailable;        external LibNameLL31DLL name 'LlIsUILanguageAvailable';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsAddResourcefilesHGLOBAL; external LibNameLL30DLL index 272;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlIsUILanguageAvailableLCID;    external LibNameLL31DLL index 266;
    {$else}
-    function   LlUtilsAddResourcefilesHGLOBAL; external LibNameLL30DLL name 'LlUtilsAddResourcefilesHGLOBAL';
+    function   LlIsUILanguageAvailableLCID;    external LibNameLL31DLL name 'LlIsUILanguageAvailableLCID';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsGetResourceString;       external LibNameLL30DLL index 274;
-   {$else}
-    function   LlUtilsGetResourceString;       external LibNameLL30DLL name 'LlUtilsGetResourceString';
+  {$ifdef UNICODE}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableExA;                external LibNameLL31DLL index 267;
+     {$else}
+      function   LlDbAddTableExA;                external LibNameLL31DLL name 'LlDbAddTableExA';
+    {$endif}
+  {$else}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableEx;                 external LibNameLL31DLL index 267;
+     {$else}
+      function   LlDbAddTableEx;                 external LibNameLL31DLL name 'LlDbAddTableExA';
+    {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlGDILockEnter;                 external LibNameLL30DLL index 275;
-   {$else}
-    procedure  LlGDILockEnter;                 external LibNameLL30DLL name 'LlGDILockEnter';
+  {$ifdef UNICODE}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableEx;                 external LibNameLL31DLL index 465;
+     {$else}
+      function   LlDbAddTableEx;                 external LibNameLL31DLL name 'LlDbAddTableExW';
+    {$endif}
+  {$else}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlDbAddTableExW;                external LibNameLL31DLL index 465;
+     {$else}
+      function   LlDbAddTableExW;                external LibNameLL31DLL name 'LlDbAddTableExW';
+    {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlGDILockLeave;                 external LibNameLL30DLL index 276;
+  {$ifdef UNICODE}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetTextExA;                external LibNameLL31DLL index 269;
+     {$else}
+      function   LlRTFSetTextExA;                external LibNameLL31DLL name 'LlRTFSetTextExA';
+    {$endif}
+  {$else}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetTextEx;                 external LibNameLL31DLL index 269;
+     {$else}
+      function   LlRTFSetTextEx;                 external LibNameLL31DLL name 'LlRTFSetTextExA';
+    {$endif}
+  {$endif}
+  {$ifdef UNICODE}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetTextEx;                 external LibNameLL31DLL index 469;
+     {$else}
+      function   LlRTFSetTextEx;                 external LibNameLL31DLL name 'LlRTFSetTextExW';
+    {$endif}
+  {$else}
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlRTFSetTextExW;                external LibNameLL31DLL index 469;
+     {$else}
+      function   LlRTFSetTextExW;                external LibNameLL31DLL name 'LlRTFSetTextExW';
+    {$endif}
+  {$endif}
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlInplaceDesignerInteraction;   external LibNameLL31DLL index 270;
    {$else}
-    procedure  LlGDILockLeave;                 external LibNameLL30DLL name 'LlGDILockLeave';
+    function   LlInplaceDesignerInteraction;   external LibNameLL31DLL name 'LlInplaceDesignerInteraction';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectDescriptionA;       external LibNameLL30DLL index 280;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectDescriptionA;       external LibNameLL31DLL index 280;
      {$else}
-      function   LlGetProjectDescriptionA;       external LibNameLL30DLL name 'LlGetProjectDescriptionA';
+      function   LlGetProjectDescriptionA;       external LibNameLL31DLL name 'LlGetProjectDescriptionA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectDescription;        external LibNameLL30DLL index 280;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectDescription;        external LibNameLL31DLL index 280;
      {$else}
-      function   LlGetProjectDescription;        external LibNameLL30DLL name 'LlGetProjectDescriptionA';
+      function   LlGetProjectDescription;        external LibNameLL31DLL name 'LlGetProjectDescriptionA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectDescription;        external LibNameLL30DLL index 480;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectDescription;        external LibNameLL31DLL index 480;
      {$else}
-      function   LlGetProjectDescription;        external LibNameLL30DLL name 'LlGetProjectDescriptionW';
+      function   LlGetProjectDescription;        external LibNameLL31DLL name 'LlGetProjectDescriptionW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlGetProjectDescriptionW;       external LibNameLL30DLL index 480;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlGetProjectDescriptionW;       external LibNameLL31DLL index 480;
      {$else}
-      function   LlGetProjectDescriptionW;       external LibNameLL30DLL name 'LlGetProjectDescriptionW';
+      function   LlGetProjectDescriptionW;       external LibNameLL31DLL name 'LlGetProjectDescriptionW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlPrintDbGetCurrentTableFilter; external LibNameLL30DLL index 281;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlPrintDbGetCurrentTableFilter; external LibNameLL31DLL index 281;
    {$else}
-    function   LlPrintDbGetCurrentTableFilter; external LibNameLL30DLL name 'LlPrintDbGetCurrentTableFilter';
+    function   LlPrintDbGetCurrentTableFilter; external LibNameLL31DLL name 'LlPrintDbGetCurrentTableFilter';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprTranslateToHostExpressionA;   external LibNameLL30DLL index 282;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprTranslateToHostExpressionA;   external LibNameLL31DLL index 282;
      {$else}
-      function   LlExprTranslateToHostExpressionA;   external LibNameLL30DLL name 'LlExprTranslateToHostExpressionA';
+      function   LlExprTranslateToHostExpressionA;   external LibNameLL31DLL name 'LlExprTranslateToHostExpressionA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprTranslateToHostExpression;  external LibNameLL30DLL index 282;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprTranslateToHostExpression;  external LibNameLL31DLL index 282;
      {$else}
-      function   LlExprTranslateToHostExpression;  external LibNameLL30DLL name 'LlExprTranslateToHostExpressionA';
+      function   LlExprTranslateToHostExpression;  external LibNameLL31DLL name 'LlExprTranslateToHostExpressionA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprTranslateToHostExpression;  external LibNameLL30DLL index 482;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprTranslateToHostExpression;  external LibNameLL31DLL index 482;
      {$else}
-      function   LlExprTranslateToHostExpression;  external LibNameLL30DLL name 'LlExprTranslateToHostExpressionW';
+      function   LlExprTranslateToHostExpression;  external LibNameLL31DLL name 'LlExprTranslateToHostExpressionW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprTranslateToHostExpressionW;   external LibNameLL30DLL index 482;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprTranslateToHostExpressionW;   external LibNameLL31DLL index 482;
      {$else}
-      function   LlExprTranslateToHostExpressionW;   external LibNameLL30DLL name 'LlExprTranslateToHostExpressionW';
+      function   LlExprTranslateToHostExpressionW;   external LibNameLL31DLL name 'LlExprTranslateToHostExpressionW';
     {$endif}
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestJobCreate;             external LibNameLL30DLL index 283;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestJobCreate;             external LibNameLL31DLL index 283;
    {$else}
-    function   LlStgTestJobCreate;             external LibNameLL30DLL name 'LlStgTestJobCreate';
+    function   LlStgTestJobCreate;             external LibNameLL31DLL name 'LlStgTestJobCreate';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestJobCmpPage;            external LibNameLL30DLL index 284;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestJobCmpPage;            external LibNameLL31DLL index 284;
    {$else}
-    function   LlStgTestJobCmpPage;            external LibNameLL30DLL name 'LlStgTestJobCmpPage';
+    function   LlStgTestJobCmpPage;            external LibNameLL31DLL name 'LlStgTestJobCmpPage';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestJobDestroy;            external LibNameLL30DLL index 285;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestJobDestroy;            external LibNameLL31DLL index 285;
    {$else}
-    function   LlStgTestJobDestroy;            external LibNameLL30DLL name 'LlStgTestJobDestroy';
+    function   LlStgTestJobDestroy;            external LibNameLL31DLL name 'LlStgTestJobDestroy';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestStgCmp;                external LibNameLL30DLL index 286;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestStgCmp;                external LibNameLL31DLL index 286;
    {$else}
-    function   LlStgTestStgCmp;                external LibNameLL30DLL name 'LlStgTestStgCmp';
+    function   LlStgTestStgCmp;                external LibNameLL31DLL name 'LlStgTestStgCmp';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    procedure  LlStgTestStgCmpRUNDLL32;        external LibNameLL30DLL index 287;
+  {$ifdef CMLL31_LINK_INDEXED}
+    procedure  LlStgTestStgCmpRUNDLL32;        external LibNameLL31DLL index 287;
    {$else}
-    procedure  LlStgTestStgCmpRUNDLL32;        external LibNameLL30DLL name 'LlStgTestStgCmpRUNDLL32';
+    procedure  LlStgTestStgCmpRUNDLL32;        external LibNameLL31DLL name 'LlStgTestStgCmpRUNDLL32';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestStgCmp2;               external LibNameLL30DLL index 288;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestStgCmp2;               external LibNameLL31DLL index 288;
    {$else}
-    function   LlStgTestStgCmp2;               external LibNameLL30DLL name 'LlStgTestStgCmp2';
+    function   LlStgTestStgCmp2;               external LibNameLL31DLL name 'LlStgTestStgCmp2';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgTestJobCmpEmbeddedStorages;  external LibNameLL30DLL index 311;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestJobCmpEmbeddedStorages;  external LibNameLL31DLL index 311;
    {$else}
-    function   LlStgTestJobCmpEmbeddedStorages;  external LibNameLL30DLL name 'LlStgTestJobCmpEmbeddedStorages';
+    function   LlStgTestJobCmpEmbeddedStorages;  external LibNameLL31DLL name 'LlStgTestJobCmpEmbeddedStorages';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlSRTriggerExport;              external LibNameLL30DLL index 289;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlSRTriggerExport;              external LibNameLL31DLL index 289;
    {$else}
-    function   LlSRTriggerExport;              external LibNameLL30DLL name 'LlSRTriggerExport';
+    function   LlSRTriggerExport;              external LibNameLL31DLL name 'LlSRTriggerExport';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsGetVariantFromProfContentsInternal;            external LibNameLL30DLL index 290;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsGetVariantFromProfContentsInternal;            external LibNameLL31DLL index 290;
    {$else}
-    function   LlUtilsGetVariantFromProfContentsInternal;            external LibNameLL30DLL name 'LlUtilsGetVariantFromProfContentsInternal';
+    function   LlUtilsGetVariantFromProfContentsInternal;            external LibNameLL31DLL name 'LlUtilsGetVariantFromProfContentsInternal';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsGetProfContentsFromVariantInternal;            external LibNameLL30DLL index 291;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsGetProfContentsFromVariantInternal;            external LibNameLL31DLL index 291;
    {$else}
-    function   LlUtilsGetProfContentsFromVariantInternal;            external LibNameLL30DLL name 'LlUtilsGetProfContentsFromVariantInternal';
+    function   LlUtilsGetProfContentsFromVariantInternal;            external LibNameLL31DLL name 'LlUtilsGetProfContentsFromVariantInternal';
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedFunctionsA;        external LibNameLL30DLL index 292;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedFunctionsA;        external LibNameLL31DLL index 292;
      {$else}
-      function   LlExprGetUsedFunctionsA;        external LibNameLL30DLL name 'LlExprGetUsedFunctionsA';
+      function   LlExprGetUsedFunctionsA;        external LibNameLL31DLL name 'LlExprGetUsedFunctionsA';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedFunctions;         external LibNameLL30DLL index 292;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedFunctions;         external LibNameLL31DLL index 292;
      {$else}
-      function   LlExprGetUsedFunctions;         external LibNameLL30DLL name 'LlExprGetUsedFunctionsA';
+      function   LlExprGetUsedFunctions;         external LibNameLL31DLL name 'LlExprGetUsedFunctionsA';
     {$endif}
   {$endif}
   {$ifdef UNICODE}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedFunctions;         external LibNameLL30DLL index 492;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedFunctions;         external LibNameLL31DLL index 492;
      {$else}
-      function   LlExprGetUsedFunctions;         external LibNameLL30DLL name 'LlExprGetUsedFunctionsW';
+      function   LlExprGetUsedFunctions;         external LibNameLL31DLL name 'LlExprGetUsedFunctionsW';
     {$endif}
   {$else}
-    {$ifdef CMLL30_LINK_INDEXED}
-      function   LlExprGetUsedFunctionsW;        external LibNameLL30DLL index 492;
+    {$ifdef CMLL31_LINK_INDEXED}
+      function   LlExprGetUsedFunctionsW;        external LibNameLL31DLL index 492;
      {$else}
-      function   LlExprGetUsedFunctionsW;        external LibNameLL30DLL name 'LlExprGetUsedFunctionsW';
+      function   LlExprGetUsedFunctionsW;        external LibNameLL31DLL name 'LlExprGetUsedFunctionsW';
     {$endif}
+  {$endif}
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDesignerTriggerJobInUIThread; external LibNameLL31DLL index 293;
+   {$else}
+    function   LlDesignerTriggerJobInUIThread; external LibNameLL31DLL name 'LlDesignerTriggerJobInUIThread';
+  {$endif}
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsComparePrinterInformation;   external LibNameLL31DLL index 305;
+   {$else}
+    function   LlUtilsComparePrinterInformation;   external LibNameLL31DLL name 'LlUtilsComparePrinterInformation';
+  {$endif}
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetUsedIdentifiersExV;        external LibNameLL31DLL index 294;
+   {$else}
+    function   LlGetUsedIdentifiersExV;        external LibNameLL31DLL name 'LlGetUsedIdentifiersExV';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDesignerTriggerJobInUIThread; external LibNameLL30DLL index 293;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetPropertyV;              external LibNameLL31DLL index 295;
    {$else}
-    function   LlDesignerTriggerJobInUIThread; external LibNameLL30DLL name 'LlDesignerTriggerJobInUIThread';
+    function   LlDomGetPropertyV;              external LibNameLL31DLL name 'LlDomGetPropertyV';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsComparePrinterInformation;   external LibNameLL30DLL index 305;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprGetUsedFunctionsV;        external LibNameLL31DLL index 296;
    {$else}
-    function   LlUtilsComparePrinterInformation;   external LibNameLL30DLL name 'LlUtilsComparePrinterInformation';
+    function   LlExprGetUsedFunctionsV;        external LibNameLL31DLL name 'LlExprGetUsedFunctionsV';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetUsedIdentifiersExV;        external LibNameLL30DLL index 294;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprGetUsedVarsExV;           external LibNameLL31DLL index 297;
    {$else}
-    function   LlGetUsedIdentifiersExV;        external LibNameLL30DLL name 'LlGetUsedIdentifiersExV';
+    function   LlExprGetUsedVarsExV;           external LibNameLL31DLL name 'LlExprGetUsedVarsExV';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetPropertyV;              external LibNameLL30DLL index 295;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetTableRelationToActiveTable;  external LibNameLL31DLL index 298;
    {$else}
-    function   LlDomGetPropertyV;              external LibNameLL30DLL name 'LlDomGetPropertyV';
+    function   LlGetTableRelationToActiveTable;  external LibNameLL31DLL name 'LlGetTableRelationToActiveTable';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprGetUsedFunctionsV;        external LibNameLL30DLL index 296;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlJobOpenCopyEx;                external LibNameLL31DLL index 299;
    {$else}
-    function   LlExprGetUsedFunctionsV;        external LibNameLL30DLL name 'LlExprGetUsedFunctionsV';
+    function   LlJobOpenCopyEx;                external LibNameLL31DLL name 'LlJobOpenCopyEx';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprGetUsedVarsExV;           external LibNameLL30DLL index 297;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlAddDebugSinkForThread;        external LibNameLL31DLL index 306;
    {$else}
-    function   LlExprGetUsedVarsExV;           external LibNameLL30DLL name 'LlExprGetUsedVarsExV';
+    function   LlAddDebugSinkForThread;        external LibNameLL31DLL name 'LlAddDebugSinkForThread';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetTableRelationToActiveTable;  external LibNameLL30DLL index 298;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRemoveDebugSinkFromThread;    external LibNameLL31DLL index 307;
    {$else}
-    function   LlGetTableRelationToActiveTable;  external LibNameLL30DLL name 'LlGetTableRelationToActiveTable';
+    function   LlRemoveDebugSinkFromThread;    external LibNameLL31DLL name 'LlRemoveDebugSinkFromThread';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlJobOpenCopyEx;                external LibNameLL30DLL index 299;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetDebugSinkProxyModule;      external LibNameLL31DLL index 309;
    {$else}
-    function   LlJobOpenCopyEx;                external LibNameLL30DLL name 'LlJobOpenCopyEx';
+    function   LlGetDebugSinkProxyModule;      external LibNameLL31DLL name 'LlGetDebugSinkProxyModule';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlAddDebugSinkForThread;        external LibNameLL30DLL index 306;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetDebugSinkProxyCategory;    external LibNameLL31DLL index 315;
    {$else}
-    function   LlAddDebugSinkForThread;        external LibNameLL30DLL name 'LlAddDebugSinkForThread';
+    function   LlGetDebugSinkProxyCategory;    external LibNameLL31DLL name 'LlGetDebugSinkProxyCategory';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRemoveDebugSinkFromThread;    external LibNameLL30DLL index 307;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDlgSelectFileOpen;            external LibNameLL31DLL index 318;
    {$else}
-    function   LlRemoveDebugSinkFromThread;    external LibNameLL30DLL name 'LlRemoveDebugSinkFromThread';
+    function   LlDlgSelectFileOpen;            external LibNameLL31DLL name 'LlDlgSelectFileOpen';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetDebugSinkProxyModule;      external LibNameLL30DLL index 309;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsLcidFromLocaleName;      external LibNameLL31DLL index 319;
    {$else}
-    function   LlGetDebugSinkProxyModule;      external LibNameLL30DLL name 'LlGetDebugSinkProxyModule';
+    function   LlUtilsLcidFromLocaleName;      external LibNameLL31DLL name 'LlUtilsLcidFromLocaleName';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetDebugSinkProxyCategory;    external LibNameLL30DLL index 315;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDesignerShowMessage;          external LibNameLL31DLL index 320;
    {$else}
-    function   LlGetDebugSinkProxyCategory;    external LibNameLL30DLL name 'LlGetDebugSinkProxyCategory';
+    function   LlDesignerShowMessage;          external LibNameLL31DLL name 'LlDesignerShowMessage';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDlgSelectFileOpen;            external LibNameLL30DLL index 318;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprConvertGlobalToLocal;     external LibNameLL31DLL index 323;
    {$else}
-    function   LlDlgSelectFileOpen;            external LibNameLL30DLL name 'LlDlgSelectFileOpen';
+    function   LlExprConvertGlobalToLocal;     external LibNameLL31DLL name 'LlExprConvertGlobalToLocal';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsLcidFromLocaleName;      external LibNameLL30DLL index 319;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprConvertLocalToGlobal;     external LibNameLL31DLL index 324;
    {$else}
-    function   LlUtilsLcidFromLocaleName;      external LibNameLL30DLL name 'LlUtilsLcidFromLocaleName';
+    function   LlExprConvertLocalToGlobal;     external LibNameLL31DLL name 'LlExprConvertLocalToGlobal';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDesignerShowMessage;          external LibNameLL30DLL index 320;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsGetProjectType;          external LibNameLL31DLL index 325;
    {$else}
-    function   LlDesignerShowMessage;          external LibNameLL30DLL name 'LlDesignerShowMessage';
+    function   LlUtilsGetProjectType;          external LibNameLL31DLL name 'LlUtilsGetProjectType';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprConvertGlobalToLocal;     external LibNameLL30DLL index 323;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetLastErrorText;             external LibNameLL31DLL index 327;
    {$else}
-    function   LlExprConvertGlobalToLocal;     external LibNameLL30DLL name 'LlExprConvertGlobalToLocal';
+    function   LlGetLastErrorText;             external LibNameLL31DLL name 'LlGetLastErrorText';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprConvertLocalToGlobal;     external LibNameLL30DLL index 324;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlDomGetCurrentObject;          external LibNameLL31DLL index 333;
    {$else}
-    function   LlExprConvertLocalToGlobal;     external LibNameLL30DLL name 'LlExprConvertLocalToGlobal';
+    function   LlDomGetCurrentObject;          external LibNameLL31DLL name 'LlDomGetCurrentObject';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsGetProjectType;          external LibNameLL30DLL index 325;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsIDFromOrgID;             external LibNameLL31DLL index 334;
    {$else}
-    function   LlUtilsGetProjectType;          external LibNameLL30DLL name 'LlUtilsGetProjectType';
+    function   LlUtilsIDFromOrgID;             external LibNameLL31DLL name 'LlUtilsIDFromOrgID';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetLastErrorText;             external LibNameLL30DLL index 327;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlProjectFindAndReplace;        external LibNameLL31DLL index 312;
    {$else}
-    function   LlGetLastErrorText;             external LibNameLL30DLL name 'LlGetLastErrorText';
+    function   LlProjectFindAndReplace;        external LibNameLL31DLL name 'LlProjectFindAndReplace';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlDomGetCurrentObject;          external LibNameLL30DLL index 333;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprParseQueryDelayedDefine;  external LibNameLL31DLL index 338;
    {$else}
-    function   LlDomGetCurrentObject;          external LibNameLL30DLL name 'LlDomGetCurrentObject';
+    function   LlExprParseQueryDelayedDefine;  external LibNameLL31DLL name 'LlExprParseQueryDelayedDefine';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsIDFromOrgID;             external LibNameLL30DLL index 334;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprTypeMask;                 external LibNameLL31DLL index 345;
    {$else}
-    function   LlUtilsIDFromOrgID;             external LibNameLL30DLL name 'LlUtilsIDFromOrgID';
+    function   LlExprTypeMask;                 external LibNameLL31DLL name 'LlExprTypeMask';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlProjectFindAndReplace;        external LibNameLL30DLL index 312;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestJobCmpEmbeddedStorages2;   external LibNameLL31DLL index 367;
    {$else}
-    function   LlProjectFindAndReplace;        external LibNameLL30DLL name 'LlProjectFindAndReplace';
+    function   LlStgTestJobCmpEmbeddedStorages2;   external LibNameLL31DLL name 'LlStgTestJobCmpEmbeddedStorages2';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprParseQueryDelayedDefine;  external LibNameLL30DLL index 338;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgTestJobAddResultJobs;      external LibNameLL31DLL index 349;
    {$else}
-    function   LlExprParseQueryDelayedDefine;  external LibNameLL30DLL name 'LlExprParseQueryDelayedDefine';
+    function   LlStgTestJobAddResultJobs;      external LibNameLL31DLL name 'LlStgTestJobAddResultJobs';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprTypeMask;                 external LibNameLL30DLL index 345;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlStgCreateFrom;                external LibNameLL31DLL index 391;
    {$else}
-    function   LlExprTypeMask;                 external LibNameLL30DLL name 'LlExprTypeMask';
+    function   LlStgCreateFrom;                external LibNameLL31DLL name 'LlStgCreateFrom';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlStgCreateFrom;                external LibNameLL30DLL index 391;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRemoveIdentifier;             external LibNameLL31DLL index 392;
    {$else}
-    function   LlStgCreateFrom;                external LibNameLL30DLL name 'LlStgCreateFrom';
+    function   LlRemoveIdentifier;             external LibNameLL31DLL name 'LlRemoveIdentifier';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRemoveIdentifier;             external LibNameLL30DLL index 392;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlExprParseEx;                  external LibNameLL31DLL index 393;
    {$else}
-    function   LlRemoveIdentifier;             external LibNameLL30DLL name 'LlRemoveIdentifier';
+    function   LlExprParseEx;                  external LibNameLL31DLL name 'LlExprParseEx';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlExprParseEx;                  external LibNameLL30DLL index 393;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetAvailableFonts;            external LibNameLL31DLL index 397;
    {$else}
-    function   LlExprParseEx;                  external LibNameLL30DLL name 'LlExprParseEx';
+    function   LlGetAvailableFonts;            external LibNameLL31DLL name 'LlGetAvailableFonts';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetAvailableFonts;            external LibNameLL30DLL index 397;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRepositoryGetDrilldownItemList;   external LibNameLL31DLL index 398;
    {$else}
-    function   LlGetAvailableFonts;            external LibNameLL30DLL name 'LlGetAvailableFonts';
+    function   LlRepositoryGetDrilldownItemList;   external LibNameLL31DLL name 'LlRepositoryGetDrilldownItemList';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlRepositoryGetDrilldownItemList;   external LibNameLL30DLL index 398;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlUtilsGetReportParameterNames; external LibNameLL31DLL index 399;
    {$else}
-    function   LlRepositoryGetDrilldownItemList;   external LibNameLL30DLL name 'LlRepositoryGetDrilldownItemList';
+    function   LlUtilsGetReportParameterNames; external LibNameLL31DLL name 'LlUtilsGetReportParameterNames';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlUtilsGetReportParameterNames; external LibNameLL30DLL index 399;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlGetIdentifierHelpText;        external LibNameLL31DLL index 400;
    {$else}
-    function   LlUtilsGetReportParameterNames; external LibNameLL30DLL name 'LlUtilsGetReportParameterNames';
+    function   LlGetIdentifierHelpText;        external LibNameLL31DLL name 'LlGetIdentifierHelpText';
   {$endif}
-  {$ifdef CMLL30_LINK_INDEXED}
-    function   LlGetIdentifierHelpText;        external LibNameLL30DLL index 400;
+  {$ifdef CMLL31_LINK_INDEXED}
+    function   LlRepositoryEditorDialog;       external LibNameLL31DLL index 404;
    {$else}
-    function   LlGetIdentifierHelpText;        external LibNameLL30DLL name 'LlGetIdentifierHelpText';
+    function   LlRepositoryEditorDialog;       external LibNameLL31DLL name 'LlRepositoryEditorDialog';
   {$endif}
 
 begin

@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{85033385-2CDC-416E-9BA3-A9ED00CFC926}</ProjectGuid>
-        <MainSource>ListLabel30Components.dpk</MainSource>
+        <MainSource>ListLabel31Components.dpk</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>3</TargetedPlatforms>
@@ -49,13 +49,13 @@
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
         <DCC_S>false</DCC_S>
         <DCC_ImageBase>00400000</DCC_ImageBase>
-        <SanitizedProjectName>ListLabel30Components</SanitizedProjectName>
+        <SanitizedProjectName>ListLabel31Components</SanitizedProjectName>
         <DCC_N>false</DCC_N>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=;CFBundleName=</VerInfo_Keys>
         <VerInfo_Locale>1031</VerInfo_Locale>
         <DCC_F>false</DCC_F>
         <DCC_K>false</DCC_K>
-        <DCC_Description>combit List &amp; Label 30 Components</DCC_Description>
+        <DCC_Description>combit List &amp; Label 31 Components</DCC_Description>
         <DCC_CBuilderOutput>All</DCC_CBuilderOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
@@ -92,7 +92,7 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="ListLabel30ComponentsResource.dcr"/>
+        <DCCReference Include="ListLabel31ComponentsResource.dcr"/>
         <DCCReference Include="vcl.dcp"/>
         <DCCReference Include="DesignIde.dcp"/>
         <DCCReference Include="dbrtl.dcp"/>
@@ -107,39 +107,41 @@
         <DCCReference Include="Sources\LLObjectEditor.pas"/>
         <DCCReference Include="Sources\ObjTree.pas"/>
         <DCCReference Include="Sources\LLThreads.pas"/>
-        <DCCReference Include="Sources\LL30Report_Reg.pas"/>
+        <DCCReference Include="Sources\LL31Report_Reg.pas"/>
         <DCCReference Include="Sources\LLReport_Types.pas"/>
-        <DCCReference Include="Sources\ListLabel30.pas"/>
-        <DCCReference Include="Sources\l30FireDACInterfaces.pas">
+        <DCCReference Include="Sources\ListLabel31.pas"/>
+        <DCCReference Include="Sources\l31FireDACInterfaces.pas">
             <ModuleName>LLFireDACInterf</ModuleName>
         </DCCReference>
-        <DCCReference Include="Sources\l30CommonInterfaces.pas"/>
+        <DCCReference Include="Sources\l31CommonInterfaces.pas"/>
         <DCCReference Include="Sources\LLPreview.pas"/>
-        <DCCReference Include="Sources\cmbtLL30x.pas"/>
-        <DCCReference Include="Sources\cmbtLS30x.pas"/>
-        <RcItem Include="Images\TLDesignerAction30.bmp">
+        <DCCReference Include="Sources\cmbtLL31x.pas"/>
+        <DCCReference Include="Sources\cmbtLS31x.pas"/>
+		<DCCReference Include="Sources\LlCoreRepository.pas"/>
+        <DCCReference Include="Sources\LlRepository.pas"/>
+        <RcItem Include="Images\TLDesignerAction31.bmp">
             <ResourceType>BITMAP</ResourceType>
-            <ResourceId>TLDesignerAction30</ResourceId>
+            <ResourceId>TLDesignerAction31</ResourceId>
         </RcItem>
-        <RcItem Include="Images\TListLabel30.bmp">
+        <RcItem Include="Images\TListLabel31.bmp">
             <ResourceType>BITMAP</ResourceType>
-            <ResourceId>TListLabel30</ResourceId>
+            <ResourceId>TListLabel31</ResourceId>
         </RcItem>
-        <RcItem Include="Images\TLlDesignerFunction30.bmp">
+        <RcItem Include="Images\TLlDesignerFunction31.bmp">
             <ResourceType>BITMAP</ResourceType>
-            <ResourceId>TLlDesignerFunction30</ResourceId>
+            <ResourceId>TLlDesignerFunction31</ResourceId>
         </RcItem>
-        <RcItem Include="Images\TLlDesignerObject30.bmp">
+        <RcItem Include="Images\TLlDesignerObject31.bmp">
             <ResourceType>BITMAP</ResourceType>
-            <ResourceId>TLlDesignerObject30</ResourceId>
+            <ResourceId>TLlDesignerObject31</ResourceId>
         </RcItem>
-        <RcItem Include="Images\TLlPreviewControl30.bmp">
+        <RcItem Include="Images\TLlPreviewControl31.bmp">
             <ResourceType>BITMAP</ResourceType>
-            <ResourceId>TLlPreviewControl30</ResourceId>
+            <ResourceId>TLlPreviewControl31</ResourceId>
         </RcItem>
-        <RcItem Include="Images\TLlRTFControl30.bmp">
+        <RcItem Include="Images\TLlRTFControl31.bmp">
             <ResourceType>BITMAP</ResourceType>
-            <ResourceId>TLlRTFControl30</ResourceId>
+            <ResourceId>TLlRTFControl31</ResourceId>
         </RcItem>
         <BuildConfiguration Include="Debug">
             <Key>Cfg_2</Key>
@@ -159,7 +161,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">ListLabel30Components.dpk</Source>
+                    <Source Name="MainSource">ListLabel31Components.dpk</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\bcboffice2k280.bpl">Embarcadero C++Builder-Package für Office 2000-Server</Excluded_Packages>
@@ -173,9 +175,9 @@
                 <Platform value="Win64">True</Platform>
             </Platforms>
             <Deployment Version="3">
-                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\ListLabel30Components.bpl" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\ListLabel31Components.bpl" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>ListLabel30Components.bpl</RemoteName>
+                        <RemoteName>ListLabel31Components.bpl</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
