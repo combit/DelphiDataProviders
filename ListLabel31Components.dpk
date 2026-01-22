@@ -2,30 +2,7 @@ package ListLabel31Components;
 
 {$R *.res}
 {$R *.dres}
-{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
-{$ALIGN 8}
-{$ASSERTIONS ON}
-{$BOOLEVAL OFF}
-{$DEBUGINFO OFF}
-{$EXTENDEDSYNTAX ON}
-{$IMPORTEDDATA ON}
-{$IOCHECKS ON}
-{$LOCALSYMBOLS ON}
-{$LONGSTRINGS ON}
-{$OPENSTRINGS ON}
-{$OPTIMIZATION OFF}
-{$OVERFLOWCHECKS OFF}
-{$RANGECHECKS OFF}
-{$REFERENCEINFO ON}
-{$SAFEDIVIDE OFF}
-{$STACKFRAMES ON}
-{$TYPEDADDRESS OFF}
-{$VARSTRINGCHECKS ON}
-{$WRITEABLECONST OFF}
-{$MINENUMSIZE 1}
-{$IMAGEBASE $400000}
-{$DEFINE DEBUG}
-{$ENDIF IMPLICITBUILDING}
+
 {$DESCRIPTION 'combit List & Label 31 Components'}
 {$IMPLICITBUILD ON}
 
@@ -33,6 +10,10 @@ requires
   vcl,
   {$ifdef win32}
   DesignIde,
+  {$else}
+  {$ifdef VER370}
+  DesignIde,
+  {$endif}
   {$endif}
   dbrtl,
   vclimg,
@@ -46,13 +27,16 @@ contains
   LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
   LLDataProvider in 'Sources\LLDataProvider.pas',
   {$ifdef win32}
-   LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  LL31Report_Reg in 'Sources\LL31Report_Reg.pas',
+  {$else}
+  {$if CompilerVersion > 36}
+  LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  LL31Report_Reg in 'Sources\LL31Report_Reg.pas',
+  {$endif}
   {$endif}
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  {$ifdef win32}
-   LL31Report_Reg in 'Sources\LL31Report_Reg.pas',
-  {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel31 in 'Sources\ListLabel31.pas',
   l31FireDACInterfaces in 'Sources\l31FireDACInterfaces.pas',

@@ -6,14 +6,15 @@
  File   : LLDataSetDataProvider.pas
  Module : List & Label 31
  Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.000
+ Version: 31.001
+
 ==================================================================================
 }
 
 unit LLDataSetDataProvider;
 
 interface
-{$WEAKPACKAGEUNIT ON}
+
 uses LLDataProvider,
      Vcl.StdCtrls, Data.DB, Classes,
      system.Generics.Collections,

@@ -4,16 +4,17 @@
 
 ----------------------------------------------------------------------------------
  File   : LLReport_Types.pas
- Module : LLReport_Types.pas
+ Module : LLReport_Types
  Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.000
+ Version: 31.001
+
 ==================================================================================
 }
 
 unit LLReport_Types;
 
 interface
-{$WEAKPACKAGEUNIT ON}
+
 Uses
   Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll31x, Dialogs, System.UITypes;
 
@@ -631,11 +632,12 @@ Type
 
   TImageStorage = class(System.Contnrs.TObjectList)
   private
-    function GetItem(Index: Integer): TPicture;
-    procedure SetItem(Index: Integer; Value: TPicture);
+    function GetItem(Index: NativeInt): TPicture;
+    procedure SetItem(Index: NativeInt; Value: TPicture);
   public
     function AddItem: TPicture;
-    property Items[Index: Integer]: TPicture read GetItem write SetItem; default;
+	 property Items[Index: NativeInt]: TPicture read GetItem write SetItem; default;
+	
   end;
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -1786,12 +1788,12 @@ end;
 // TImageStorage
 // =====================================================================
 
-function TImageStorage.GetItem(Index: Integer): TPicture;
+function TImageStorage.GetItem(Index: NativeInt): TPicture;
 begin
   Result := TPicture(inherited GetItem(Index));
 end;
 
-procedure TImageStorage.SetItem(Index: Integer; Value: TPicture);
+procedure TImageStorage.SetItem(Index: NativeInt; Value: TPicture);
 Begin
   inherited SetItem(Index, Value);
 End;

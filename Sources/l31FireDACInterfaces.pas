@@ -6,7 +6,7 @@
  File   : L31FireDACInterfaces.pas
  Module : List & Label 31 FireDAC Interface definitions
  Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.000
+ Version: 31.001
 ==================================================================================
 }
 
@@ -14,7 +14,7 @@ unit l31FireDACInterfaces;
 
 
 interface
-{$WEAKPACKAGEUNIT ON}
+
 
 uses
 	windows,
@@ -70,22 +70,21 @@ type
 
 
 ILlXInterface = interface(IUnknown)
+['{3cbae4e1-8880-11d2-96a3-0060086fefd5}']
     end;
 
 ILlBase = interface(IUnknown)
   end;
-pILlBase =Array[0..0] of ILlBase;
-
 
 ILlXObjectNtfySink = interface(IUnknown)
+['{3cbae4f4-8880-11d2-96a3-0060086fefd5}']
   function UpdateView(const nFlags: cardinal; const bImmediate: boolean): HResult; stdcall;
       function SetActive(bLock: boolean): HResult; stdcall;
   end;
-pILlXObjectNtfySink =Array[0..0] of ILlXObjectNtfySink;
-
 
 ILlXObject = interface(IUnknown)
-  function SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;  stdcall;
+  ['{3cbae4e9-8880-11d2-96a3-0060086fefd5}']
+  function SetLLJob(hLLJob: HLLJob; pInfo: ILlBase): HResult;  stdcall;
   function GetName(var pbsName: OLEString): HResult;  stdcall;   // get name.
   function GetDescr(var pbsDescr: OLEString):HResult;  stdcall;  // get description
   function GetIcon(var phIcon: HIcon):HResult;  stdcall; // get icon (must be released by LLX Object)
@@ -96,7 +95,7 @@ ILlXObject = interface(IUnknown)
   function GetOptionString(const sOption: OLEString; var psValue:OLEString): HResult; stdcall;
   function SetParameters(pIStream: IStream): HResult; stdcall;
   function GetParameters(pIStream: IStream ): HResult;  stdcall;
-  function Clone (var pIObject):HResult; stdcall;
+  function Clone (var pIObject: ILlXObject):HResult; stdcall;
   function FirstCreation(const hWndParent: cmbtHWND):HResult; stdcall;// Wizard?
   function GetMinDimensionsSCM(const bForNew: boolean; var ptMinSize: Size):HResult; stdcall;
   function Show(const hDC: HDC; var prcPaint: TRect; const hExportProfJob: HPROFJOB; const hExportProfList: HPROFLIST; const nExportVerbosity: integer; const nDestination: integer; const bSelected: boolean):HResult ;stdcall;
@@ -109,7 +108,7 @@ ILlXObject = interface(IUnknown)
   function PrintUnfinished:HResult ;stdcall;
   function PrintFinished:HResult ;stdcall;
   function PrintPastFinished:HResult ;stdcall;
-  function SetNtfySink(pNtfySink: pILlXObjectNtfySink):HResult ;stdcall; // must inc ref count and release when finished
+  function SetNtfySink(pNtfySink: ILlXObjectNtfySink):HResult ;stdcall; // must inc ref count and release when finished
   function Edit(const hWnd: cmbtHWND;ptMouse: TPoint):HResult ;stdcall;// S_FALSE for aborted, pNtfySink may be NULL!!!
   function ClearEditPartInfo:HResult ;stdcall;
   function CanEditPart(ptMouse: TPoint; var phMenu: hMenu):HResult ;stdcall; // item ID 10000 ff
@@ -128,19 +127,18 @@ ILlXObject = interface(IUnknown)
   function GetVarSizeInfo(const hDC: HDC; const prcSpaceAvailable: pTRect; var pnMinHeight,pnIdealHeight: integer): HRESULT; stdcall;
   end;
 
-  pILlXObject = Array[0..0] of ILlXObject;
-
-
 //EnumObjects-Interface
 ILlXEnumObjects = interface(IUnknown)
-  function Next(nCount: cardinal; var Obj: pILlXObject; pnDone: PLongint): HResult;  stdcall;
+  ['{3cbae4e8-8880-11d2-96a3-0060086fefd5}']
+  function Next(nCount: cardinal; var Obj: ILlXObject; pnDone: PLongint): HResult;  stdcall;
   function Skip(nCount: cardinal): HResult;  stdcall;
   function Reset: HResult;  stdcall;
   function Clone(var Obj): HResult;  stdcall;
 end;
 
 ILlXFunction=Interface(IUnknown)
-  function SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;  stdcall;
+  ['{3cbae4e7-8880-11d2-96a3-0060086fefd5}']
+  function SetLLJob(hLLJob: HLLJob; pInfo: ILlBase): HResult;  stdcall;
   function SetOption (const nOption: integer; nValue: lParam): HResult;  stdcall;
   function GetOption (const nOption: integer; var pnValue: lParam): HResult; stdcall;
   function GetName(var pbsName: OLEString): HResult;  stdcall;   // get name.
@@ -154,10 +152,10 @@ ILlXFunction=Interface(IUnknown)
   function GetVisibleFlag(var pbVisible: boolean) : HResult; stdcall;
   function GetParaValueHint(const nPara: integer; var pbsHint,pbsTabbedList: OLEString): HResult; stdcall;// nPara = 0..3
 end;
-pILlXFunction = Array[0..0] of ILlXFunction;
 
 ILlXEnumFunctions=Interface(IUnknown)
-  function Next(nCount: cardinal; var Obj: pILlXFunction; pnDone: PLongint): HResult;  stdcall;
+  ['{3cbae4e6-8880-11d2-96a3-0060086fefd5}']
+  function Next(nCount: cardinal; var Obj: ILlXFunction; pnDone: PLongint): HResult;  stdcall;
   function Skip(nCount: cardinal): HResult;  stdcall;
   function Reset: HResult;  stdcall;
   function Clone(var Obj): HResult;  stdcall;
@@ -188,7 +186,7 @@ public
   function QueryInterface(const IID: TGUID; out Obj): HResult;  stdcall;
   function _AddRef: Integer; stdcall;
   function _Release: Integer; stdcall;
-  function Next(nCount: cardinal; var Obj: pILlXObject; pnDone: PLongint): HResult; stdcall;
+  function Next(nCount: cardinal; var Obj: ILlXObject; pnDone: PLongint): HResult; stdcall;
   function Skip(nCount: cardinal): HResult; stdcall;
   function Reset: HResult; stdcall;
   function Clone(var Obj): HResult;  stdcall;
@@ -205,7 +203,7 @@ public
   function QueryInterface(const IID: TGUID; out Obj): HResult;  stdcall;
   function _AddRef: Integer; stdcall;
   function _Release: Integer; stdcall;
-  function Next(nCount: cardinal; var Obj: pILlXFunction; pnDone: PLongint): HResult; stdcall;
+  function Next(nCount: cardinal; var Obj: ILlXFunction; pnDone: PLongint): HResult; stdcall;
   function Skip(nCount: cardinal): HResult; stdcall;
   function Reset: HResult;       stdcall;
   function Clone(var Obj): HResult;  stdcall;
@@ -332,44 +330,34 @@ end;
 
 function LlXEnumObjects.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
-	Result := S_OK;
-	pointer(obj) := NIL;
+ Result := E_NOINTERFACE;
 
-    if  IsEqualGuid(iid,IID_IUnknown) then
-          IUnknown(obj) := IUnknown(self);
-    if IsEqualGuid(iid,IID_LLX_IENUMOBJECTS) then
-          ILlxEnumObjects(obj) := ILlxEnumObjects(self);
-
-    if pointer(obj) = NIL then
-        Result := E_NOINTERFACE;
-
-end;
-
-function LlXEnumObjects.Next(nCount: cardinal; var Obj: pILlXObject; pnDone: PLongint): HResult;
-var
-    pObject: TLlDesignerObject31;
-    pObj: ILlXObject;
-begin
-    Obj[0] := NIL;
-    pObj := NIL;
-    pnDone^:=0;
-    if m_nIndex <= FObjList.Count-1 then
-    	begin
-          pObject := TLlDesignerObject31(FObjList[m_nIndex]);
-          if FAILED(pObject.QueryInterface(IID_LLX_IOBJECT,pObj)) then
-              begin
-              pObject.Free;
-              Result := E_FAIL;
-              exit;
-              end;
-          Obj[0] := pObj;
-          pObj:=nil;
-
-        inc(m_nIndex);
-        inc(pnDone^);
-        end;
+  if (GetInterface(IID,Obj)) then
     Result := S_OK;
 end;
+
+function LlXEnumObjects.Next(nCount: cardinal; var Obj: ILlXObject; pnDone: PLongint): HResult;
+var
+    pObject: TLlDesignerObject31;
+begin
+ Result := S_FALSE;
+    pnDone^:=0;
+    if m_nIndex <= FObjList.Count-1 then
+        begin
+        pObject := TLlDesignerObject31.CreateCopy(nil, FObjList[m_nIndex]);
+        if (not pObject.GetInterface(IID_LLX_IOBJECT, Obj)) then
+            begin
+            pObject.Free;
+            Result := E_FAIL;
+            end
+          else
+            begin
+            inc(m_nIndex);
+            inc(pnDone^);
+            Result := S_OK;
+            end;
+        end;
+ end;
 
 function LlXEnumObjects.Skip(nCount: cardinal): HResult;
 begin
@@ -443,25 +431,15 @@ begin
 
 end;
 
-function LlXEnumFunctions.Next(nCount: cardinal; var Obj: pILlXFunction; pnDone: PLongint): HResult;
+function LlXEnumFunctions.Next(nCount: cardinal; var Obj: ILlXFunction; pnDone: PLongint): HResult;
 var
     pFunction: TLlDesignerFunction31;
-    pObj: ILlXFunction;
 begin
-    Obj[0] := NIL;
-    pObj := NIL;
     pnDone^:=0;
     if m_nIndex <= FFctList.Count-1 then
     	begin
           pFunction := TLlDesignerFunction31(FFctList[m_nIndex]);
-          if FAILED(pFunction.QueryInterface(IID_LLX_IFUNCTION,pObj)) then
-              begin
-              pFunction.Free;
-              Result := E_FAIL;
-              exit;
-              end;
-          Obj[0] := pObj;
-          pObj:=nil;
+          Obj := pFunction;
 
         inc(m_nIndex);
         inc(pnDone^);
@@ -505,4 +483,3 @@ end;
 
 
 end.
-

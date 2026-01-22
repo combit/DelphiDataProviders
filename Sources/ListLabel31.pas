@@ -6,7 +6,7 @@
  File   : ListLabel31.pas
  Module : List & Label 31
  Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.000
+ Version: 31.001
 ==================================================================================
 }
 
@@ -268,7 +268,6 @@ end;
 TLlDesignerFunction31=class(TComponent,ILlXFunction,IUnknown)
 private
   FParent:TListLabel31;
-  FILlBase: pILlBase;
   FLLJob: HLLJOB;
   FRefCount: Integer;
   FLanguage: integer;
@@ -313,7 +312,7 @@ public
   function QueryInterface(const IID: TGUID; out Obj): HResult; override; stdcall;
   function _AddRef: Integer; stdcall;
   function _Release: Integer; stdcall;
-  function SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult; stdcall;
+  function SetLLJob(hLLJob: HLLJob; pInfo: ILlBase): HResult; stdcall;
   function SetOption (const nOption: integer; nValue: lParam): HResult;  stdcall;
   function GetOption (const nOption: integer; var pnValue: lParam): HResult; stdcall;
   function GetName(var pbsName: OLEString): HResult; stdcall;  // get name.
@@ -385,8 +384,8 @@ private
   procedure SetOnResetPrintState(const Value: TResetPrintStateEvent);
 protected
   FRefCount: Integer;
-  FILlXObjectNtfySink: pILlXObjectNtfySink ;
-  FILlBase: pILlBase;
+  FILlXObjectNtfySink: ILlXObjectNtfySink ;
+  FILlBase: ILlBase;
   FLLJob: HLLJOB;
   FIsCopy: boolean;
 
@@ -415,7 +414,7 @@ public
   function QueryInterface(const IID: TGUID; out Obj): HResult; override; stdcall;
   function _AddRef: Integer; stdcall;
   function _Release: Integer; stdcall;
-  function SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult; stdcall;
+  function SetLLJob(hLLJob: HLLJob; pInfo: ILlBase): HResult; stdcall;
   function GetName(var pbsName: OLEString): HResult; stdcall;  // get name.
   function GetDescr(var pbsDescr: OLEString):HResult; stdcall; // get description
   function GetIcon(var phIcon: HIcon):HResult; stdcall;// get icon (must be released by LLX object)
@@ -426,7 +425,7 @@ public
   function GetOptionString(const sOption: OLEString; var psValue:OLEString): HResult;stdcall;
   function SetParameters(pIStream: IStream): HResult;stdcall;
   function GetParameters(pIStream: IStream ): HResult; stdcall;
-  function Clone (var pIObject):HResult; stdcall;
+  function Clone (var pIObject: ILlXObject):HResult; stdcall;
   function FirstCreation(const hWndParent: cmbtHWND):HResult; stdcall;// Wizard?
   function GetMinDimensionsSCM(const bForNew: boolean; var ptMinSize: Size):HResult; stdcall;
   function Show(const hDC: HDC; var prcPaint: TRect; const hExportProfJob: HPROFJOB; const hExportProfList: HPROFLIST; const nExportVerbosity: integer; const nDestination: integer; const bSelected: boolean):HResult ;stdcall;
@@ -439,7 +438,7 @@ public
   function PrintUnfinished:HResult ;stdcall;
   function PrintFinished:HResult ;stdcall;
   function PrintPastFinished:HResult ;stdcall;
-  function SetNtfySink(pNtfySink: pILlXObjectNtfySink):HResult ;stdcall; // must inc ref count and release when finished
+  function SetNtfySink(pNtfySink: ILlXObjectNtfySink):HResult ;stdcall; // must inc ref count and release when finished
   function Edit(const hWnd: cmbtHWND;ptMouse: TPoint):HResult ;stdcall;// S_FALSE for aborted, pNtfySink may be NULL!!!
   function ClearEditPartInfo:HResult ;stdcall;
   function CanEditPart(ptMouse: TPoint; var phMenu: hMenu):HResult ;stdcall; // item ID 10000 ff
@@ -991,12 +990,12 @@ begin
       begin
           (TListLabel31(lUserParam)).NotifyProgressCallback(Integer(lparam));
       end;
-	  
+
 	  LL_NTFY_VIEWERBTNCLICKED:
       begin
           lResult := (TListLabel31(lUserParam)).NotifyViewerBtnClicked(Integer(lparam));
       end;
-	  
+
     LL_INFO_PRINTJOBSUPERVISION:
       begin
           (TListLabel31(lUserParam)).PrintJobInfoCallback(PSCLLPRINTJOBINFO(lParam));
@@ -2576,7 +2575,7 @@ begin
 	LlSetOption(GetJobHandle, LL_OPTION_ILLDATAPROVIDER, lParam(ILlDataProvider(DataProviderIntf)));
 	if (FDomDataProvider <> nil) then FDomDataProvider.Free;
 	FDomDataProvider:=DataProvider;
-		
+
 end;
 
 Procedure TListLabel31.DefineData(DataProvider: TDataSetDataProvider; table: TListLabelTable);
@@ -3894,14 +3893,7 @@ end;
 function TLlDesignerFunction31._Release: Integer;
 begin
     InterlockedDecrement(l31FireDACInterfaces.g_nObjects);
-	Result := InterlockedDecrement(FRefCount);
-    if Result = 0 then
-    begin
-      if FILlBase[0]<>nil then
-          FILlBase[0]:=nil;
-
-    end;
-
+	  Result := InterlockedDecrement(FRefCount);
 end;
 
 function TLlDesignerFunction31.CheckSyntax(var pbsError: OLEString;
@@ -4124,18 +4116,10 @@ end;
 
 function TLlDesignerFunction31.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
-	Result := S_OK;
-	pointer(obj) := NIL;
+	Result := E_NOINTERFACE;
 
-	if IsEqualGuid(iid,IID_IUnknown) then
-        IUnknown(obj):=IUnknown(self);
-
-    if IsEqualGuid(iid,IID_LLX_IFUNCTION) then
-        ILlXFunction(obj) := ILlXFunction(self);
-
-    if pointer(obj) = NIL then
-        Result := E_NOINTERFACE;
-
+  if (GetInterface(IID,Obj)) then
+    Result := S_OK;
 end;
 
 procedure TLlDesignerFunction31.SetDescription(const Value: String);
@@ -4143,17 +4127,9 @@ begin
   FDescription := Value;
 end;
 
-function TLlDesignerFunction31.SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;
+function TLlDesignerFunction31.SetLLJob(hLLJob: HLLJob; pInfo: ILlBase): HResult;
 begin
-  if (hLLJob=0) then
-  begin
-      result:=S_OK;
-      exit;
-  end;
   FLlJob:=hLlJob;
-  if FILlBase[0]<>nil then
-      FILlBase[0]:=nil;
-  FILlBase:=pInfo;
   result:=S_OK;
 end;
 
@@ -4392,20 +4368,12 @@ end;
 function TLlDesignerObject31._Release: Integer;
 begin
     InterlockedDecrement(l31FireDACInterfaces.g_nObjects);
-	Result := InterlockedDecrement(FRefCount);
-    if Result = 0 then
+  	Result := InterlockedDecrement(FRefCount);
+    if (Result = 0) then
     begin
-      if FILlBase[0]<>nil then
-          FILlBase[0]:=nil;
-      if FILlXObjectNtfySink[0]<>nil then
-          FILlXObjectNtfySink[0]:=nil;
-      if FIsCopy then
-        self.Destroy;
+      self.Destroy;
     end;
-
 end;
-
-
 
 function TLlDesignerObject31.AllowPageBreak: HResult;
 begin
@@ -4493,18 +4461,11 @@ begin
     result:=S_OK;
 end;
 
-function TLlDesignerObject31.Clone(var pIObject): HResult;
-var pObject: TLlDesignerObject31;
+function TLlDesignerObject31.Clone(var pIObject: ILlXObject): HResult;
 begin
     try
-      pObject := TLlDesignerObject31.CreateCopy(owner,self);
-      if FAILED(pObject.QueryInterface(IID_LLX_IOBJECT,pIObject)) then
-          begin
-          pObject.Free;
-          Result := E_FAIL;
-          exit;
-          end;
-     result:=S_OK;
+      pIObject := TLlDesignerObject31.CreateCopy(owner,self);
+      result:=S_OK;
     except
      Result := E_FAIL;
     end;
@@ -4558,26 +4519,14 @@ begin
      FFontHandle:=Base.FFontHandle;
      FFontColor:=Base.FFontColor;
      FFontSize:=Base.FFontSize;
-     if Base.FILlBase[0]<> nil then
-     begin
-        FILlBase[0]:=Base.FILlBase[0];
-     end
-     else
-        FILlBase[0]:=nil;
-
-     if Base.FILlXObjectNtfySink[0]<>nil then
-     begin
-        FILlXObjectNtfySink[0]:=Base.FILlXObjectNtfySink[0];
-     end
-     else
-        FILlXObjectNtfySink[0]:=nil;
-
+     FILlBase:=nil;
+     FILlXObjectNtfySink:=nil;
      Properties:=TListLabelDesignerProperty.CreateCopy(Base.Properties);
 end;
 
 destructor TLlDesignerObject31.Destroy;
 begin
-    if Assigned(fParent) then
+    if not FIsCopy and Assigned(fParent) then
      try
          fParent.DesignerObjects.Remove(self);
      except
@@ -4598,9 +4547,9 @@ begin
     begin
         FOnEdit(self, hWnd, ChangedFlag);
         if ChangedFlag then
-            FILlXObjectNtfySink[0].UpdateView(LLX_OBJECTNOTIFYSINK_UPDATEVIEWFLAG_OBJECTCHANGED, true)
+            FILlXObjectNtfySink.UpdateView(LLX_OBJECTNOTIFYSINK_UPDATEVIEWFLAG_OBJECTCHANGED, true)
         else
-            FILlXObjectNtfySink[0].UpdateView(0,true);
+            FILlXObjectNtfySink.UpdateView(0,true);
     end;
     result:=S_OK;
 end;
@@ -4637,7 +4586,7 @@ begin
         if Assigned(TheItem.OnClick) then
         begin
             TheItem.OnClick(self);
-            FILlXObjectNtfySink[0].UpdateView(LLX_OBJECTNOTIFYSINK_UPDATEVIEWFLAG_OBJECTCHANGED, true);
+            FILlXObjectNtfySink.UpdateView(LLX_OBJECTNOTIFYSINK_UPDATEVIEWFLAG_OBJECTCHANGED, true);
         end;
     result:=S_OK;
 end;
@@ -4839,18 +4788,10 @@ end;
 
 function TLlDesignerObject31.QueryInterface(const IID: TGUID; out Obj): HResult;
 begin
-	Result := S_OK;
-	pointer(obj) := NIL;
+  Result := E_NOINTERFACE;
 
-	if IsEqualGuid(iid,IID_IUnknown) then
-        IUnknown(obj):=IUnknown(self);
-
-    if IsEqualGuid(iid,IID_LLX_IObject) then
-        ILlXObject(obj) := ILlXObject(self);
-
-    if pointer(obj) = NIL then
-        Result := E_NOINTERFACE;
-
+  if (GetInterface(IID,Obj)) then
+    Result := S_OK;
 end;
 
 function TLlDesignerObject31.ResetPrintState: HResult;
@@ -4898,28 +4839,16 @@ begin
 end;
 
 
-function TLlDesignerObject31.SetLLJob(hLLJob: HLLJob; pInfo: pILlBase): HResult;
+function TLlDesignerObject31.SetLLJob(hLLJob: HLLJob; pInfo: ILlBase): HResult;
 begin
-    if (hLLJob=0) then
-    begin
-        result:=S_OK;
-        exit;
-    end;
     FLlJob:=hLlJob;
-    if FILlBase[0]<>nil then
-        FILlBase[0]:=nil;
     FILlBase:=pInfo;
-
     result:=S_OK;
-
 end;
 
-function TLlDesignerObject31.SetNtfySink(pNtfySink: pILlXObjectNtfySink): HResult;
+function TLlDesignerObject31.SetNtfySink(pNtfySink: ILlXObjectNtfySink): HResult;
 begin
-    if FILlXObjectNtfySink[0] <> nil then
-        FILlXObjectNtfySink[0]:=nil;
-
-    FILlXObjectNtfySink[0]:=pNtfySink[0];
+    FILlXObjectNtfySink:=pNtfySink;
     result:=S_OK;
 end;
 
@@ -5015,7 +4944,8 @@ end;
 procedure TLlDesignerObject31.SetMyParentComponent(const Value: TListLabel31);
 begin
   fParent := Value;
-  fParent.DesignerObjects.Add(self);
+  if (not FIsCopy) then
+    fParent.DesignerObjects.Add(self);
 end;
 
 procedure TLlDesignerObject31.SetOnClick(const Value: TClickEvent);
@@ -5747,6 +5677,3 @@ finalization
   FreeMem(g_BufferStr);
   g_BufferStr := nil;
 end.
-
-
-

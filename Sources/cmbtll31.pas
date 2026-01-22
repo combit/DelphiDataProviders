@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL31.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2025-09-22 23:09:32] *)
+(*  [build of 2025-12-08 14:12:03] *)
 
 unit cmbtLL31;
 
@@ -952,6 +952,8 @@ const
                     (* r/o *)
   LL_PRNOPT_PAGERANGE_USES_ABSOLUTENUMBER = 20;
                     (* default: false *)
+  LL_PRNOPT_PAGEINDEX_FOR_PAGERANGE = 21;
+                    (* r/o, returns page number or page index, depending on option LL_PRNOPT_PAGERANGE_USES_ABSOLUTENUMBER *)
   LL_PRNOPT_USEMEMORYMETAFILE    = 22;
                     (* default: false *)
   LL_PRNOPT_PARTIALPREVIEW       = 23;
