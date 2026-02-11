@@ -6,14 +6,13 @@
  File   : LLPreview.pas
  Module : LLPreview.pas
  Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Version: 30.001
 ==================================================================================
 }
 
 unit LLPreview;
 
 interface
-{$WEAKPACKAGEUNIT ON}
 
 uses
   System.SysUtils, System.Classes, WinApi.Windows, Vcl.Graphics, Vcl.Controls,

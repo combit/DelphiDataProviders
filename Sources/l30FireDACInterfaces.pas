@@ -6,7 +6,7 @@
  File   : L30FireDACInterfaces.pas
  Module : List & Label 30 FireDAC Interface definitions
  Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Version: 30.001
 ==================================================================================
 }
 
@@ -14,7 +14,6 @@ unit l30FireDACInterfaces;
 
 
 interface
-{$WEAKPACKAGEUNIT ON}
 
 uses
 	windows,

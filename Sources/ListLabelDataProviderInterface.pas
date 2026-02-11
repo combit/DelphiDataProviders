@@ -6,14 +6,14 @@
  File   : ListLabelDataProviderInterface.pas
  Module : List & Label 30
  Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Version: 30.001
 ==================================================================================
 }
 
 unit ListLabelDataProviderInterface;
 
 interface
-{$WEAKPACKAGEUNIT ON}
+
 Type
   DefineDelayedInfoType = (diSortOrdersDesigning = 0, diSortOrdersPrinting = 1);
 

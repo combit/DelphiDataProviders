@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS30.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2024-12-11 10:12:49] *)
+(*  [build of 2025-10-15 11:10:33] *)
 
 unit cmbtLS30x;
 
@@ -1081,7 +1081,11 @@ type
 	 _nCMBTLanguage:   integer
 	): longbool; stdcall;
 
+{$if CompilerVersion < 37}
 const
+{$else}
+var
+{$ifend}
   {$ifdef UNICODE}
       LlStgsysStorageOpenO: pfnLlStgsysStorageOpenA = NIL;
      {$else}

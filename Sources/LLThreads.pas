@@ -6,14 +6,14 @@
  File   : LLThreads.pas
  Module : List & Label 30
  Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Version: 30.001
 ==================================================================================
 }
 
 unit LLThreads;
 
 interface
-{$WEAKPACKAGEUNIT ON}
+
 uses
   Classes, SysUtils, Windows, ListLabel30;
 

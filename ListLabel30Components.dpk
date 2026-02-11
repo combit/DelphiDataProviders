@@ -30,9 +30,13 @@ package ListLabel30Components;
 {$IMPLICITBUILD ON}
 
 requires
-  vcl,
+ vcl,
   {$ifdef win32}
   DesignIde,
+  {$else}
+  {$ifdef VER370}
+  DesignIde,
+  {$endif}
   {$endif}
   dbrtl,
   vclimg,
@@ -46,13 +50,16 @@ contains
   LLDataSetDataProvider in 'Sources\LLDataSetDataProvider.pas',
   LLDataProvider in 'Sources\LLDataProvider.pas',
   {$ifdef win32}
-   LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  LL30Report_Reg in 'Sources\LL30Report_Reg.pas',
+  {$else}
+  {$if CompilerVersion > 36}
+  LLObjectEditor in 'Sources\LLObjectEditor.pas',
+  LL30Report_Reg in 'Sources\LL30Report_Reg.pas',
+  {$endif}
   {$endif}
   ObjTree in 'Sources\ObjTree.pas',
   LLThreads in 'Sources\LLThreads.pas',
-  {$ifdef win32}
-   LL30Report_Reg in 'Sources\LL30Report_Reg.pas',
-  {$endif}
   LLReport_Types in 'Sources\LLReport_Types.pas',
   ListLabel30 in 'Sources\ListLabel30.pas',
   l30FireDACInterfaces in 'Sources\l30FireDACInterfaces.pas',

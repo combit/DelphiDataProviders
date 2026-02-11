@@ -6,14 +6,14 @@
  File   : LLReport_Types.pas
  Module : LLReport_Types.pas
  Descr. : Implementation file for the List & Label 30 VCL-Component
- Version: 30.000
+ Version: 30.001
 ==================================================================================
 }
 
 unit LLReport_Types;
 
 interface
-{$WEAKPACKAGEUNIT ON}
+
 Uses
   Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll30x, Dialogs, System.UITypes;
 
@@ -635,7 +635,7 @@ Type
     procedure SetItem(Index: Integer; Value: TPicture);
   public
     function AddItem: TPicture;
-    property Items[Index: Integer]: TPicture read GetItem write SetItem; default;
+   
   end;
 
 //--------------------------------------------------------------------------------------------------------------------

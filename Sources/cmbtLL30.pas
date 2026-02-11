@@ -1,6 +1,6 @@
 (* Pascal/Delphi constants and function definitions for LL30.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2025-08-19 22:08:14] *)
+(*  [build of 2025-10-15 11:10:55] *)
 
 unit cmbtLL30;
 
