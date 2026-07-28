@@ -6,7 +6,7 @@
  File   : LLPreview.pas
  Module : LLPreview.pas
  Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
+ Version: 31.002
 
 ==================================================================================
 }
@@ -312,6 +312,7 @@ end;
     procedure SetSlideShowMode;
     procedure RefreshToolbar;
     procedure SetOptionString(Option: TString; Value: TString);
+    procedure SetOption(Option: NativeUInt; Value: NativeUInt);
     procedure Attach(FParentComponent: TListLabel31; nFlags: Cardinal);
     procedure Detach;
     procedure SearchFirst(SearchString: TString; CaseSensitive: Boolean);
@@ -1118,6 +1119,11 @@ end;
 procedure TLlPreviewControl31.SetOptionString(Option, Value: TString);
 begin
   SendMessage(handle, LS_VIEWERCONTROL_SET_OPTIONSTR, NativeUInt(PTChar(Option)), NativeInt(PTChar(Value)));
+end;
+
+procedure TLlPreviewControl31.SetOption(Option: NativeUInt; Value: NativeUInt);
+begin
+  SendMessage(handle, LS_VIEWERCONTROL_SET_OPTION, Option, Value);
 end;
 
 procedure TLlPreviewControl31.SetSlideShowMode;

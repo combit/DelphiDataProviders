@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LS31.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2026-02-13 22:02:49] *)
+(*  [build of 2026-07-15 22:07:41] *)
 
 unit cmbtLS31x;
 
@@ -192,9 +192,9 @@ const
   LS_OPTION_STARTNEWJOB          = 19;
   LS_OPTION_PAGETYPE             = 20;
                     (* 0=normal, 1=GTC *)
-  LS_OPTION_CONBINATIONPRINT_INDEX = 21;
+  LS_OPTION_COMBINATIONPRINT_INDEX = 21;
                     (* r/o *)
-  LS_OPTION_CONBINATIONPRINT_COUNT = 22;
+  LS_OPTION_COMBINATIONPRINT_COUNT = 22;
                     (* r/o *)
   LS_OPTION_PROJECTNAME          = 100;
                     (* name of the original project (not page dependent) *)
@@ -242,11 +242,13 @@ const
                     (* r/o, DEVMODEW structure, to be used with the LlConvertXxxx API *)
   LS_OPTION_REGIONNAME           = 123;
                     (* r/o *)
-  LS_OPTION_CONBINATIONPRINT_PROJECT = 126;
+  LS_OPTION_COMBINATIONPRINT_PROJECT = 126;
                     (* r/o *)
-  LS_OPTION_CONBINATIONPRINT_DESCRIPTION = 127;
+  LS_OPTION_COMBINATIONPRINT_DESCRIPTION = 127;
                     (* r/o *)
   LS_OPTION_PROHIBITSHELLEXECUTE = 128;
+  LS_OPTION_COMBINATIONPRINT_PROJECTFILENAME = 129;
+                    (* r/o, Page dependent full path or repo id of the project file. Also valid for single projects, not only for combination print projects. *)
   LS_PRINTFLAG_FIT               = $00000001;
   LS_PRINTFLAG_STACKEDCOPIES     = $00000002;
                     (* n times page1, n times page2, ... (else n times (page 1...x)) *)

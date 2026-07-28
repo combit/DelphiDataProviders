@@ -6,7 +6,7 @@
  File   : ListLabel31.pas
  Module : List & Label 31
  Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.002
+ Version: 31.003
 ==================================================================================
 }
 
@@ -2959,7 +2959,7 @@ begin
                 (LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_PAGEINDEX) <
                  LlPrintGetOption(CurrentJobHandle, LL_PRNOPT_LASTPAGE)) do
           begin
-            if Assigned(FOnAutoDefineNewPage) then
+            if Assigned(FOnAutoDefineNewPage) and (AutoProjectType = TLlProject.ptList) then
               OnAutoDefineNewPage(self, False);
           end;
 

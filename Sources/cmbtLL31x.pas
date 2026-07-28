@@ -1,6 +1,6 @@
 (* Pascal/Delphi runtime linkage constants and function definitions for LL31.DLL *)
 (*  (c) combit GmbH *)
-(*  [build of 2026-04-29 23:04:55] *)
+(*  [build of 2026-07-08 00:07:59] *)
 
 unit cmbtLL31x;
 
@@ -2023,6 +2023,12 @@ const
                     (* default: false *)
   LL_OPTION_PROHIBITSHELLEXECUTE = 438;
                     (* default: true *)
+  LL_OPTION_COMPAT_REORDER_COORDINATES_FOR_LINERECTS = 439;
+                    (* default: false *)
+  LL_OPTION_COMBINATIONPRINT_FORCETOTALPAGESSYNC = 441;
+                    (* default: LL_CBPSYNC_NEVER Totalpagecounter will be synchronized among the combination print steps on finalize *)
+  LL_CBPSYNC_NEVER               = 0;
+  LL_CBPSYNC_ALWAYS              = 1;
   LL_OPTIONSTR_LABEL_PRJEXT      = 0;
                     (* internal... (compatibility to L6) *)
   LL_OPTIONSTR_LABEL_PRVEXT      = 1;
