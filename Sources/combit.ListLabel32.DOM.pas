@@ -1,22 +1,16 @@
-{ =================================================================================
+{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.DOM.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
-  Copyright © combit GmbH, Konstanz
-
-  ----------------------------------------------------------------------------------
-
-  File   : l31dom.pas
-  Module : List & Label 31 DOM
-  Descr. : Implementation file for the List & Label 31 DOM
-  Version: 31.000
-
-  ==================================================================================
-}
-
-unit l31dom;
+unit combit.ListLabel32.DOM;
 {$if CompilerVersion > 10}
 {$DEFINE USELLXOBJECTS}
 {$ifend}
-
 
 {$if CompilerVersion > 19}
 {$define UNICODE}
@@ -24,11 +18,10 @@ unit l31dom;
 {$define UNICODESTRING_AWARE}
 {$ifend}
 
-
 interface
 
 uses
-  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,l31CommonInterfaces,cmbtll31x
+  classes, Dialogs, SysUtils, graphics, Windows, System.Variants,combit.ListLabel32.CommonInterfaces,cmbtll32x
   {$if CompilerVersion > 27} // XE7 and newer
   , System.UITypes
   {$ifend}
@@ -6057,13 +6050,15 @@ end;
     function GetLinkURL: TString;
     procedure SetLinkURL(const value: TString);
     function GetSortOrders: TLlDOMPropertySortOrders;
-
+    function GetAccessibilityAltText: TString;
+    procedure SetAccessibilityAltText(const Value: TString);
   public
 
     property Animation: TLlDOMPropertyAnimation read GetAnimation;
     property XhtmlAnimation: TLlDOMPropertyXhtmlAnimation read GetXhtmlAnimation;
     property LinkURL: TString read GetLinkURL write SetLinkURL;
     property SortOrders: TLlDOMPropertySortOrders read GetSortOrders;
+    property AccessibilityAltText: TString read GetAccessibilityAltText write SetAccessibilityAltText;
     constructor Create(list: TLlDOMTableLineFieldList; objType: TString;
       index: integer); overload;
     destructor Destroy; override;
@@ -6833,12 +6828,15 @@ private
     function GetBookmark: TLlDOMPropertyBookmark;
     procedure SetIssueCondition(const value: TString);
     function GetIssueCondition: TString;
+    function GetAccessibilityAltText: TString;
+    procedure SetAccessibilityAltText(const Value: TString);
   public
     property Animation: TLlDOMPropertyAnimation read GetAnimation;
     property XhtmlAnimation: TLlDOMPropertyXhtmlAnimation read GetXhtmlAnimation;
     property UUID: TString read GetUUID;
     property TemplateUUID: TString read GetTemplateUUID;
     property LinkUUID: TString read GetLinkUUID write SetLinkUUID;
+    property AccessibilityAltText: TString read GetAccessibilityAltText write SetAccessibilityAltText;
 
     property Name: TString read GetName write SetName;
     property Content: TString read GetContent write SetContent;
@@ -8095,7 +8093,7 @@ end;
 constructor TLlDOMProjectBase.Create(hTheParentComponent: ILlDomParent);
 begin
   inherited Create();
-  LL31xLoad();
+  LL32xLoad();
   fhParentComponent := hTheParentComponent;
   projectLoaded := False;
 end;
@@ -8118,7 +8116,7 @@ begin
     fRegionList.Free;
   if Assigned(fProjectTemplateList) then
     fProjectTemplateList.Free;
-  LL31xUnload();
+  LL32xUnload();
   inherited;
 end;
 
@@ -8444,7 +8442,7 @@ end;
 
 function TLlDOMObjectCheckbox.GetExportAsPicture: TString;
 begin
-  GetProperty('ExportAsPicture')
+  result := GetProperty('ExportAsPicture')
 end;
 
 function TLlDOMObjectCheckbox.GetContent: TString;
@@ -9192,6 +9190,16 @@ end;
 procedure TLlDOMObjectBase.SetLinkMode(const value: TString);
 begin
   SetProperty('LinkMode', value);
+end;
+
+function TLlDOMObjectBase.GetAccessibilityAltText: TString;
+begin
+  result := GetProperty('AccessibilityAltText');
+end;
+
+procedure TLlDOMObjectBase.SetAccessibilityAltText(const Value: TString);
+begin
+  SetProperty('AccessibilityAltText', Value);
 end;
 
 function TLlDOMObjectBase.GetBookmark: TLlDOMPropertyBookmark;
@@ -11169,12 +11177,12 @@ end;
 
 function TLlDOMPropertyMatchDevicePixel.GetContents: TString;
 begin
-  GetProperty('Contents');
+  result := GetProperty('Contents');
 end;
 
 function TLlDOMPropertyMatchDevicePixel.GetDotSizeReduction: TString;
 begin
-  GetProperty('DotSizeReduction');
+  result := GetProperty('DotSizeReduction');
 end;
 
 { TBarcodeSource }
@@ -11334,12 +11342,12 @@ end;
 {TLlDOMPropertyMaxicodeBarcodeSource}
 function TLlDOMPropertyMaxicodeBarcodeSource.GetPolygonFillRate: TString;
 begin
-  GetProperty('PolygonFillRate');
+  result := GetProperty('PolygonFillRate');
 end;
 
 function TLlDOMPropertyMaxicodeBarcodeSource.GetMaxicodeMode: TString;
 begin
-  GetProperty('MaxicodeMode');
+  result := GetProperty('MaxicodeMode');
 end;
 
 procedure TLlDOMPropertyMaxicodeBarcodeSource.SetPolygonFillRate(const value: TString);
@@ -17538,12 +17546,12 @@ end;
 {TLlDOMPropertyTableFieldMaxicodeBarcodeSource}
 function TLlDOMPropertyTableFieldMaxicodeBarcodeSource.GetPolygonFillRate: TString;
 begin
-  GetProperty('PolygonFillRate');
+  result := GetProperty('PolygonFillRate');
 end;
 
 function TLlDOMPropertyTableFieldMaxicodeBarcodeSource.GetMaxicodeMode: TString;
 begin
-  GetProperty('MaxicodeMode');
+  result := GetProperty('MaxicodeMode');
 end;
 
 procedure TLlDOMPropertyTableFieldMaxicodeBarcodeSource.SetPolygonFillRate(const value: TString);
@@ -18153,6 +18161,16 @@ begin
   SetProperty('LinkURL', value);
 end;
 
+
+function TLlDOMTableFieldBase.GetAccessibilityAltText: TString;
+begin
+  result := GetProperty('AccessibilityAltText');
+end;
+
+procedure TLlDOMTableFieldBase.SetAccessibilityAltText(const Value: TString);
+begin
+  SetProperty('AccessibilityAltText', Value);
+end;
 function TLlDOMTableField.GetName: TString;
 begin
   result := GetProperty('Name');
@@ -32374,7 +32392,7 @@ var
   {$endif}
 begin
   VariantInit(Content);
-  cmbTLl31x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
+  cmbTLl32x.LlUtilsGetProfContentsFromVariantInternal(input, PVARIANT(@Content));
   result:= Content;
   VariantClear(Content);
 
@@ -32390,7 +32408,7 @@ var
 
 begin
   VariantInit(Content);
-  cmbTLl31x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
+  cmbTLl32x.LlUtilsGetVariantFromProfContentsInternal(text, PVARIANT(@Content));
   result:= Content;
  VariantClear(Content);
 end;

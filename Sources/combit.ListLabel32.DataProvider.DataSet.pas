@@ -1,25 +1,21 @@
 ﻿{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.DataProvider.DataSet.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : LLDataSetDataProvider.pas
- Module : List & Label 31
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-
-==================================================================================
-}
-
-unit LLDataSetDataProvider;
+unit combit.ListLabel32.DataProvider.DataSet;
 
 interface
 
-uses LLDataProvider,
+uses combit.ListLabel32.DataProvider,
      Vcl.StdCtrls, Data.DB, Classes,
      system.Generics.Collections,
      FireDac.Comp.DataSet,FireDac.Comp.Client,
-     FireDac.Stan.Intf, LLReport_Types;
+     FireDac.Stan.Intf, combit.ListLabel32.Report.Types;
 
 type
 
@@ -185,7 +181,7 @@ const
     '{\f0\fswiss\fcharset0 Arial;}}\viewkind4\uc1\pard\f0\fs20\par}';
 
 implementation
-uses Sysutils, cmbtll31x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
+uses Sysutils, cmbtll32x, Windows, dialogs, vcl.graphics, vcl.imaging.jpeg;
 
 Constructor TDataSetDescription.Create(ADataset: TDataSet; AKeyField: String; ASortDescription: String; AFilter: String  );
 Begin

@@ -1,22 +1,18 @@
 ﻿{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.Report.Types.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : LLReport_Types.pas
- Module : LLReport_Types
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-
-==================================================================================
-}
-
-unit LLReport_Types;
+unit combit.ListLabel32.Report.Types;
 
 interface
 
 Uses
-  Windows, Classes, DB, Graphics, ObjTree, System.Contnrs, cmbtll31x, Dialogs, System.UITypes;
+  Windows, Classes, DB, Graphics, combit.ListLabel32.ObjectTree, System.Contnrs, cmbtll32x, Dialogs, System.UITypes;
 
 Type
 
@@ -111,6 +107,7 @@ Type
                       PdfTitle,
                       PdfSubject,
                       PdfKeywords,
+					  PdfAccessibilityStandard,
                       PdfAuthor,
                       PdfCreator,
                       PdfEncryptionEncryptFile,
@@ -485,7 +482,8 @@ Type
         Printerless = 375,
 		UseSimpleWindowsPenStyleFrameDrawing = 389, // LL_OPTION_USESIMPLEWINDOWSPENSTYLE_FRAMEDRAWING (389) /* default: false */
 		UseSvg2Bmp = LL_OPTION_USE_SVG2BMP,
-		MultiSectionPrintMerge = LL_OPTION_MULTISECTIONPRINT_MERGE
+		MultiSectionPrintMerge = LL_OPTION_MULTISECTIONPRINT_MERGE,
+		PDFUASupport = LL_OPTION_PDF_UA_SUPPORT
 	); 
 
   TExportEnumHelper = class
@@ -637,7 +635,7 @@ Type
   public
     function AddItem: TPicture;
 	 property Items[Index: NativeInt]: TPicture read GetItem write SetItem; default;
-	
+   
   end;
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -817,6 +815,8 @@ begin
                           result:= 'PDF.Subject';
       PdfKeywords:
                           result:= 'PDF.Keywords';
+	  PdfAccessibilityStandard:
+                          result:= 'PDF.AccessibilityStandard';
       PdfAuthor:
                           result:= 'PDF.Author';
       PdfCreator:

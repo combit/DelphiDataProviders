@@ -1,10 +1,19 @@
-unit LlCoreRepository;
+{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.Core.Repository.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
+
+unit combit.ListLabel32.Core.Repository;
 
 interface
 uses
   System.SysUtils, System.Classes, System.Variants,
   Winapi.Windows, Winapi.ActiveX,
-  LlRepository;
+  combit.ListLabel32.Repository;
 
 type
   // Repository Item Info Enumeration

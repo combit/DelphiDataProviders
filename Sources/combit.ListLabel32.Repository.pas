@@ -1,4 +1,13 @@
-unit LlRepository;
+{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.Repository.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
+
+unit combit.ListLabel32.Repository;
 
 interface
 

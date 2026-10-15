@@ -1,25 +1,20 @@
 ﻿{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.Design.ObjectEditor.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : LLObjectEditor.pas
- Module : List & Label 31
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-
-==================================================================================
-}
-
-unit LLObjectEditor;
+unit combit.ListLabel32.Design.ObjectEditor;
 
 interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics,
-  Controls, Dialogs, Forms, DesignIntf, ObjTree, Vcl.ComCtrls, Vcl.Buttons, Vcl.ExtCtrls, Vcl.ActnList,
+  Controls, Dialogs, Forms, DesignIntf, combit.ListLabel32.ObjectTree, Vcl.ComCtrls, Vcl.Buttons, Vcl.ExtCtrls, Vcl.ActnList,
   Vcl.ImgList, Vcl.ToolWin, System.ImageList, System.Actions ;
-
 
 const
   sInvalidParameter = 'Parameter %s von %s darf nicht %s';

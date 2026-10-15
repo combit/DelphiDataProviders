@@ -1,0 +1,51 @@
+package combit.ListLabel32.Components;
+
+{$R *.res}
+{$R *.dres}
+
+{$DESCRIPTION 'combit List & Label 32 Components'}
+{$IMPLICITBUILD ON}
+
+requires
+  vcl,
+  {$ifdef win32}
+  DesignIde,
+  {$else}
+  {$ifdef VER370}
+  DesignIde,
+  {$endif}
+  {$endif}
+  dbrtl,
+  vclimg,
+  rtl,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon;
+
+contains
+  combit.ListLabel32.DataProviderInterface in 'Sources\combit.ListLabel32.DataProviderInterface.pas',
+  combit.ListLabel32.DataProvider.DataSet in 'Sources\combit.ListLabel32.DataProvider.DataSet.pas',
+  combit.ListLabel32.DataProvider in 'Sources\combit.ListLabel32.DataProvider.pas',
+  {$ifdef win32}
+  combit.ListLabel32.Design.ObjectEditor in 'Sources\combit.ListLabel32.Design.ObjectEditor.pas',
+  combit.ListLabel32.Report.Reg in 'Sources\combit.ListLabel32.Report.Reg.pas',
+  {$else}
+  {$if CompilerVersion > 36}
+  combit.ListLabel32.Design.ObjectEditor in 'Sources\combit.ListLabel32.Design.ObjectEditor.pas',
+  combit.ListLabel32.Report.Reg in 'Sources\combit.ListLabel32.Report.Reg.pas',
+  {$endif}
+  {$endif}
+  combit.ListLabel32.ObjectTree in 'Sources\combit.ListLabel32.ObjectTree.pas',
+  combit.ListLabel32.Threads in 'Sources\combit.ListLabel32.Threads.pas',
+  combit.ListLabel32.Report.Types in 'Sources\combit.ListLabel32.Report.Types.pas',
+  combit.ListLabel32 in 'Sources\combit.ListLabel32.pas',
+  combit.ListLabel32.FireDACInterfaces in 'Sources\combit.ListLabel32.FireDACInterfaces.pas',
+  combit.ListLabel32.CommonInterfaces in 'Sources\combit.ListLabel32.CommonInterfaces.pas',
+  combit.ListLabel32.Preview in 'Sources\combit.ListLabel32.Preview.pas',
+  cmbtLL32x in 'Sources\cmbtLL32x.pas',
+  cmbtLS32x in 'Sources\cmbtLS32x.pas',
+  combit.ListLabel32.Core.Repository in 'Sources\combit.ListLabel32.Core.Repository.pas',
+  combit.ListLabel32.Repository in 'Sources\combit.ListLabel32.Repository.pas';
+
+end.
+

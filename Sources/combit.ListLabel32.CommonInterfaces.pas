@@ -1,15 +1,13 @@
 {=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.CommonInterfaces.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : l31CommonInterfaces.pas
- Module : List & Label 31 Interface definitions
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.000
-==================================================================================
-}
-unit l31CommonInterfaces;
+unit combit.ListLabel32.CommonInterfaces;
 
 interface
 {$WEAKPACKAGEUNIT ON}

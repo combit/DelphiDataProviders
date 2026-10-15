@@ -1,17 +1,13 @@
 ﻿{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.DataProviderInterface.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : ListLabelDataProviderInterface.pas
- Module : List & Label 31
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-
-==================================================================================
-}
-
-unit ListLabelDataProviderInterface;
+unit combit.ListLabel32.DataProviderInterface;
 
 interface
 

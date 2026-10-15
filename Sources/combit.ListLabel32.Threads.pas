@@ -1,28 +1,24 @@
 ﻿{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.Threads.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : LLThreads.pas
- Module : List & Label 31
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-
-==================================================================================
-}
-
-unit LLThreads;
+unit combit.ListLabel32.Threads;
 
 interface
 
 uses
-  Classes, SysUtils, Windows, ListLabel31;
+  Classes, SysUtils, Windows, combit.ListLabel32;
 
 type
 
   TPrintPreviewThread = class(TThread)
   private
-    FPrintInstance      : TListLabel31;
+    FPrintInstance      : TListLabel32;
     FProjectFile        : string;
     FOriginalProjectFile: string;
     FExportFormat       : String;
@@ -40,7 +36,7 @@ type
     procedure FinalizePrinting();
     procedure Abort();
 
-    property PrintInstance: TListLabel31 read FPrintInstance write FPrintInstance;
+    property PrintInstance: TListLabel32 read FPrintInstance write FPrintInstance;
     Property ProjectFile  : string read FProjectFile write FProjectFile;
     Property OriginalProjectFile: string read FOriginalProjectFile write FOriginalProjectFile;
     Property ExportFormat: String read FExportFormat write FExportFormat;
@@ -61,7 +57,7 @@ type
     FParentKey      : String;
     FParentTableName: String;
     FAttachInfo     : THandle;
-    FPrintInstance  : TListLabel31;
+    FPrintInstance  : TListLabel32;
     FTerminated     : boolean;
     FKeyValue       : String;
     FJobID          : longint;
@@ -75,7 +71,7 @@ type
     procedure Execute; override;
   public
     property Terminated: boolean read FTerminated write FTerminated;
-    property PrintInstance: TListLabel31 read FPrintInstance write FPrintInstance;
+    property PrintInstance: TListLabel32 read FPrintInstance write FPrintInstance;
     property UserParam: integer read FUserParam write FUserParam;
     property ParentTableName: String read FParentTableName write FParentTableName;
     property RelationName: String read FRelationName write FRelationName;
@@ -94,7 +90,7 @@ type
   end;
 
 implementation
-uses cmbtLS31x, LLDataSetDataProvider;
+uses cmbtLS32x, combit.ListLabel32.DataProvider.DataSet;
 procedure TPrintPreviewThread.Abort;
 begin
   PrintInstance.AbortPrinting;

@@ -1,20 +1,17 @@
 ﻿{=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.DataProvider.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : LLDataProvider.pas
- Module : List & Label 31
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-==================================================================================
-}
-
-unit LLDataProvider;
+unit combit.ListLabel32.DataProvider;
 
 interface
 
-  uses ListLabelDataProviderInterface, system.Generics.Collections, Classes, windows, llreport_types;
+  uses combit.ListLabel32.DataProviderInterface, system.Generics.Collections, Classes, windows, combit.ListLabel32.Report.Types;
 
 type
   TListLabelDataProvider = class;
@@ -130,7 +127,7 @@ type
   end;
 
 implementation
-  uses  sysutils, ListLabel31;
+  uses  sysutils, combit.ListLabel32;
 { TDataProviderRoot }
 
 constructor TDataProviderInterfaceProxyRoot.Create(ListLabel: TComponent; AProvider: TListLabelDataProvider);
@@ -352,12 +349,12 @@ var Column: TListLabelTableColumn;
 begin
   ColumnList := Row.Columns;
   ColumnList.OwnsObjects := True;
-  AsVariables:= (TListLabel31(Parent).DataController.DataMember = Row.TableName) and (TListLabel31(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
+  AsVariables:= (TListLabel32(Parent).DataController.DataMember = Row.TableName) and (TListLabel32(Parent).DataController.AutoMasterMode = TLlAutoMasterMode.mmAsVariables);
 
-   if ((TListLabel31(Parent).AutoProjectType) <> TLlProject.ptList) then
+   if ((TListLabel32(Parent).AutoProjectType) <> TLlProject.ptList) then
     begin
-    if Assigned(TListLabel31(Parent).OnAutoDefineNewPage) then
-      TListLabel31(Parent).OnAutoDefineNewPage(self, false);
+    if Assigned(TListLabel32(Parent).OnAutoDefineNewPage) then
+      TListLabel32(Parent).OnAutoDefineNewPage(self, false);
     end;
 
 
@@ -366,16 +363,16 @@ begin
      if Column.ImgHandle > 0 Then
      begin
       if AsVariables then
-          TListLabel31(Parent).Core.LlDefineVariableExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+          TListLabel32(Parent).Core.LlDefineVariableExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
         else
-          TListLabel31(Parent).Core.LlDefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
+          TListLabel32(Parent).Core.LlDefineFieldExtHandle(Row.TableName+'.'+Column.ColumnName, Column.ImgHandle, Column.FieldType)
      end
      else
      begin
       if AsVariables then
-        TListLabel31(Parent).Core.LlDefineVariableExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType)
+        TListLabel32(Parent).Core.LlDefineVariableExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType)
       else
-        TListLabel31(Parent).Core.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
+        TListLabel32(Parent).Core.LlDefineFieldExt(Row.TableName+'.'+Column.ColumnName, Column.Content, Column.FieldType);
      end;
    end;
   ColumnList.Clear;

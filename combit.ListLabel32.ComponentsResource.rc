@@ -1,0 +1,6 @@
+TLDesignerAction32 BITMAP "Images\\TLDesignerAction32.bmp"
+TListLabel32 BITMAP "Images\\TListLabel32.bmp"
+TLlDesignerFunction32 BITMAP "Images\\TLlDesignerFunction32.bmp"
+TLlDesignerObject32 BITMAP "Images\\TLlDesignerObject32.bmp"
+TLlPreviewControl32 BITMAP "Images\\TLlPreviewControl32.bmp"
+TLlRTFControl32 BITMAP "Images\\TLlRTFControl32.bmp"

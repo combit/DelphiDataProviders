@@ -1,28 +1,22 @@
 {=================================================================================
+	Product:    : combit List & Label
+	File        : combit.ListLabel32.FireDACInterfaces.pas
+	Version     : 32.0
+	------------------------------------------------------------------------------
+	Copyright © combit GmbH
+	www.combit.net
+==================================================================================}
 
- Copyright © combit GmbH, Konstanz
-
-----------------------------------------------------------------------------------
- File   : L31FireDACInterfaces.pas
- Module : List & Label 31 FireDAC Interface definitions
- Descr. : Implementation file for the List & Label 31 VCL-Component
- Version: 31.001
-==================================================================================
-}
-
-unit l31FireDACInterfaces;
-
+unit combit.ListLabel32.FireDACInterfaces;
 
 interface
-
 
 uses
 	windows,
     activex,
     graphics,
     classes
-    ,cmbtll31x;
-
+    ,cmbtll32x;
 
 const
   LLXOBJECT_OPTION_LANGUAGE			=1; // r/w, if call fails with E_FAIL, LL does not load this Function
@@ -42,7 +36,6 @@ const
   LLXOBJECT_OPTION_USABLE_IN_STATIC_CELL	=26; // r/o
   LLXOBJECT_OPTION_BITMAP_SMALL = 38;
   LLXOBJECT_OPTION_BITMAP_LARGE= 39;
-
 
 var
 	CLSID_LLX:TGUID =                     (D1:$3cbae4e0;D2:$8880;D3:$11d2;D4:($96,$a3,$00,$60,$08,$6f,$ef,$d5));
@@ -67,7 +60,6 @@ type
   HPROFJOB  = longint;
   HPROFLIST = pChar;
   cmbtHWND  = DWORD_PTR;
-
 
 ILlXInterface = interface(IUnknown)
 ['{3cbae4e1-8880-11d2-96a3-0060086fefd5}']
@@ -174,7 +166,6 @@ public
   function _Release: Integer; stdcall;
 end;
 
-
 LlXEnumObjects=class(TObject,IUnknown,ILlXEnumObjects)
 protected
   m_nRef: Integer;
@@ -209,10 +200,9 @@ public
   function Clone(var Obj): HResult;  stdcall;
 end;
 
-
 implementation
 
-uses ListLabel31;
+uses combit.ListLabel32;
 constructor LlXInterface.Create(ObjList: TList; FctList: TList);
 begin
     inherited create;
@@ -312,8 +302,6 @@ begin
   FObjList:=ObjList;
 end;
 
-
-
 function LlXEnumObjects._AddRef: Integer;
 begin
 	Result := InterlockedIncrement(m_nRef);
@@ -338,13 +326,13 @@ end;
 
 function LlXEnumObjects.Next(nCount: cardinal; var Obj: ILlXObject; pnDone: PLongint): HResult;
 var
-    pObject: TLlDesignerObject31;
+    pObject: TLlDesignerObject32;
 begin
  Result := S_FALSE;
     pnDone^:=0;
     if m_nIndex <= FObjList.Count-1 then
         begin
-        pObject := TLlDesignerObject31.CreateCopy(nil, FObjList[m_nIndex]);
+        pObject := TLlDesignerObject32.CreateCopy(nil, FObjList[m_nIndex]);
         if (not pObject.GetInterface(IID_LLX_IOBJECT, Obj)) then
             begin
             pObject.Free;
@@ -433,12 +421,12 @@ end;
 
 function LlXEnumFunctions.Next(nCount: cardinal; var Obj: ILlXFunction; pnDone: PLongint): HResult;
 var
-    pFunction: TLlDesignerFunction31;
+    pFunction: TLlDesignerFunction32;
 begin
     pnDone^:=0;
     if m_nIndex <= FFctList.Count-1 then
     	begin
-          pFunction := TLlDesignerFunction31(FFctList[m_nIndex]);
+          pFunction := TLlDesignerFunction32(FFctList[m_nIndex]);
           Obj := pFunction;
 
         inc(m_nIndex);
